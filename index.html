@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GESTIÓN TI — REPORTE DE FALLAS</title>
+  <meta name="description" content="App simple en HTML/CSS/JS para reportar fallas e incidentes. Guarda en localStorage, permite filtrar, buscar, cambiar estado y exportar a CSV." />
+  <style>
+    :root{
+      --bg: #0b1020;
+      --card: #121a33;
+      --text: #e9eefc;
+      --muted: #9fb2e4;
+      --accent: #4f7cff;
+      --accent-2: #63e6be;
+      --danger: #ff6b6b;
+      --warning: #ffd166;
+      --ok: #51cf66;
+      --border: rgba(255,255,255,.12);
+      --shadow: 0 10px 25px rgba(0,0,0,.35);
+    }
+    .light{
+      --bg: #f5f7ff;
+      --card: #ffffff;
+      --text: #0d1333;
+      --muted: #51608b;
+      --accent: #335dff;
+      --accent-2: #0ca678;
+      --danger: #e03131;
+      --warning: #f08c00;
+      --ok: #2b8a3e;
+      --border: rgba(13,19,51,.12);
+      --shadow: 0 8px 20px rgba(13,19,51,.12);
+    }
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 700px at 10% -10%, #1a244a 0%, transparent 60%),
+                  radial-gradient(1100px 600px at 120% 10%, #2d3a72 0%, transparent 60%),
+                  var(--bg);
+      color: var(--text);
+      transition: background .3s ease, color .3s ease;
+    }
+    header{
+      position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      background: color-mix(in oklab, var(--bg) 78%, transparent);
+    }
+    .nav{max-width:1100px; margin:auto; display:flex; gap:14px; align-items:center; padding:14px 16px}
+    .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px}
+    .brand .logo{width:28px; height:28px; border-radius:8px; background: linear-gradient(135deg, var(--accent), #8e9bff); box-shadow: var(--shadow)}
+    .spacer{flex:1}
+    .btn{appearance:none; border:1px solid var(--border); background:linear-gradient(180deg, color-mix(in oklab, var(--card) 88%, transparent), var(--card)); color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600; box-shadow:var(--shadow); transition: transform .06s ease, border-color .2s ease, opacity .2s ease}
+    .btn:hover{transform: translateY(-1px)}
+    .btn:active{transform: translateY(0)}
+    .btn.primary{border-color: color-mix(in oklab, var(--accent) 60%, var(--border));}
+    .btn.danger{border-color: color-mix(in oklab, var(--danger) 60%, var(--border));}
+    .btn.ghost{background: transparent}
+
+    main{max-width:1100px; margin: 22px auto; padding: 0 16px; display:grid; grid-template-columns: 1fr; gap:18px}
+    @media(min-width: 960px){ main{grid-template-columns: 420px 1fr} }
+    .card{background: linear-gradient(180deg, color-mix(in oklab, var(--card) 94%, transparent), var(--card)); border:1px solid var(--border); border-radius:18px; box-shadow:var(--shadow)}
+    .card h2{margin:0; padding: 18px 18px 0 18px}
+    .card .body{padding: 16px 18px 18px 18px}
+
+    form .grid{display:grid; grid-template-columns: 1fr; gap:12px}
+    @media(min-width: 560px){ form .grid{grid-template-columns: 1fr 1fr} }
+    label{font-size:.9rem; color: var(--muted); display:block; margin-bottom:6px}
+    input[type="text"], input[type="email"], select, textarea{
+      width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background: color-mix(in oklab, var(--card) 88%, transparent);
+      color: var(--text); outline:none; transition:border-color .2s ease, background .2s ease
+    }
+    textarea{min-height:96px; resize:vertical}
+    input[type="file"]{color:var(--muted)}
+
+    .kpis{display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; margin-bottom: 10px}
+    @media(min-width:730px){ .kpis{grid-template-columns: repeat(4, minmax(0,1fr))} }
+    .kpi{padding:14px; border:1px solid var(--border); border-radius:14px; background:linear-gradient(180deg, color-mix(in oklab, var(--card) 94%, transparent), var(--card));}
+    .kpi .label{font-size:.8rem; color:var(--muted)}
+    .kpi .val{font-weight:800; font-size:1.4rem}
+
+    .filters{display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin: 10px 0 12px}
+    .filters input[type="search"]{flex:1; min-width:220px}
+
+    table{width:100%; border-collapse:separate; border-spacing:0 10px}
+    thead th{font-size:.85rem; color:var(--muted); text-align:left; padding:0 10px}
+    tbody tr{background:linear-gradient(180deg, color-mix(in oklab, var(--card) 94%, transparent), var(--card)); border:1px solid var(--border)}
+    tbody td{padding:12px 10px; border-top:1px solid var(--border); border-bottom:1px solid var(--border)}
+    tbody tr td:first-child{border-left:1px solid var(--border); border-radius:10px 0 0 10px}
+    tbody tr td:last-child{border-right:1px solid var(--border); border-radius:0 10px 10px 0}
+
+    .badge{display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; border:1px solid var(--border); font-size:.78rem}
+    .badge.dot::before{content:""; width:8px; height:8px; border-radius:999px; display:inline-block}
+    .prio-alta{background: color-mix(in oklab, var(--danger) 15%, transparent)}
+    .prio-media{background: color-mix(in oklab, var(--warning) 20%, transparent)}
+    .prio-baja{background: color-mix(in oklab, var(--ok) 20%, transparent)}
+    .prio-alta.dot::before{background: var(--danger)}
+    .prio-media.dot::before{background: var(--warning)}
+    .prio-baja.dot::before{background: var(--ok)}
+
+    .estado-abierto{color: var(--danger)}
+    .estado-proceso{color: var(--warning)}
+    .estado-cerrado{color: var(--ok)}
+
+    .actions{display:flex; gap:8px; flex-wrap:wrap}
+    .actions .btn{padding:8px 10px; border-radius:10px}
+
+    footer{max-width:1100px; margin: 6px auto 30px; padding:0 16px; color:var(--muted); font-size:.85rem}
+
+    dialog{border:1px solid var(--border); border-radius:16px; background: var(--card); color: var(--text); box-shadow: var(--shadow); width:min(760px, 92vw)}
+    dialog::backdrop{background: rgba(0,0,0,.45)}
+    .modal-head{display:flex; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid var(--border)}
+    .modal-body{padding:14px}
+    .thumb{max-width: 100%; border-radius:12px; border:1px solid var(--border)}
+    .muted{color: var(--muted)}
+  </style>
+</head>
+<body class="light">
+  <header>
+    <div class="nav">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>Gestión TI · <span class="muted">REPORTE DE FALLAS</span></div>
+      </div>
+      <div class="spacer"></div>
+      <button id="toggleTheme" class="btn ghost" title="Cambiar tema">🌗 Tema</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Columna izquierda: Formulario -->
+    <section class="card">
+      <h2>REPORTE USUARIO</h2>
+      <div class="body">
+        <form id="formTicket" novalidate>
+          <div class="grid">
+            <div>
+              <label for="titulo">Título *</label>
+              <input id="titulo" name="titulo" type="text" required placeholder="Ej. No hay internet en el piso 3" />
+            </div>
+            <div>
+              <label for="categoria">Categoría *</label>
+              <select id="categoria" name="categoria" required>
+                <option value="">Selecciona…</option>
+                <option>Red</option>
+                <option>Hardware</option>
+                <option>Software</option>
+                <option>Correo</option>
+                <option>Impresión</option>
+		    <option>Mantenimiento</option>
+                <option>Otro</option>
+              </select>
+            </div>
+            <div>
+              <label for="prioridad">Prioridad *</label>
+              <select id="prioridad" name="prioridad" required>
+                <option value="">Selecciona…</option>
+                <option>Alta</option>
+                <option>Media</option>
+                <option>Baja</option>
+              </select>
+            </div>
+            <div>
+              <label for="reportante">Reportado por *</label>
+              <input id="reportante" name="reportante" type="text" required placeholder="Tu nombre" />
+            </div>
+            <div>
+              <label for="email">Correo</label>
+              <input id="email" name="email" type="email" placeholder="tu@empresa.com" />
+            </div>
+            <div>
+              <label for="adjunto">Adjunto (opcional)</label>
+              <input id="adjunto" name="adjunto" type="file" accept="image/*" />
+            </div>
+          </div>
+          <div style="margin-top:10px">
+            <label for="descripcion">Descripción *</label>
+            <textarea id="descripcion" name="descripcion" required placeholder="Describe claramente el problema, cuándo ocurre y a quién afecta"></textarea>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap">
+            <button type="submit" class="btn primary">➕ Guardar reporte</button>
+            <button type="button" id="btnDemo" class="btn ghost" title="Cargar datos de ejemplo">🧪 Demo</button>
+            <button type="reset" class="btn ghost">↺ Limpiar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Columna derecha: Dashboard -->
+    <section class="card">
+      <h2>ESTADO DE REPORTE</h2>
+      <div class="body">
+        <div class="kpis">
+          <div class="kpi"><div class="label">Total</div><div class="val" id="kpiTotal">0</div></div>
+          <div class="kpi"><div class="label">Abiertos</div><div class="val" id="kpiAbierto">0</div></div>
+          <div class="kpi"><div class="label">En proceso</div><div class="val" id="kpiProceso">0</div></div>
+          <div class="kpi"><div class="label">Cerrados</div><div class="val" id="kpiCerrado">0</div></div>
+        </div>
+
+        <div class="filters">
+          <select id="fEstado" title="Filtrar por estado">
+            <option value="todos">Estado: Todos</option>
+            <option value="Abierto">Abierto</option>
+            <option value="En Proceso">En Proceso</option>
+            <option value="Cerrado">Cerrado</option>
+          </select>
+          <select id="fPrioridad" title="Filtrar por prioridad">
+            <option value="todas">Prioridad: Todas</option>
+            <option value="Alta">Alta</option>
+            <option value="Media">Media</option>
+            <option value="Baja">Baja</option>
+          </select>
+          <input id="fSearch" type="search" placeholder="Buscar por título o descripción" />
+          <div class="spacer"></div>
+          <button id="btnExport" class="btn">⬇️ Exportar CSV</button>
+          <button id="btnBorrarTodo" class="btn danger" title="Eliminar todos los registros">🗑️ Borrar todo</button>
+        </div>
+
+        <div style="overflow:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Categoría</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div>⚡ App HTML (sin frameworks). Los datos se guardan en <strong>este navegador</strong> usando localStorage.</div>
+  </footer>
+
+  <dialog id="ticketModal">
+    <div class="modal-head">
+      <strong id="mId">Ticket</strong>
+      <div class="spacer"></div>
+      <button id="mClose" class="btn ghost">✕</button>
+    </div>
+    <div class="modal-body" id="mBody"></div>
+  </dialog>
+
+  <script>
+  (function(){
+    'use strict';
+
+    // Helpers rápidos
+    const $ = (s, el=document) => el.querySelector(s);
+    const $$ = (s, el=document) => el.querySelectorAll(s);
+
+    // Estado y almacenamiento
+    const STORE_KEY = 'tickets_fallas_v1';
+    const THEME_KEY = 'tickets_theme_v1';
+
+    const load = () => { try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch{ return []; } };
+    const save = (arr) => localStorage.setItem(STORE_KEY, JSON.stringify(arr));
+
+    let tickets = load();
+
+    // Elementos UI
+    const tbody = $('#tbody');
+    const kpiTotal = $('#kpiTotal');
+    const kpiAbierto = $('#kpiAbierto');
+    const kpiProceso = $('#kpiProceso');
+    const kpiCerrado = $('#kpiCerrado');
+    const fEstado = $('#fEstado');
+    const fPrioridad = $('#fPrioridad');
+    const fSearch = $('#fSearch');
+    const form = $('#formTicket');
+    const btnDemo = $('#btnDemo');
+    const btnExport = $('#btnExport');
+    const btnBorrarTodo = $('#btnBorrarTodo');
+    const toggleTheme = $('#toggleTheme');
+
+    const modal = $('#ticketModal');
+    const mId = $('#mId');
+    const mBody = $('#mBody');
+    const mClose = $('#mClose');
+
+    // Filtros
+    let state = {
+      estado: 'todos',
+      prioridad: 'todas',
+      q: ''
+    };
+
+    // Tema (claro/oscuro)
+    function applyTheme(theme){
+      document.body.classList.toggle('light', theme === 'light');
+      document.body.classList.toggle('dark', theme === 'dark');
+      localStorage.setItem(THEME_KEY, theme);
+    }
+    function initTheme(){
+      const saved = localStorage.getItem(THEME_KEY);
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(saved || (prefersDark ? 'dark' : 'light'));
+    }
+
+    // Render
+    function formatDate(iso){
+      try{
+        const d = new Date(iso);
+        return d.toLocaleString();
+      }catch{ return iso }
+    }
+    function badgePrioridad(p){
+      const m = { 'Alta': 'prio-alta', 'Media': 'prio-media', 'Baja': 'prio-baja' }[p] || 'prio-media';
+      return `<span class="badge dot ${m}">${p}</span>`;
+    }
+    function labelEstado(e){
+      const cls = e === 'Abierto' ? 'estado-abierto' : (e === 'En Proceso' ? 'estado-proceso' : 'estado-cerrado');
+      return `<strong class="${cls}">${e}</strong>`;
+    }
+
+    function counters(){
+      const total = tickets.length;
+      const a = tickets.filter(t=>t.estado==='Abierto').length;
+      const p = tickets.filter(t=>t.estado==='En Proceso').length;
+      const c = tickets.filter(t=>t.estado==='Cerrado').length;
+      kpiTotal.textContent = total;
+      kpiAbierto.textContent = a;
+      kpiProceso.textContent = p;
+      kpiCerrado.textContent = c;
+    }
+
+    function currentList(){
+      const q = state.q.trim().toLowerCase();
+      return tickets
+        .filter(t => state.estado === 'todos' || t.estado === state.estado)
+        .filter(t => state.prioridad === 'todas' || t.prioridad === state.prioridad)
+        .filter(t => !q || (t.titulo.toLowerCase().includes(q) || t.descripcion.toLowerCase().includes(q)))
+        .sort((a,b)=> new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+    }
+
+    function render(){
+      counters();
+      const list = currentList();
+      tbody.innerHTML = '';
+      if(list.length === 0){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="7" class="muted" style="text-align:center; padding:18px">Sin resultados</td>`;
+        tbody.appendChild(tr);
+        return;
+      }
+      const frag = document.createDocumentFragment();
+      for(const t of list){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${t.id}</td>
+          <td>${escapeHtml(t.titulo)}</td>
+          <td>${escapeHtml(t.categoria)}</td>
+          <td>${badgePrioridad(t.prioridad)}</td>
+          <td>${labelEstado(t.estado)}</td>
+          <td>${formatDate(t.fecha)}</td>
+          <td>
+            <div class="actions">
+              <button class="btn" data-action="ver" data-id="${t.id}">👁️ Ver</button>
+              <select data-action="estado" data-id="${t.id}">
+                <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
+                <option ${t.estado==='En Proceso'?'selected':''}>En Proceso</option>
+                <option ${t.estado==='Cerrado'?'selected':''}>Cerrado</option>
+              </select>
+              <button class="btn danger" data-action="del" data-id="${t.id}">Eliminar</button>
+            </div>
+          </td>`;
+        frag.appendChild(tr);
+      }
+      tbody.appendChild(frag);
+    }
+
+    // Util para HTML seguro
+    function escapeHtml(str=''){
+      return String(str)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#39;');
+    }
+
+    // CRUD
+    function makeId(){
+      const t = new Date();
+      return 'T' + t.toISOString().replace(/\D/g,'').slice(0,14);
+    }
+
+    function upsert(ticket){
+      const idx = tickets.findIndex(x=>x.id===ticket.id);
+      if(idx>=0) tickets[idx] = ticket; else tickets.unshift(ticket);
+      save(tickets);
+      render();
+    }
+
+    function removeById(id){
+      tickets = tickets.filter(t=>t.id!==id);
+      save(tickets); render();
+    }
+
+    // Formulario
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const fd = new FormData(form);
+
+      // Validación mínima
+      const required = ['titulo','categoria','prioridad','reportante','descripcion'];
+      for(const k of required){
+        if(!fd.get(k)){
+          alert('Por favor completa los campos obligatorios.');
+          return;
+        }
+      }
+
+      const file = fd.get('adjunto');
+      const base = await toDataUrl(file);
+
+      const ticket = {
+        id: makeId(),
+        titulo: fd.get('titulo').trim(),
+        categoria: fd.get('categoria'),
+        prioridad: fd.get('prioridad'),
+        reportante: fd.get('reportante').trim(),
+        email: fd.get('email')?.trim() || '',
+        descripcion: fd.get('descripcion').trim(),
+        estado: 'Abierto',
+        fecha: new Date().toISOString(),
+        adjunto: base ? { name: file.name, type: file.type, dataUrl: base, size: file.size } : null
+      };
+      upsert(ticket);
+      form.reset();
+    });
+
+    // File -> dataURL (si hay archivo)
+    function toDataUrl(file){
+      return new Promise((resolve)=>{
+        if(!file || !file.size){ resolve(null); return; }
+        const reader = new FileReader();
+        reader.onload = ()=> resolve(reader.result);
+        reader.onerror = ()=> resolve(null);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Acciones de tabla (delegación)
+    tbody.addEventListener('click', (e)=>{
+      const btn = e.target.closest('button');
+      if(!btn) return;
+      const id = btn.getAttribute('data-id');
+      const action = btn.getAttribute('data-action');
+      const t = tickets.find(x=>x.id===id);
+      if(!t) return;
+      if(action==='ver'){
+        openModal(t);
+      } else if(action==='del'){
+        if(confirm('¿Eliminar este ticket?')) removeById(id);
+      }
+    });
+
+    tbody.addEventListener('change', (e)=>{
+      const sel = e.target.closest('select[data-action="estado"]');
+      if(!sel) return;
+      const id = sel.getAttribute('data-id');
+      const t = tickets.find(x=>x.id===id);
+      if(!t) return;
+      t.estado = sel.value;
+      upsert(t);
+    });
+
+    // Modal
+    function openModal(t){
+      mId.textContent = `${t.id} · ${t.titulo}`;
+      mBody.innerHTML = `
+        <p class="muted" style="margin:0 0 6px">${formatDate(t.fecha)} · ${escapeHtml(t.reportante)} ${t.email?`· <a href="mailto:${escapeHtml(t.email)}">${escapeHtml(t.email)}</a>`:''}</p>
+        <p><strong>Categoría:</strong> ${escapeHtml(t.categoria)} · <strong>Prioridad:</strong> ${escapeHtml(t.prioridad)} · <strong>Estado:</strong> ${escapeHtml(t.estado)}</p>
+        <p style="white-space:pre-wrap">${escapeHtml(t.descripcion)}</p>
+        ${t.adjunto ? `<details><summary>Adjunto: ${escapeHtml(t.adjunto.name)} (${Math.round(t.adjunto.size/1024)} KB)</summary><div style="margin-top:8px"><img class="thumb" alt="Adjunto" src="${t.adjunto.dataUrl}" /></div></details>`:''}
+      `;
+      if(typeof modal.showModal === 'function') modal.showModal(); else modal.setAttribute('open','');
+    }
+    mClose.addEventListener('click', ()=> modal.close && modal.close());
+
+    // Filtros
+    fEstado.addEventListener('change', ()=>{ state.estado = fEstado.value; render(); });
+    fPrioridad.addEventListener('change', ()=>{ state.prioridad = fPrioridad.value; render(); });
+    fSearch.addEventListener('input', ()=>{ state.q = fSearch.value; render(); });
+
+    // Exportar CSV
+    btnExport.addEventListener('click', ()=>{
+      const rows = currentList();
+      if(!rows.length){ alert('No hay datos para exportar.'); return; }
+      const headers = ['ID','Título','Categoría','Prioridad','Estado','Fecha','Reportante','Correo','Descripción'];
+      const csv = [headers.join(',')].concat(rows.map(r=>[
+        r.id,
+        q(r.titulo),
+        q(r.categoria),
+        q(r.prioridad),
+        q(r.estado),
+        q(formatDate(r.fecha)),
+        q(r.reportante),
+        q(r.email),
+        q(r.descripcion.replaceAll('\n',' '))
+      ].join(','))).join('\n');
+      download(`tickets_${Date.now()}.csv`, csv);
+    });
+
+    function q(val){
+      const s = String(val ?? '').replaceAll('"','""');
+      return '"'+s+'"';
+    }
+    function download(filename, text){
+      const blob = new Blob([text], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.style.display='none';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 5000);
+    }
+
+    // Borrar todo
+    btnBorrarTodo.addEventListener('click', ()=>{
+      if(!tickets.length){ alert('No hay registros.'); return; }
+      if(confirm('Esto eliminará TODOS los tickets guardados en este navegador. ¿Continuar?')){
+        tickets = []; save(tickets); render();
+      }
+    });
+
+    // Datos demo
+    btnDemo.addEventListener('click', ()=>{
+      if(!confirm('Cargar 3 tickets de ejemplo?')) return;
+      const now = new Date();
+      const demo = [
+        { titulo:'Sin Internet piso 3', categoria:'Red', prioridad:'Alta', reportante:'Laura M', email:'laura@empresa.com', descripcion:'Desde la mañana sin conectividad en 3er piso. AP parpadea en rojo.', estado:'Abierto' },
+        { titulo:'Outlook no envía', categoria:'Correo', prioridad:'Media', reportante:'Carlos R', email:'carlos@empresa.com', descripcion:'Queda en bandeja de salida. Ocurre intermitente.', estado:'En Proceso' },
+        { titulo:'Impresora contabilidad atascada', categoria:'Impresión', prioridad:'Baja', reportante:'Diana P', email:'diana@empresa.com', descripcion:'Papel atascado frecuente. Solicita mantenimiento.', estado:'Cerrado' }
+      ].map((x,i)=> ({
+        id: makeId() + (i+1),
+        ...x,
+        fecha: new Date(now.getTime() - (i*3600_000)).toISOString(),
+        adjunto: null
+      }));
+      tickets = demo.concat(tickets);
+      save(tickets); render();
+    });
+
+    // Tema
+    toggleTheme.addEventListener('click', ()=>{
+      const cur = document.body.classList.contains('dark') ? 'dark' : 'light';
+      applyTheme(cur === 'dark' ? 'light' : 'dark');
+    });
+
+    // Inicio
+    initTheme();
+    render();
+  })();
+  </script>
+</body>
+</html>
