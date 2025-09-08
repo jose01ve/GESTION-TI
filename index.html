@@ -113,6 +113,7 @@
     .modal-body{padding:14px}
     .thumb{max-width: 100%; border-radius:12px; border:1px solid var(--border)}
     .muted{color: var(--muted)}
+    .notice{font-size:.9rem; padding:10px 12px; border-radius:10px; border:1px solid var(--border); margin-top:10px}
   </style>
 </head>
 <body class="light">
@@ -147,7 +148,7 @@
                 <option>Software</option>
                 <option>Correo</option>
                 <option>Impresión</option>
-		    <option>Mantenimiento</option>
+                <option>Mantenimiento</option>
                 <option>Otro</option>
               </select>
             </div>
@@ -177,6 +178,7 @@
             <label for="descripcion">Descripción *</label>
             <textarea id="descripcion" name="descripcion" required placeholder="Describe claramente el problema, cuándo ocurre y a quién afecta"></textarea>
           </div>
+          <div id="notice" class="notice muted" style="display:none"></div>
           <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap">
             <button type="submit" class="btn primary">➕ Guardar reporte</button>
             <button type="button" id="btnDemo" class="btn ghost" title="Cargar datos de ejemplo">🧪 Demo</button>
@@ -237,7 +239,7 @@
   </main>
 
   <footer>
-    <div>⚡ App HTML (sin frameworks). Los datos se guardan en <strong>este navegador</strong> usando localStorage.</div>
+    <div>⚡ App HTML (sin frameworks). Los datos se guardan en <strong>este navegador</strong> y se envían a <strong>Google Sheets</strong> si hay conexión.</div>
   </footer>
 
   <dialog id="ticketModal">
@@ -252,6 +254,10 @@
   <script>
   (function(){
     'use strict';
+
+    // === GOOGLE SHEETS INTEGRATION ===========================================
+    // Pega aquí la URL de tu Web App (el cuadro que te mostró Apps Script).
+    const WEB_APP_URL = 'PEGAR_AQUI_LA_URL_DE_TU_WEBAPP';
 
     // Helpers rápidos
     const $ = (s, el=document) => el.querySelector(s);
@@ -280,6 +286,7 @@
     const btnExport = $('#btnExport');
     const btnBorrarTodo = $('#btnBorrarTodo');
     const toggleTheme = $('#toggleTheme');
+    const notice = $('#notice');
 
     const modal = $('#ticketModal');
     const mId = $('#mId');
@@ -287,11 +294,7 @@
     const mClose = $('#mClose');
 
     // Filtros
-    let state = {
-      estado: 'todos',
-      prioridad: 'todas',
-      q: ''
-    };
+    let state = { estado: 'todos', prioridad: 'todas', q: '' };
 
     // Tema (claro/oscuro)
     function applyTheme(theme){
@@ -307,10 +310,7 @@
 
     // Render
     function formatDate(iso){
-      try{
-        const d = new Date(iso);
-        return d.toLocaleString();
-      }catch{ return iso }
+      try{ return new Date(iso).toLocaleString(); }catch{ return iso }
     }
     function badgePrioridad(p){
       const m = { 'Alta': 'prio-alta', 'Media': 'prio-media', 'Baja': 'prio-baja' }[p] || 'prio-media';
@@ -320,18 +320,13 @@
       const cls = e === 'Abierto' ? 'estado-abierto' : (e === 'En Proceso' ? 'estado-proceso' : 'estado-cerrado');
       return `<strong class="${cls}">${e}</strong>`;
     }
-
     function counters(){
       const total = tickets.length;
       const a = tickets.filter(t=>t.estado==='Abierto').length;
       const p = tickets.filter(t=>t.estado==='En Proceso').length;
       const c = tickets.filter(t=>t.estado==='Cerrado').length;
-      kpiTotal.textContent = total;
-      kpiAbierto.textContent = a;
-      kpiProceso.textContent = p;
-      kpiCerrado.textContent = c;
+      kpiTotal.textContent = total; kpiAbierto.textContent = a; kpiProceso.textContent = p; kpiCerrado.textContent = c;
     }
-
     function currentList(){
       const q = state.q.trim().toLowerCase();
       return tickets
@@ -340,7 +335,6 @@
         .filter(t => !q || (t.titulo.toLowerCase().includes(q) || t.descripcion.toLowerCase().includes(q)))
         .sort((a,b)=> new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
     }
-
     function render(){
       counters();
       const list = currentList();
@@ -380,11 +374,8 @@
     // Util para HTML seguro
     function escapeHtml(str=''){
       return String(str)
-        .replaceAll('&','&amp;')
-        .replaceAll('<','&lt;')
-        .replaceAll('>','&gt;')
-        .replaceAll('"','&quot;')
-        .replaceAll("'",'&#39;');
+        .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+        .replaceAll('"','&quot;').replaceAll("'",'&#39;');
     }
 
     // CRUD
@@ -392,17 +383,60 @@
       const t = new Date();
       return 'T' + t.toISOString().replace(/\D/g,'').slice(0,14);
     }
-
     function upsert(ticket){
       const idx = tickets.findIndex(x=>x.id===ticket.id);
       if(idx>=0) tickets[idx] = ticket; else tickets.unshift(ticket);
       save(tickets);
       render();
     }
-
     function removeById(id){
       tickets = tickets.filter(t=>t.id!==id);
       save(tickets); render();
+    }
+
+    // === Envío a Google Sheets (Apps Script) ================================
+    async function sendToSheets(ticket){
+      if(!WEB_APP_URL || WEB_APP_URL.includes('PEGAR_AQUI')){
+        return { ok:false, status:'NoURL', message:'Falta configurar WEB_APP_URL' };
+      }
+      // Prepara un payload “liviano”: no enviamos el binario del adjunto
+      const payload = {
+        id: ticket.id,
+        titulo: ticket.titulo,
+        categoria: ticket.categoria,
+        prioridad: ticket.prioridad,
+        reportadoPor: ticket.reportante,
+        correo: ticket.email,
+        descripcion: ticket.descripcion,
+        estado: ticket.estado,
+        fechaISO: ticket.fecha,
+        adjuntoNombre: ticket.adjunto?.name || '',
+        adjuntoTipo: ticket.adjunto?.type || '',
+        adjuntoTamKB: ticket.adjunto ? Math.round((ticket.adjunto.size||0)/1024) : 0
+      };
+      try{
+        const res = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          redirect: 'follow',
+          // Si tu despliegue NO es "Anyone", el navegador bloqueará por CORS/autorización
+        });
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const data = await res.json().catch(()=>({result:'success'}));
+        return { ok:true, status:'OK', data };
+      }catch(err){
+        console.error('Sheets error:', err);
+        return { ok:false, status:'ERR', message:String(err) };
+      }
+    }
+
+    function showNotice(msg, kind='info'){
+      notice.style.display = 'block';
+      notice.style.borderColor = kind==='ok' ? '#2b8a3e55' : (kind==='warn'?'#f08c0055':'#e0313155');
+      notice.style.background = 'transparent';
+      notice.innerHTML = msg;
+      setTimeout(()=>{ notice.style.display='none'; }, 5000);
     }
 
     // Formulario
@@ -413,10 +447,7 @@
       // Validación mínima
       const required = ['titulo','categoria','prioridad','reportante','descripcion'];
       for(const k of required){
-        if(!fd.get(k)){
-          alert('Por favor completa los campos obligatorios.');
-          return;
-        }
+        if(!fd.get(k)){ alert('Por favor completa los campos obligatorios.'); return; }
       }
 
       const file = fd.get('adjunto');
@@ -434,11 +465,22 @@
         fecha: new Date().toISOString(),
         adjunto: base ? { name: file.name, type: file.type, dataUrl: base, size: file.size } : null
       };
+
+      // 1) Guardar local (siempre)
       upsert(ticket);
+
+      // 2) Enviar a Google Sheets (mejor esfuerzo)
+      const rsp = await sendToSheets(ticket);
+      if(rsp.ok){
+        showNotice('✅ Reporte enviado a Google Sheets correctamente.', 'ok');
+      }else{
+        showNotice('⚠️ No se pudo enviar a Sheets ahora. El ticket <b>sí quedó guardado</b> en este navegador. Intenta más tarde.', 'warn');
+      }
+
       form.reset();
     });
 
-    // File -> dataURL (si hay archivo)
+    // File -> dataURL (si hay archivo). Solo para previsualizar/guardar metadata local.
     function toDataUrl(file){
       return new Promise((resolve)=>{
         if(!file || !file.size){ resolve(null); return; }
@@ -463,8 +505,7 @@
         if(confirm('¿Eliminar este ticket?')) removeById(id);
       }
     });
-
-    tbody.addEventListener('change', (e)=>{
+    tbody.addEventListener('change', async (e)=>{
       const sel = e.target.closest('select[data-action="estado"]');
       if(!sel) return;
       const id = sel.getAttribute('data-id');
@@ -472,6 +513,8 @@
       if(!t) return;
       t.estado = sel.value;
       upsert(t);
+      // (opcional) notificar cambio de estado a Sheets
+      sendToSheets(t);
     });
 
     // Modal
@@ -498,30 +541,16 @@
       if(!rows.length){ alert('No hay datos para exportar.'); return; }
       const headers = ['ID','Título','Categoría','Prioridad','Estado','Fecha','Reportante','Correo','Descripción'];
       const csv = [headers.join(',')].concat(rows.map(r=>[
-        r.id,
-        q(r.titulo),
-        q(r.categoria),
-        q(r.prioridad),
-        q(r.estado),
-        q(formatDate(r.fecha)),
-        q(r.reportante),
-        q(r.email),
-        q(r.descripcion.replaceAll('\n',' '))
+        r.id, q(r.titulo), q(r.categoria), q(r.prioridad), q(r.estado),
+        q(formatDate(r.fecha)), q(r.reportante), q(r.email), q(r.descripcion.replaceAll('\n',' '))
       ].join(','))).join('\n');
       download(`tickets_${Date.now()}.csv`, csv);
     });
-
-    function q(val){
-      const s = String(val ?? '').replaceAll('"','""');
-      return '"'+s+'"';
-    }
+    function q(val){ const s = String(val ?? '').replaceAll('"','""'); return '"'+s+'"'; }
     function download(filename, text){
-      const blob = new Blob([text], {type:'text/csv;charset=utf-8;'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename; a.style.display='none';
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url), 5000);
+      const blob = new Blob([text], {type:'text/csv;charset=utf-8;'}); const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = filename; a.style.display='none';
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 5000);
     }
 
     // Borrar todo
@@ -540,14 +569,8 @@
         { titulo:'Sin Internet piso 3', categoria:'Red', prioridad:'Alta', reportante:'Laura M', email:'laura@empresa.com', descripcion:'Desde la mañana sin conectividad en 3er piso. AP parpadea en rojo.', estado:'Abierto' },
         { titulo:'Outlook no envía', categoria:'Correo', prioridad:'Media', reportante:'Carlos R', email:'carlos@empresa.com', descripcion:'Queda en bandeja de salida. Ocurre intermitente.', estado:'En Proceso' },
         { titulo:'Impresora contabilidad atascada', categoria:'Impresión', prioridad:'Baja', reportante:'Diana P', email:'diana@empresa.com', descripcion:'Papel atascado frecuente. Solicita mantenimiento.', estado:'Cerrado' }
-      ].map((x,i)=> ({
-        id: makeId() + (i+1),
-        ...x,
-        fecha: new Date(now.getTime() - (i*3600_000)).toISOString(),
-        adjunto: null
-      }));
-      tickets = demo.concat(tickets);
-      save(tickets); render();
+      ].map((x,i)=> ({ id: makeId() + (i+1), ...x, fecha: new Date(now.getTime() - (i*3600_000)).toISOString(), adjunto: null }));
+      tickets = demo.concat(tickets); save(tickets); render();
     });
 
     // Tema
