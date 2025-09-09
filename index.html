@@ -103,13 +103,11 @@
 
   <footer>⚡ App HTML: guarda en este navegador y envía a Google Sheets si hay conexión.</footer>
 
-  <dialog id="ticketModal"><div class="body" id="mBody"></div></dialog>
-
   <script>
   (function(){
     'use strict';
 
-    // === TU URL del Web App ===
+    // === URL del Web App === (de tu captura)
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbydMqt7bo7Nm7ISiQ1cbbapTRwE38r3fmGOgi-g4rf3WA228TzQ5cqE5dtSwKubsNrvMw/exec';
 
     // Helpers y estado
@@ -153,7 +151,7 @@
         </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
-    // Crear ticket
+    // Crear ticket (op: create)
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const titulo = $('#titulo').value.trim();
@@ -172,20 +170,18 @@
       tickets.unshift(ticket); save(tickets); render();
 
       try{
-        await fetch(WEB_APP_URL, { method:'POST', body: JSON.stringify({
+        const r = await fetch(WEB_APP_URL, { method:'POST', body: JSON.stringify({
+          op:'create',
           id: ticket.id, titulo, categoria, prioridad,
           reportadoPor: reportante, correo: email, descripcion,
           estado: ticket.estado, fechaISO: ticket.fecha, adjuntoNombre: ''
         })});
-        show('✅ Enviado a Google Sheets.', 'ok');
-      }catch(_){
-        show('⚠️ No se pudo enviar a Sheets ahora. El ticket sí quedó guardado en este navegador.', 'warn');
-      }
-
+        console.log('Sheets create:', await r.json().catch(()=>({})));
+      }catch(_){/* offline */}
       form.reset();
     });
 
-    // Cambiar estado → solo {id, estado}
+    // Cambiar estado → op: updateEstado (solo id + estado)
     tbody.addEventListener('change', (e) => {
       const sel = e.target.closest('select[data-action="estado"]'); if(!sel) return;
       const id = sel.dataset.id; const t = tickets.find(x => x.id === id); if(!t) return;
@@ -195,10 +191,13 @@
       fetch(WEB_APP_URL, {
         method: 'POST',
         body: JSON.stringify({ op:'updateEstado', id: t.id, estado: t.estado })
-      }).catch(()=>{});
+      })
+      .then(r=>r.json().catch(()=>({})))
+      .then(d=>console.log('Sheets updateEstado:', d))
+      .catch(()=>{});
     });
 
-    // Eliminar (local + Sheets)
+    // Eliminar → op: delete
     tbody.addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-action="del"]'); if(!btn) return;
       const id = btn.dataset.id;
@@ -207,8 +206,11 @@
 
       fetch(WEB_APP_URL, {
         method: 'POST',
-        body: JSON.stringify({ op: 'delete', id })
-      }).catch(() => {});
+        body: JSON.stringify({ op:'delete', id })
+      })
+      .then(r=>r.json().catch(()=>({})))
+      .then(d=>console.log('Sheets delete:', d))
+      .catch(()=>{});
     });
 
     // Demo
@@ -221,8 +223,6 @@
       ].map((x,i)=> ({ id:'T'+(now.getTime()-i).toString(), ...x, fecha:new Date(now.getTime()-i*3600_000).toISOString() }));
       tickets = demo.concat(tickets); save(tickets); render();
     });
-
-    function show(msg, kind){ notice.style.display='block'; notice.textContent = msg; notice.style.borderColor = kind==='ok'?'#b2f2bb':'#ffe066'; setTimeout(()=>notice.style.display='none', 4000); }
 
     render();
   })();
