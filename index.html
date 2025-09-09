@@ -256,7 +256,7 @@
     'use strict';
 
     // === CONFIGURA AQUÍ LA URL DEL WEB APP (Apps Script) =====================
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxcnqObkQ82S6hAtXqTKc9_RQY2qfazsIxXl_6JiP5mSNhpKYS8b3pDMF6RZL9mt5NXgg/exec'; // p.ej. 'https://script.google.com/macros/s/AKfycb.../exec'
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbydMqt7bo7Nm7ISiQ1cbbapTRwE38r3fmGOgi-g4rf3WA228TzQ5cqE5dtSwKubsNrvMw/exec'; // p.ej. 'https://script.google.com/macros/s/AKfycb.../exec'
 
     // Helpers
     const $ = (s, el=document) => el.querySelector(s);
@@ -357,7 +357,7 @@
 
     // === Envío a Google Sheets (Apps Script) =================================
     async function sendToSheets(ticket){
-      if(!WEB_APP_URL || WEB_APP_URL.includes('https://script.google.com/macros/s/AKfycbxcnqObkQ82S6hAtXqTKc9_RQY2qfazsIxXl_6JiP5mSNhpKYS8b3pDMF6RZL9mt5NXgg/exec')) return { ok:false, status:'NoURL' };
+      if(!WEB_APP_URL || WEB_APP_URL.includes('https://script.google.com/macros/s/AKfycbydMqt7bo7Nm7ISiQ1cbbapTRwE38r3fmGOgi-g4rf3WA228TzQ5cqE5dtSwKubsNrvMw/exec')) return { ok:false, status:'NoURL' };
 
       const payload = {
         id: ticket.id,
@@ -526,3 +526,4 @@
   </script>
 </body>
 </html>
+
