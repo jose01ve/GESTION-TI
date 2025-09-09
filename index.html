@@ -414,21 +414,24 @@
         adjuntoTipo: ticket.adjunto?.type || '',
         adjuntoTamKB: ticket.adjunto ? Math.round((ticket.adjunto.size||0)/1024) : 0
       };
-      try{
-        const res = await fetch(WEB_APP_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          redirect: 'follow',
-          // Si tu despliegue NO es "Anyone", el navegador bloqueará por CORS/autorización
-        });
-        if(!res.ok) throw new Error('HTTP '+res.status);
-        const data = await res.json().catch(()=>({result:'success'}));
-        return { ok:true, status:'OK', data };
-      }catch(err){
-        console.error('Sheets error:', err);
-        return { ok:false, status:'ERR', message:String(err) };
-      }
+
+// Antes (provoca preflight/CORS):
+// fetch(WEB_APP_URL, {
+//   method: "POST",
+//   headers: { "Content-Type": "application/json" },
+//   body: JSON.stringify(payload)
+// })
+
+// Ahora (simple request, sin preflight):
+fetch(https://script.google.com/macros/s/AKfycbxcnqObkQ82S6hAtXqTKc9_RQY2qfazsIxXl_6JiP5mSNhpKYS8b3pDMF6RZL9mt5NXgg/exec, {
+  method: "POST",
+  body: JSON.stringify(payload)   // el navegador pone Content-Type: text/plain;charset=UTF-8
+})
+  .then(r => r.json().catch(() => ({result:'success'})))
+  .then(() => showNotice('✅ Reporte enviado a Google Sheets correctamente.', 'ok'))
+  .catch(() => showNotice('⚠️ No se pudo enviar a Sheets ahora. El ticket sí quedó guardado en este navegador.', 'warn'));
+
+      
     }
 
     function showNotice(msg, kind='info'){
@@ -586,3 +589,4 @@
   </script>
 </body>
 </html>
+
