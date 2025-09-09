@@ -109,7 +109,7 @@
   (function(){
     'use strict';
 
-    // === TU URL del Web App (ya puesta) ===
+    // === TU URL del Web App ===
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbydMqt7bo7Nm7ISiQ1cbbapTRwE38r3fmGOgi-g4rf3WA228TzQ5cqE5dtSwKubsNrvMw/exec';
 
     // Helpers y estado
@@ -128,6 +128,7 @@
     const fmt = iso => new Date(iso).toLocaleString();
     const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p}</span>`;
     const labelE = e => `<strong class="${e==='Abierto'?'estado-abierto':e==='En Proceso'?'estado-proceso':'estado-cerrado'}">${e}</strong>`;
+    const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
 
     function counters(){
       kpiTotal.textContent = tickets.length;
@@ -151,9 +152,8 @@
           </td>
         </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
-    const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
 
-    // Form submit
+    // Crear ticket
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const titulo = $('#titulo').value.trim();
@@ -169,10 +169,8 @@
       const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
       const ticket = { id, titulo, categoria, prioridad, reportante, email, descripcion, estado:'Abierto', fecha:new Date().toISOString() };
 
-      // Guarda local
       tickets.unshift(ticket); save(tickets); render();
 
-      // Envía a Sheets (sin headers → sin preflight)
       try{
         await fetch(WEB_APP_URL, { method:'POST', body: JSON.stringify({
           id: ticket.id, titulo, categoria, prioridad,
@@ -187,25 +185,38 @@
       form.reset();
     });
 
-    // Cambios de estado / borrar
-    tbody.addEventListener('change', e=>{
+    // Cambiar estado → solo {id, estado}
+    tbody.addEventListener('change', (e) => {
       const sel = e.target.closest('select[data-action="estado"]'); if(!sel) return;
-      const id = sel.dataset.id; const t = tickets.find(x=>x.id===id); if(!t) return;
+      const id = sel.dataset.id; const t = tickets.find(x => x.id === id); if(!t) return;
+
       t.estado = sel.value; save(tickets); render();
-      // actualizar también en Sheets (best-effort)
-      fetch(WEB_APP_URL, { method:'POST', body: JSON.stringify({ id:t.id, estado:t.estado }) }).catch(()=>{});
+
+      fetch(WEB_APP_URL, {
+        method: 'POST',
+        body: JSON.stringify({ op:'updateEstado', id: t.id, estado: t.estado })
+      }).catch(()=>{});
     });
-    tbody.addEventListener('click', e=>{
+
+    // Eliminar (local + Sheets)
+    tbody.addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-action="del"]'); if(!btn) return;
-      const id = btn.dataset.id; tickets = tickets.filter(t=>t.id!==id); save(tickets); render();
+      const id = btn.dataset.id;
+
+      tickets = tickets.filter(t => t.id !== id); save(tickets); render();
+
+      fetch(WEB_APP_URL, {
+        method: 'POST',
+        body: JSON.stringify({ op: 'delete', id })
+      }).catch(() => {});
     });
 
     // Demo
     btnDemo.addEventListener('click', ()=>{
       const now = new Date();
       const demo = [
-        { titulo:'Sin Internet piso 3', categoria:'Red', prioridad:'Alta', reportante:'Laura M', email:'laura@empresa.com', descripcion:'Sin conectividad en 3er piso', estado:'Abierto' },
-        { titulo:'Outlook no envía', categoria:'Correo', prioridad:'Media', reportante:'Carlos R', email:'carlos@empresa.com', descripcion:'Queda en bandeja de salida', estado:'En Proceso' },
+        { titulo:'Sin Internet piso 3', categoria:'Red', prioridad:'Alta',  reportante:'Laura M',  email:'laura@empresa.com',  descripcion:'Sin conectividad en 3er piso', estado:'Abierto' },
+        { titulo:'Outlook no envía',    categoria:'Correo', prioridad:'Media', reportante:'Carlos R', email:'carlos@empresa.com', descripcion:'Queda en bandeja de salida',    estado:'En Proceso' },
         { titulo:'Impresora contabilidad', categoria:'Impresión', prioridad:'Baja', reportante:'Diana P', email:'diana@empresa.com', descripcion:'Papel atascado frecuente', estado:'Cerrado' }
       ].map((x,i)=> ({ id:'T'+(now.getTime()-i).toString(), ...x, fecha:new Date(now.getTime()-i*3600_000).toISOString() }));
       tickets = demo.concat(tickets); save(tickets); render();
@@ -213,7 +224,6 @@
 
     function show(msg, kind){ notice.style.display='block'; notice.textContent = msg; notice.style.borderColor = kind==='ok'?'#b2f2bb':'#ffe066'; setTimeout(()=>notice.style.display='none', 4000); }
 
-    // inicio
     render();
   })();
   </script>
