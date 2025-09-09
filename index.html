@@ -396,7 +396,7 @@
 
     // === Envío a Google Sheets (Apps Script) ================================
     async function sendToSheets(ticket){
-      if(!WEB_APP_URL || WEB_APP_URL.includes('PEGAR_AQUI')){
+      if(!WEB_APP_URL || WEB_APP_URL.includes('https://script.google.com/macros/s/AKfycbxcnqObkQ82S6hAtXqTKc9_RQY2qfazsIxXl_6JiP5mSNhpKYS8b3pDMF6RZL9mt5NXgg/exec')){
         return { ok:false, status:'NoURL', message:'Falta configurar WEB_APP_URL' };
       }
       // Prepara un payload “liviano”: no enviamos el binario del adjunto
@@ -589,4 +589,5 @@ fetch(https://script.google.com/macros/s/AKfycbxcnqObkQ82S6hAtXqTKc9_RQY2qfazsIx
   </script>
 </body>
 </html>
+
 
