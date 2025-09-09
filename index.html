@@ -152,45 +152,93 @@
     }
 
     // Crear ticket (op: create)
-    form.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const titulo = $('#titulo').value.trim();
-      const categoria = $('#categoria').value;
-      const prioridad = $('#prioridad').value;
-      const reportante = $('#reportante').value.trim();
-      const email = $('#email').value.trim();
-      const descripcion = $('#descripcion').value.trim();
-      if(!titulo || !categoria || !prioridad || !reportante || !descripcion){
-        alert('Completa los campos obligatorios'); return;
-      }
+   form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
 
-      const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
-      const ticket = { id, titulo, categoria, prioridad, reportante, email, descripcion, estado:'Abierto', fecha:new Date().toISOString() };
+  const titulo      = $('#titulo').value.trim();
+  const categoria   = $('#categoria').value;
+  const prioridad   = $('#prioridad').value;
+  const reportante  = $('#reportante').value.trim();
+  const email       = $('#email').value.trim();
+  const descripcion = $('#descripcion').value.trim();
 
-      tickets.unshift(ticket); save(tickets); render();
+  if(!titulo || !categoria || !prioridad || !reportante || !descripcion){
+    alert('Completa los campos obligatorios');
+    return;
+  }
 
-      try{
-        const r = await fetch(WEB_APP_URL, { method:'POST', body: JSON.stringify({
-          op:'create',
-          id: ticket.id, titulo, categoria, prioridad,
-          reportadoPor: reportante, correo: email, descripcion,
-          estado: ticket.estado, fechaISO: ticket.fecha, adjuntoNombre: ''
-        })});
-        console.log('Sheets create:', await r.json().catch(()=>({})));
-      }catch(_){/* offline */}
-      form.reset();
+  const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
+  const ticket = {
+    id, titulo, categoria, prioridad,
+    reportante, email, descripcion,
+    estado:'Abierto',
+    fecha:new Date().toISOString()
+  };
+
+  // Guarda local y pinta
+  tickets.unshift(ticket);
+  save(tickets);
+  render();
+
+  // === CREA EN SHEETS y guarda la FILA devuelta (row) ===
+  try {
+    const r = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        op:'create',
+        id: ticket.id,
+        titulo,
+        categoria,
+        prioridad,
+        reportadoPor: reportante,
+        correo: email,
+        descripcion,
+        estado: ticket.estado,
+        fechaISO: ticket.fecha,
+        adjuntoNombre: ''
+      })
     });
+    const d = await r.json().catch(()=>({}));
+    if (d && d.row) {
+      ticket.row = d.row;     // <<< fila real en la hoja
+      save(tickets);          //    persistimos el row en localStorage
+      console.log('Sheets create:', d);
+    }
+  } catch(_) { /* sin conexión: se queda en local y se intentará luego */ }
+
+  form.reset();
+});
+
 
     // Cambiar estado → op: updateEstado (solo id + estado)
-    tbody.addEventListener('change', (e) => {
-      const sel = e.target.closest('select[data-action="estado"]'); if(!sel) return;
-      const id = sel.dataset.id; const t = tickets.find(x => x.id === id); if(!t) return;
+   tbody.addEventListener('change', (e) => {
+  const sel = e.target.closest('select[data-action="estado"]');
+  if (!sel) return;
 
-      t.estado = sel.value; save(tickets); render();
+  const id = sel.dataset.id;
+  const t  = tickets.find(x => x.id === id);
+  if (!t) return;
 
-      fetch(WEB_APP_URL, {
-        method: 'POST',
-        body: JSON.stringify({ op:'updateEstado', id: t.id, estado: t.estado })
+  // Actualiza UI/local
+  t.estado = sel.value;
+  save(tickets);
+  render();
+
+  // === ACTUALIZA EN SHEETS PASANDO TAMBIÉN LA FILA (row) ===
+  fetch(WEB_APP_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      op: 'updateEstado',
+      id: t.id,
+      estado: t.estado,
+      row: t.row || 0   // <<< si existe row, el servidor actualizará por fila
+    })
+  })
+  .then(r => r.json().catch(()=>({})))
+  .then(d => console.log('Sheets updateEstado:', d))
+  .catch(()=>{});
+});
+
       })
       .then(r=>r.json().catch(()=>({})))
       .then(d=>console.log('Sheets updateEstado:', d))
@@ -229,3 +277,4 @@
   </script>
 </body>
 </html>
+
