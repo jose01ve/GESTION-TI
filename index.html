@@ -48,6 +48,7 @@
     <section class="card">
       <h2>REPORTE USUARIO</h2>
       <div class="body">
+        <!-- evita navegación / 405 -->
         <form id="formTicket" action="javascript:void(0)" autocomplete="off">
           <div class="grid">
             <div><label for="titulo">Título *</label><input id="titulo" required placeholder="Ej. No hay internet en el piso 3"></div>
@@ -107,7 +108,7 @@
   (function(){
     'use strict';
 
-    // === URL del Web App ===
+    // === URL de tu Web App (YA lista) ===
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbydMqt7bo7Nm7ISiQ1cbbapTRwE38r3fmGOgi-g4rf3WA228TzQ5cqE5dtSwKubsNrvMw/exec';
 
     // Helpers y estado
@@ -153,68 +154,65 @@
 
     // === CREAR ticket (op: create) ===
     form.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  console.log('[UI] submit fired');
+      e.preventDefault();
 
-  // aviso rápido por si hay caché y no ves nada
-  const blink = (msg, kind='ok')=>{
-    notice.style.display = 'block';
-    notice.textContent   = msg;
-    notice.style.borderColor = kind==='ok' ? '#b2f2bb' : '#ffc9c9';
-    setTimeout(()=> notice.style.display='none', 1800);
-  };
+      const blink = (msg, kind='ok')=>{
+        notice.style.display = 'block';
+        notice.textContent   = msg;
+        notice.style.borderColor = kind==='ok' ? '#b2f2bb' : '#ffc9c9';
+        setTimeout(()=> notice.style.display='none', 1800);
+      };
 
-  const titulo      = $('#titulo').value.trim();
-  const categoria   = $('#categoria').value;
-  const prioridad   = $('#prioridad').value;
-  const reportante  = $('#reportante').value.trim();
-  const email       = $('#email').value.trim();
-  const descripcion = $('#descripcion').value.trim();
+      const titulo      = $('#titulo').value.trim();
+      const categoria   = $('#categoria').value;
+      const prioridad   = $('#prioridad').value;
+      const reportante  = $('#reportante').value.trim();
+      const email       = $('#email').value.trim();
+      const descripcion = $('#descripcion').value.trim();
 
-  if(!titulo || !categoria || !prioridad || !reportante || !descripcion){
-    blink('Completa los campos obligatorios', 'err');
-    return;
-  }
+      if(!titulo || !categoria || !prioridad || !reportante || !descripcion){
+        blink('Completa los campos obligatorios', 'err');
+        return;
+      }
 
-  const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
-  const ticket = {
-    id, titulo, categoria, prioridad,
-    reportante, email, descripcion,
-    estado:'Abierto',
-    fecha:new Date().toISOString()
-  };
+      const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
+      const ticket = {
+        id, titulo, categoria, prioridad,
+        reportante, email, descripcion,
+        estado:'Abierto',
+        fecha:new Date().toISOString()
+      };
 
-  // Guarda local y renderiza de inmediato
-  tickets.unshift(ticket);
-  save(tickets);
-  render();
-  blink('Guardado local. Enviando a Sheets…', 'ok');
+      // Guarda local y renderiza
+      tickets.unshift(ticket);
+      save(tickets);
+      render();
+      blink('Guardado local. Enviando a Sheets…', 'ok');
 
-  // Enviar a Apps Script
-  try {
-    const r = await fetch(WEB_APP_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        op:'create',
-        id: ticket.id,
-        titulo, categoria, prioridad,
-        reportadoPor: reportante,
-        correo: email,
-        descripcion,
-        estado: ticket.estado,
-        fechaISO: ticket.fecha,
-        adjuntoNombre: ''
-      })
+      // Enviar a Apps Script
+      try {
+        const r = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            op:'create',
+            id: ticket.id,
+            titulo, categoria, prioridad,
+            reportadoPor: reportante,
+            correo: email,
+            descripcion,
+            estado: ticket.estado,
+            fechaISO: ticket.fecha,
+            adjuntoNombre: ''
+          })
+        });
+        const d = await r.json().catch(()=>({}));
+        if (d && d.row) { ticket.row = d.row; save(tickets); } // guarda la fila para updates
+      } catch (err) {
+        console.error('fetch error:', err);
+      }
+
+      form.reset();
     });
-    const d = await r.json().catch(()=>({}));
-    console.log('Sheets create:', d);
-    if (d && d.row) { ticket.row = d.row; save(tickets); }
-  } catch (err) {
-    console.error('fetch error:', err);
-  }
-
-  form.reset();
-});
 
     // === Cambiar estado (op: updateEstado) ===
     tbody.addEventListener('change', (e) => {
@@ -230,7 +228,7 @@
       save(tickets);
       render();
 
-      // Envío a Sheets incluyendo row (si existe)
+      // Envío a Sheets SOLO estado + row/id
       fetch(WEB_APP_URL, {
         method: 'POST',
         body: JSON.stringify({
@@ -239,10 +237,7 @@
           estado: t.estado,
           row: t.row || 0
         })
-      })
-      .then(r => r.json().catch(()=>({})))
-      .then(d => console.log('Sheets updateEstado:', d))
-      .catch(()=>{});
+      }).catch(()=>{});
     });
 
     // === Eliminar (op: delete) ===
@@ -258,10 +253,7 @@
       fetch(WEB_APP_URL, {
         method: 'POST',
         body: JSON.stringify({ op:'delete', id, row: t && t.row ? t.row : 0 })
-      })
-      .then(r=>r.json().catch(()=>({})))
-      .then(d=>console.log('Sheets delete:', d))
-      .catch(()=>{});
+      }).catch(()=>{});
     });
 
     // Demo
@@ -271,7 +263,7 @@
         { titulo:'Sin Internet piso 3', categoria:'Red', prioridad:'Alta',  reportante:'Laura M',  email:'laura@empresa.com',  descripcion:'Sin conectividad en 3er piso', estado:'Abierto' },
         { titulo:'Outlook no envía',    categoria:'Correo', prioridad:'Media', reportante:'Carlos R', email:'carlos@empresa.com', descripcion:'Queda en bandeja de salida',    estado:'En Proceso' },
         { titulo:'Impresora contabilidad', categoria:'Impresión', prioridad:'Baja', reportante:'Diana P', email:'diana@empresa.com', descripcion:'Papel atascado frecuente', estado:'Cerrado' }
-      ].map((x,i)=> ({ id:'T'+(now.getTime()-i).toString(), ...x, fecha:new Date(now.getTime()-i*3600_000).toISOString() }));
+      ].map((x,i)=> ({ id:'T'+(now.getTime()-i).toString(), ...x, fecha:new Date(now.getTime()-i*3600000).toISOString() })); // 3600000 = 1h
       tickets = demo.concat(tickets); save(tickets); render();
     });
 
@@ -280,5 +272,3 @@
   </script>
 </body>
 </html>
-
-
