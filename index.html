@@ -255,63 +255,41 @@
   (function(){
     'use strict';
 
-    // === GOOGLE SHEETS INTEGRATION ===========================================
-    // Pega aquí la URL de tu Web App (el cuadro que te mostró Apps Script).
-    const WEB_APP_URL = 'PEGAR_AQUI_LA_URL_DE_TU_WEBAPP';
+    // === CONFIGURA AQUÍ LA URL DEL WEB APP (Apps Script) =====================
+    const WEB_APP_URL = 'PEGAR_AQUI_LA_URL_DE_TU_WEBAPP'; // p.ej. 'https://script.google.com/macros/s/AKfycb.../exec'
 
-    // Helpers rápidos
+    // Helpers
     const $ = (s, el=document) => el.querySelector(s);
-    const $$ = (s, el=document) => el.querySelectorAll(s);
 
     // Estado y almacenamiento
     const STORE_KEY = 'tickets_fallas_v1';
     const THEME_KEY = 'tickets_theme_v1';
-
     const load = () => { try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch{ return []; } };
     const save = (arr) => localStorage.setItem(STORE_KEY, JSON.stringify(arr));
-
     let tickets = load();
 
-    // Elementos UI
+    // UI
     const tbody = $('#tbody');
-    const kpiTotal = $('#kpiTotal');
-    const kpiAbierto = $('#kpiAbierto');
-    const kpiProceso = $('#kpiProceso');
-    const kpiCerrado = $('#kpiCerrado');
-    const fEstado = $('#fEstado');
-    const fPrioridad = $('#fPrioridad');
-    const fSearch = $('#fSearch');
-    const form = $('#formTicket');
-    const btnDemo = $('#btnDemo');
-    const btnExport = $('#btnExport');
-    const btnBorrarTodo = $('#btnBorrarTodo');
-    const toggleTheme = $('#toggleTheme');
-    const notice = $('#notice');
+    const kpiTotal = $('#kpiTotal'), kpiAbierto = $('#kpiAbierto'), kpiProceso = $('#kpiProceso'), kpiCerrado = $('#kpiCerrado');
+    const fEstado = $('#fEstado'), fPrioridad = $('#fPrioridad'), fSearch = $('#fSearch');
+    const form = $('#formTicket'), btnDemo = $('#btnDemo'), btnExport = $('#btnExport'), btnBorrarTodo = $('#btnBorrarTodo');
+    const toggleTheme = $('#toggleTheme'), notice = $('#notice');
+    const modal = $('#ticketModal'), mId = $('#mId'), mBody = $('#mBody'), mClose = $('#mClose');
 
-    const modal = $('#ticketModal');
-    const mId = $('#mId');
-    const mBody = $('#mBody');
-    const mClose = $('#mClose');
-
-    // Filtros
     let state = { estado: 'todos', prioridad: 'todas', q: '' };
 
-    // Tema (claro/oscuro)
     function applyTheme(theme){
       document.body.classList.toggle('light', theme === 'light');
       document.body.classList.toggle('dark', theme === 'dark');
       localStorage.setItem(THEME_KEY, theme);
     }
-    function initTheme(){
+    (function initTheme(){
       const saved = localStorage.getItem(THEME_KEY);
       const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
       applyTheme(saved || (prefersDark ? 'dark' : 'light'));
-    }
+    })();
 
-    // Render
-    function formatDate(iso){
-      try{ return new Date(iso).toLocaleString(); }catch{ return iso }
-    }
+    function formatDate(iso){ try{ return new Date(iso).toLocaleString(); }catch{ return iso } }
     function badgePrioridad(p){
       const m = { 'Alta': 'prio-alta', 'Media': 'prio-media', 'Baja': 'prio-baja' }[p] || 'prio-media';
       return `<span class="badge dot ${m}">${p}</span>`;
@@ -322,10 +300,10 @@
     }
     function counters(){
       const total = tickets.length;
-      const a = tickets.filter(t=>t.estado==='Abierto').length;
-      const p = tickets.filter(t=>t.estado==='En Proceso').length;
-      const c = tickets.filter(t=>t.estado==='Cerrado').length;
-      kpiTotal.textContent = total; kpiAbierto.textContent = a; kpiProceso.textContent = p; kpiCerrado.textContent = c;
+      kpiTotal.textContent = total;
+      kpiAbierto.textContent = tickets.filter(t=>t.estado==='Abierto').length;
+      kpiProceso.textContent = tickets.filter(t=>t.estado==='En Proceso').length;
+      kpiCerrado.textContent = tickets.filter(t=>t.estado==='Cerrado').length;
     }
     function currentList(){
       const q = state.q.trim().toLowerCase();
@@ -333,16 +311,14 @@
         .filter(t => state.estado === 'todos' || t.estado === state.estado)
         .filter(t => state.prioridad === 'todas' || t.prioridad === state.prioridad)
         .filter(t => !q || (t.titulo.toLowerCase().includes(q) || t.descripcion.toLowerCase().includes(q)))
-        .sort((a,b)=> new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+        .sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
     }
     function render(){
       counters();
       const list = currentList();
       tbody.innerHTML = '';
       if(list.length === 0){
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td colspan="7" class="muted" style="text-align:center; padding:18px">Sin resultados</td>`;
-        tbody.appendChild(tr);
+        tbody.innerHTML = `<tr><td colspan="7" class="muted" style="text-align:center; padding:18px">Sin resultados</td></tr>`;
         return;
       }
       const frag = document.createDocumentFragment();
@@ -371,35 +347,18 @@
       tbody.appendChild(frag);
     }
 
-    // Util para HTML seguro
     function escapeHtml(str=''){
-      return String(str)
-        .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
-        .replaceAll('"','&quot;').replaceAll("'",'&#39;');
+      return String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+                        .replaceAll('"','&quot;').replaceAll("'",'&#39;');
     }
+    function makeId(){ return 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14); }
+    function upsert(ticket){ const i = tickets.findIndex(x=>x.id===ticket.id); (i>=0 ? tickets[i]=ticket : tickets.unshift(ticket)); save(tickets); render(); }
+    function removeById(id){ tickets = tickets.filter(t=>t.id!==id); save(tickets); render(); }
 
-    // CRUD
-    function makeId(){
-      const t = new Date();
-      return 'T' + t.toISOString().replace(/\D/g,'').slice(0,14);
-    }
-    function upsert(ticket){
-      const idx = tickets.findIndex(x=>x.id===ticket.id);
-      if(idx>=0) tickets[idx] = ticket; else tickets.unshift(ticket);
-      save(tickets);
-      render();
-    }
-    function removeById(id){
-      tickets = tickets.filter(t=>t.id!==id);
-      save(tickets); render();
-    }
-
-    // === Envío a Google Sheets (Apps Script) ================================
+    // === Envío a Google Sheets (Apps Script) =================================
     async function sendToSheets(ticket){
-      if(!WEB_APP_URL || WEB_APP_URL.includes('PEGAR_AQUI')){
-        return { ok:false, status:'NoURL', message:'Falta configurar WEB_APP_URL' };
-      }
-      // Prepara un payload “liviano”: no enviamos el binario del adjunto
+      if(!WEB_APP_URL || WEB_APP_URL.includes('PEGAR_AQUI')) return { ok:false, status:'NoURL' };
+
       const payload = {
         id: ticket.id,
         titulo: ticket.titulo,
@@ -414,17 +373,15 @@
         adjuntoTipo: ticket.adjunto?.type || '',
         adjuntoTamKB: ticket.adjunto ? Math.round((ticket.adjunto.size||0)/1024) : 0
       };
+
       try{
         const res = await fetch(WEB_APP_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          redirect: 'follow',
-          // Si tu despliegue NO es "Anyone", el navegador bloqueará por CORS/autorización
+          // ¡sin headers! → evita preflight/CORS
+          body: JSON.stringify(payload)
         });
-        if(!res.ok) throw new Error('HTTP '+res.status);
         const data = await res.json().catch(()=>({result:'success'}));
-        return { ok:true, status:'OK', data };
+        return { ok:true, data };
       }catch(err){
         console.error('Sheets error:', err);
         return { ok:false, status:'ERR', message:String(err) };
@@ -444,9 +401,8 @@
       e.preventDefault();
       const fd = new FormData(form);
 
-      // Validación mínima
-      const required = ['titulo','categoria','prioridad','reportante','descripcion'];
-      for(const k of required){
+      // Requeridos
+      for(const k of ['titulo','categoria','prioridad','reportante','descripcion']){
         if(!fd.get(k)){ alert('Por favor completa los campos obligatorios.'); return; }
       }
 
@@ -466,32 +422,29 @@
         adjunto: base ? { name: file.name, type: file.type, dataUrl: base, size: file.size } : null
       };
 
-      // 1) Guardar local (siempre)
+      // 1) Guardar local
       upsert(ticket);
 
-      // 2) Enviar a Google Sheets (mejor esfuerzo)
+      // 2) Enviar a Sheets
       const rsp = await sendToSheets(ticket);
-      if(rsp.ok){
-        showNotice('✅ Reporte enviado a Google Sheets correctamente.', 'ok');
-      }else{
-        showNotice('⚠️ No se pudo enviar a Sheets ahora. El ticket <b>sí quedó guardado</b> en este navegador. Intenta más tarde.', 'warn');
-      }
+      if(rsp.ok) showNotice('✅ Reporte enviado a Google Sheets correctamente.', 'ok');
+      else showNotice('⚠️ No se pudo enviar a Sheets ahora. El ticket <b>sí quedó guardado</b> en este navegador.', 'warn');
 
       form.reset();
     });
 
-    // File -> dataURL (si hay archivo). Solo para previsualizar/guardar metadata local.
+    // File → dataURL (solo para mostrar / conservar metadata local)
     function toDataUrl(file){
       return new Promise((resolve)=>{
         if(!file || !file.size){ resolve(null); return; }
-        const reader = new FileReader();
-        reader.onload = ()=> resolve(reader.result);
-        reader.onerror = ()=> resolve(null);
-        reader.readAsDataURL(file);
+        const r = new FileReader();
+        r.onload = ()=> resolve(r.result);
+        r.onerror = ()=> resolve(null);
+        r.readAsDataURL(file);
       });
     }
 
-    // Acciones de tabla (delegación)
+    // Acciones de tabla
     tbody.addEventListener('click', (e)=>{
       const btn = e.target.closest('button');
       if(!btn) return;
@@ -499,13 +452,10 @@
       const action = btn.getAttribute('data-action');
       const t = tickets.find(x=>x.id===id);
       if(!t) return;
-      if(action==='ver'){
-        openModal(t);
-      } else if(action==='del'){
-        if(confirm('¿Eliminar este ticket?')) removeById(id);
-      }
+      if(action==='ver'){ openModal(t); }
+      if(action==='del' && confirm('¿Eliminar este ticket?')) removeById(id);
     });
-    tbody.addEventListener('change', async (e)=>{
+    tbody.addEventListener('change', (e)=>{
       const sel = e.target.closest('select[data-action="estado"]');
       if(!sel) return;
       const id = sel.getAttribute('data-id');
@@ -513,7 +463,7 @@
       if(!t) return;
       t.estado = sel.value;
       upsert(t);
-      // (opcional) notificar cambio de estado a Sheets
+      // opcional: notificar cambio de estado a Sheets
       sendToSheets(t);
     });
 
@@ -530,12 +480,11 @@
     }
     mClose.addEventListener('click', ()=> modal.close && modal.close());
 
-    // Filtros
+    // Filtros y utilidades
     fEstado.addEventListener('change', ()=>{ state.estado = fEstado.value; render(); });
     fPrioridad.addEventListener('change', ()=>{ state.prioridad = fPrioridad.value; render(); });
     fSearch.addEventListener('input', ()=>{ state.q = fSearch.value; render(); });
 
-    // Exportar CSV
     btnExport.addEventListener('click', ()=>{
       const rows = currentList();
       if(!rows.length){ alert('No hay datos para exportar.'); return; }
@@ -546,14 +495,13 @@
       ].join(','))).join('\n');
       download(`tickets_${Date.now()}.csv`, csv);
     });
-    function q(val){ const s = String(val ?? '').replaceAll('"','""'); return '"'+s+'"'; }
+    function q(v){ const s = String(v ?? '').replaceAll('"','""'); return `"${s}"`; }
     function download(filename, text){
       const blob = new Blob([text], {type:'text/csv;charset=utf-8;'}); const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = filename; a.style.display='none';
-      document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 5000);
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 3000);
     }
 
-    // Borrar todo
     btnBorrarTodo.addEventListener('click', ()=>{
       if(!tickets.length){ alert('No hay registros.'); return; }
       if(confirm('Esto eliminará TODOS los tickets guardados en este navegador. ¿Continuar?')){
@@ -561,7 +509,6 @@
       }
     });
 
-    // Datos demo
     btnDemo.addEventListener('click', ()=>{
       if(!confirm('Cargar 3 tickets de ejemplo?')) return;
       const now = new Date();
@@ -573,14 +520,7 @@
       tickets = demo.concat(tickets); save(tickets); render();
     });
 
-    // Tema
-    toggleTheme.addEventListener('click', ()=>{
-      const cur = document.body.classList.contains('dark') ? 'dark' : 'light';
-      applyTheme(cur === 'dark' ? 'light' : 'dark');
-    });
-
     // Inicio
-    initTheme();
     render();
   })();
   </script>
