@@ -153,61 +153,68 @@
 
     // === CREAR ticket (op: create) ===
     form.addEventListener('submit', async (e)=>{
-      e.preventDefault();
+  e.preventDefault();
+  console.log('[UI] submit fired');
 
-      const titulo      = $('#titulo').value.trim();
-      const categoria   = $('#categoria').value;
-      const prioridad   = $('#prioridad').value;
-      const reportante  = $('#reportante').value.trim();
-      const email       = $('#email').value.trim();
-      const descripcion = $('#descripcion').value.trim();
+  // aviso rápido por si hay caché y no ves nada
+  const blink = (msg, kind='ok')=>{
+    notice.style.display = 'block';
+    notice.textContent   = msg;
+    notice.style.borderColor = kind==='ok' ? '#b2f2bb' : '#ffc9c9';
+    setTimeout(()=> notice.style.display='none', 1800);
+  };
 
-      if(!titulo || !categoria || !prioridad || !reportante || !descripcion){
-        alert('Completa los campos obligatorios');
-        return;
-      }
+  const titulo      = $('#titulo').value.trim();
+  const categoria   = $('#categoria').value;
+  const prioridad   = $('#prioridad').value;
+  const reportante  = $('#reportante').value.trim();
+  const email       = $('#email').value.trim();
+  const descripcion = $('#descripcion').value.trim();
 
-      const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
-      const ticket = {
-        id, titulo, categoria, prioridad,
-        reportante, email, descripcion,
-        estado:'Abierto',
-        fecha:new Date().toISOString()
-      };
+  if(!titulo || !categoria || !prioridad || !reportante || !descripcion){
+    blink('Completa los campos obligatorios', 'err');
+    return;
+  }
 
-      // Guarda local y pinta
-      tickets.unshift(ticket);
-      save(tickets);
-      render();
+  const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
+  const ticket = {
+    id, titulo, categoria, prioridad,
+    reportante, email, descripcion,
+    estado:'Abierto',
+    fecha:new Date().toISOString()
+  };
 
-      // Crea en Sheets y guarda la FILA devuelta
-      try {
-        const r = await fetch(WEB_APP_URL, {
-          method: 'POST',
-          body: JSON.stringify({
-            op:'create',
-            id: ticket.id,
-            titulo,
-            categoria,
-            prioridad,
-            reportadoPor: reportante,
-            correo: email,
-            descripcion,
-            estado: ticket.estado,
-            fechaISO: ticket.fecha,
-            adjuntoNombre: ''
-          })
-        });
-        const d = await r.json().catch(()=>({}));
-        if (d && d.row) {
-          ticket.row = d.row;   // fila en la hoja
-          save(tickets);        // persistir
-          console.log('Sheets create:', d);
-        }
-      } catch(_) { /* offline: se envía luego */ }
+  // Guarda local y renderiza de inmediato
+  tickets.unshift(ticket);
+  save(tickets);
+  render();
+  blink('Guardado local. Enviando a Sheets…', 'ok');
 
-      form.reset();
+  // Enviar a Apps Script
+  try {
+    const r = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        op:'create',
+        id: ticket.id,
+        titulo, categoria, prioridad,
+        reportadoPor: reportante,
+        correo: email,
+        descripcion,
+        estado: ticket.estado,
+        fechaISO: ticket.fecha,
+        adjuntoNombre: ''
+      })
     });
+    const d = await r.json().catch(()=>({}));
+    console.log('Sheets create:', d);
+    if (d && d.row) { ticket.row = d.row; save(tickets); }
+  } catch (err) {
+    console.error('fetch error:', err);
+  }
+
+  form.reset();
+});
 
     // === Cambiar estado (op: updateEstado) ===
     tbody.addEventListener('change', (e) => {
@@ -273,4 +280,5 @@
   </script>
 </body>
 </html>
+
 
