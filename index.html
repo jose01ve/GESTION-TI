@@ -3,41 +3,33 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gestión TI · Reporte de fallas</title>
+  <title>GESTIÓN TI — REPORTE DE FALLAS</title>
   <style>
-    :root{
-      --bg:#f5f7ff; --card:#ffffff; --text:#0d1333; --muted:#51608b;
-      --accent:#335dff; --danger:#e03131; --warning:#f08c00; --ok:#2b8a3e; --border:rgba(13,19,51,.12);
-    }
+    :root{--bg:#f5f7ff;--card:#fff;--text:#0d1333;--muted:#51608b;--accent:#335dff;--danger:#e03131;--warning:#f08c00;--ok:#2b8a3e;--border:rgba(13,19,51,.12)}
     body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:#eef2ff;color:var(--text)}
-    header{position:sticky;top:0;background:#fffbd;backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+    header{position:sticky;top:0;background:#ffffffaa;backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
     .nav{max-width:1100px;margin:auto;display:flex;gap:12px;align-items:center;padding:12px 16px}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
-    .brand .dot{width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#6c7bff,#aab1ff)}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}.brand .dot{width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#6c7bff,#aab1ff)}
     .btn{border:1px solid var(--border);background:#fff;color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600}
-    .btn.primary{border-color:#a3b0ff}
-    .btn.danger{border-color:#ffc9c9}
+    .btn.primary{border-color:#a3b0ff}.btn.danger{border-color:#ffc9c9}
     main{max-width:1100px;margin:18px auto;padding:0 16px;display:grid;gap:18px;grid-template-columns:1fr}
     @media(min-width:960px){main{grid-template-columns:420px 1fr}}
     .card{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 10px 24px rgba(13,19,51,.08)}
-    .card h2{margin:0;padding:18px 18px 0}
-    .card .body{padding:16px 18px 18px}
+    .card h2{margin:0;padding:18px 18px 0}.card .body{padding:16px 18px 18px}
     form .grid{display:grid;grid-template-columns:1fr;gap:12px}
     @media(min-width:560px){form .grid{grid-template-columns:1fr 1fr}}
     label{font-size:.9rem;color:var(--muted);display:block;margin-bottom:6px}
     input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fbfcff}
     textarea{min-height:96px;resize:vertical}
     .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px}
-    .kpi{padding:14px;border:1px solid var(--border);border-radius:14px;background:#fff}
-    .kpi .label{font-size:.8rem;color:var(--muted)}
-    .kpi .val{font-weight:800;font-size:1.4rem}
+    .kpi{padding:14px;border:1px solid var(--border);border-radius:14px;background:#fff}.kpi .label{font-size:.8rem;color:var(--muted)}.kpi .val{font-weight:800;font-size:1.4rem}
     table{width:100%;border-collapse:separate;border-spacing:0 10px}
     thead th{font-size:.85rem;color:var(--muted);text-align:left;padding:0 10px}
     tbody tr{background:#fff;border:1px solid var(--border)}
     tbody td{padding:12px 10px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
     .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);font-size:.78rem}
     .prio-alta{background:#fff5f5}.prio-media{background:#fff4e6}.prio-baja{background:#ebfbee}
-    .estado-abierto{color:var(--danger)} .estado-proceso{color:var(--warning)} .estado-cerrado{color:var(--ok)}
+    .estado-abierto{color:var(--danger)}.estado-proceso{color:var(--warning)}.estado-cerrado{color:var(--ok)}
     .actions{display:flex;gap:8px;flex-wrap:wrap}
     .notice{font-size:.9rem;padding:10px 12px;border-radius:10px;border:1px solid var(--border);margin-top:10px;display:none}
     footer{max-width:1100px;margin:6px auto 30px;padding:0 16px;color:var(--muted);font-size:.85rem}
@@ -46,7 +38,7 @@
 <body>
   <header>
     <div class="nav">
-      <div class="brand"><div class="dot"></div> Gestión TI · <span style="color:#7181b8">Reporte de fallas</span></div>
+      <div class="brand"><div class="dot"></div> Gestión TI · <span style="color:#7181b8">REPORTE DE FALLAS</span></div>
       <div style="flex:1"></div>
     </div>
   </header>
@@ -66,9 +58,164 @@
                 <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Otro</option>
               </select>
             </div>
-            <div>
-              <label for="prioridad">Prioridad *</label>
-              <select id="prioridad" required>
-                <option value="">Selecciona…</option><option>Alta</option><option>Media</option><option>Baja</option>
-              </select>
-            </div
+            <div><label for="prioridad">Prioridad *</label>
+              <select id="prioridad" required><option value="">Selecciona…</option><option>Alta</option><option>Media</option><option>Baja</option></select>
+            </div>
+            <div><label for="reportante">Reportado por *</label><input id="reportante" required placeholder="Tu nombre"></div>
+            <div><label for="email">Correo</label><input id="email" type="email" placeholder="tu@empresa.com"></div>
+            <div><label for="adjunto">Adjunto (opcional)</label><input id="adjunto" type="file" accept="image/*"></div>
+          </div>
+          <div style="margin-top:10px"><label for="descripcion">Descripción *</label>
+            <textarea id="descripcion" required placeholder="Describe claramente el problema, cuándo ocurre y a quién afecta"></textarea>
+          </div>
+          <div id="notice" class="notice"></div>
+          <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+            <button type="submit" class="btn primary">➕ Guardar reporte</button>
+            <button type="button" id="btnDemo" class="btn">🧪 Demo</button>
+            <button type="reset" class="btn">↺ Limpiar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Lista -->
+    <section class="card">
+      <h2>ESTADO DE REPORTE</h2>
+      <div class="body">
+        <div class="kpis">
+          <div class="kpi"><div class="label">Total</div><div class="val" id="kpiTotal">0</div></div>
+          <div class="kpi"><div class="label">Abiertos</div><div class="val" id="kpiAbierto">0</div></div>
+          <div class="kpi"><div class="label">En proceso</div><div class="val" id="kpiProceso">0</div></div>
+          <div class="kpi"><div class="label">Cerrados</div><div class="val" id="kpiCerrado">0</div></div>
+        </div>
+
+        <div style="overflow:auto">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Título</th><th>Categoría</th><th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>⚡ App HTML: guarda en este navegador y envía a Google Sheets si hay conexión.</footer>
+
+  <dialog id="ticketModal"><div class="body" id="mBody"></div></dialog>
+
+  <script>
+  (function(){
+    'use strict';
+
+    // === TU URL del Web App (ya puesta) ===
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbydMqt7bo7Nm7ISiQ1cbbapTRwE38r3fmGOgi-g4rf3WA228TzQ5cqE5dtSwKubsNrvMw/exec';
+
+    // Helpers y estado
+    const $ = s => document.querySelector(s);
+    const STORE_KEY = 'tickets_fallas_v1';
+    const load = () => { try { return JSON.parse(localStorage.getItem(STORE_KEY))||[] } catch { return [] } };
+    const save = a => localStorage.setItem(STORE_KEY, JSON.stringify(a));
+    let tickets = load();
+
+    // UI
+    const tbody = $('#tbody');
+    const kpiTotal=$('#kpiTotal'),kpiAbierto=$('#kpiAbierto'),kpiProceso=$('#kpiProceso'),kpiCerrado=$('#kpiCerrado');
+    const form = $('#formTicket'), notice = $('#notice'), btnDemo=$('#btnDemo');
+
+    // Render
+    const fmt = iso => new Date(iso).toLocaleString();
+    const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p}</span>`;
+    const labelE = e => `<strong class="${e==='Abierto'?'estado-abierto':e==='En Proceso'?'estado-proceso':'estado-cerrado'}">${e}</strong>`;
+
+    function counters(){
+      kpiTotal.textContent = tickets.length;
+      kpiAbierto.textContent = tickets.filter(t=>t.estado==='Abierto').length;
+      kpiProceso.textContent = tickets.filter(t=>t.estado==='En Proceso').length;
+      kpiCerrado.textContent = tickets.filter(t=>t.estado==='Cerrado').length;
+    }
+    function render(){
+      counters();
+      tbody.innerHTML = tickets.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).map(t=>`
+        <tr>
+          <td>${t.id}</td><td>${esc(t.titulo)}</td><td>${esc(t.categoria)}</td>
+          <td>${badge(t.prioridad)}</td><td>${labelE(t.estado)}</td><td>${fmt(t.fecha)}</td>
+          <td class="actions">
+            <select data-action="estado" data-id="${t.id}">
+              <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
+              <option ${t.estado==='En Proceso'?'selected':''}>En Proceso</option>
+              <option ${t.estado==='Cerrado'?'selected':''}>Cerrado</option>
+            </select>
+            <button class="btn danger" data-action="del" data-id="${t.id}">Eliminar</button>
+          </td>
+        </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
+    }
+    const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
+
+    // Form submit
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const titulo = $('#titulo').value.trim();
+      const categoria = $('#categoria').value;
+      const prioridad = $('#prioridad').value;
+      const reportante = $('#reportante').value.trim();
+      const email = $('#email').value.trim();
+      const descripcion = $('#descripcion').value.trim();
+      if(!titulo || !categoria || !prioridad || !reportante || !descripcion){
+        alert('Completa los campos obligatorios'); return;
+      }
+
+      const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
+      const ticket = { id, titulo, categoria, prioridad, reportante, email, descripcion, estado:'Abierto', fecha:new Date().toISOString() };
+
+      // Guarda local
+      tickets.unshift(ticket); save(tickets); render();
+
+      // Envía a Sheets (sin headers → sin preflight)
+      try{
+        await fetch(WEB_APP_URL, { method:'POST', body: JSON.stringify({
+          id: ticket.id, titulo, categoria, prioridad,
+          reportadoPor: reportante, correo: email, descripcion,
+          estado: ticket.estado, fechaISO: ticket.fecha, adjuntoNombre: ''
+        })});
+        show('✅ Enviado a Google Sheets.', 'ok');
+      }catch(_){
+        show('⚠️ No se pudo enviar a Sheets ahora. El ticket sí quedó guardado en este navegador.', 'warn');
+      }
+
+      form.reset();
+    });
+
+    // Cambios de estado / borrar
+    tbody.addEventListener('change', e=>{
+      const sel = e.target.closest('select[data-action="estado"]'); if(!sel) return;
+      const id = sel.dataset.id; const t = tickets.find(x=>x.id===id); if(!t) return;
+      t.estado = sel.value; save(tickets); render();
+      // actualizar también en Sheets (best-effort)
+      fetch(WEB_APP_URL, { method:'POST', body: JSON.stringify({ id:t.id, estado:t.estado }) }).catch(()=>{});
+    });
+    tbody.addEventListener('click', e=>{
+      const btn = e.target.closest('button[data-action="del"]'); if(!btn) return;
+      const id = btn.dataset.id; tickets = tickets.filter(t=>t.id!==id); save(tickets); render();
+    });
+
+    // Demo
+    btnDemo.addEventListener('click', ()=>{
+      const now = new Date();
+      const demo = [
+        { titulo:'Sin Internet piso 3', categoria:'Red', prioridad:'Alta', reportante:'Laura M', email:'laura@empresa.com', descripcion:'Sin conectividad en 3er piso', estado:'Abierto' },
+        { titulo:'Outlook no envía', categoria:'Correo', prioridad:'Media', reportante:'Carlos R', email:'carlos@empresa.com', descripcion:'Queda en bandeja de salida', estado:'En Proceso' },
+        { titulo:'Impresora contabilidad', categoria:'Impresión', prioridad:'Baja', reportante:'Diana P', email:'diana@empresa.com', descripcion:'Papel atascado frecuente', estado:'Cerrado' }
+      ].map((x,i)=> ({ id:'T'+(now.getTime()-i).toString(), ...x, fecha:new Date(now.getTime()-i*3600_000).toISOString() }));
+      tickets = demo.concat(tickets); save(tickets); render();
+    });
+
+    function show(msg, kind){ notice.style.display='block'; notice.textContent = msg; notice.style.borderColor = kind==='ok'?'#b2f2bb':'#ffe066'; setTimeout(()=>notice.style.display='none', 4000); }
+
+    // inicio
+    render();
+  })();
+  </script>
+</body>
+</html>
