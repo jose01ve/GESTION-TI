@@ -112,7 +112,7 @@
     /* ==== helpers & estado ==== */
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
-    const storeKey = 'tickets_fallas_v2';
+    const storeKey = 'tickets_fallas_v3'; // nueva clave para no mezclar con versiones previas
     const load = () => { try{ return JSON.parse(localStorage.getItem(storeKey))||[] } catch { return [] } };
     const save = v => localStorage.setItem(storeKey, JSON.stringify(v));
     let tickets = load();
@@ -140,16 +140,19 @@
     }
     function render(){
       counters();
-      tbody.innerHTML = tickets.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).map(t=>`
+      tbody.innerHTML = tickets
+        .slice()
+        .sort((a,b)=>new Date(b.fecha)-new Date(a.fecha))
+        .map(t=>`
         <tr>
           <td>${t.id}</td>
           <td>${esc(t.titulo)}</td>
           <td>${esc(t.categoria)}</td>
           <td>${badge(t.prioridad)}</td>
           <td>${tagE(t.estado)}</td>
-          <td>${fmt(t.fecha)}</td>
+          <td data-fecha-for="${t.id}">${fmt(t.fecha)}</td>
           <td style="display:flex;gap:8px;flex-wrap:wrap">
-            <select data-action="estado" data-id="${t.id}">
+            <select class="estado-select" data-id="${t.id}">
               <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
               <option ${t.estado==='En Proceso'?'selected':''}>En Proceso</option>
               <option ${t.estado==='Cerrado'?'selected':''}>Cerrado</option>
@@ -177,52 +180,75 @@
       const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
       const t = { id, titulo, categoria, prioridad, reportante, email, descripcion, estado:'Abierto', fecha:new Date().toISOString() };
 
+      // Actualiza UI y cache local inmediatamente
       tickets.unshift(t); save(tickets); render();
       show('Guardado local. Enviando a Sheets…');
 
       try{
         const r = await fetch(WEB_APP_URL, {
           method:'POST',
+          headers:{ 'Content-Type':'application/json' },
           body: JSON.stringify({
-            op:'create',
+            action:'create',
             id:t.id, titulo, categoria, prioridad,
             reportadoPor: reportante, correo: email, descripcion,
             estado: t.estado, fechaISO: t.fecha, adjuntoNombre:''
           })
         });
         const d = await r.json().catch(()=>({}));
-        if (d && d.row){ t.row = d.row; save(tickets); } // <-- guarda número de fila para updates
+        // Si el backend devuelve número de fila o confirmación, lo guardamos
+        if (d && (d.row || d.ok)) { t.row = d.row || 0; save(tickets); }
       }catch(err){ console.error(err); }
-
       form.reset();
     });
 
-    /* ==== cambiar estado (solo col H) ==== */
-    tbody.addEventListener('change', e=>{
-      const sel = e.target.closest('select[data-action="estado"]'); if(!sel) return;
-      const id  = sel.dataset.id;
-      const t   = tickets.find(x=>x.id===id); if(!t) return;
+    /* ==== cambiar estado (actualiza SOLO col H en Sheets) ==== */
+    document.addEventListener('change', async (e)=>{
+      const sel = e.target.closest('.estado-select'); if(!sel) return;
 
-      t.estado = sel.value; save(tickets); render(); // UI primero
+      const id = sel.dataset.id;
+      const status = sel.value;
+      const t = tickets.find(x=>x.id===id); if(!t) return;
 
-      fetch(WEB_APP_URL, {
-        method:'POST',
-        body: JSON.stringify({ op:'updateEstado', id:t.id, estado:t.estado, row:t.row||0 })
-      }).catch(()=>{ /* silencioso */ });
+      // refresco optimista en UI
+      t.estado = status;
+      t.fecha = new Date().toISOString();
+      save(tickets); render();
+
+      try{
+        const r = await fetch(WEB_APP_URL, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({ action:'update_status', id, status })
+        });
+        const d = await r.json().catch(()=>({}));
+        if (!d || !d.ok){
+          show('No se pudo actualizar en Sheets', 'err');
+        } else {
+          const cell = document.querySelector(`[data-fecha-for="${id}"]`);
+          if (cell) cell.textContent = new Date().toLocaleString();
+        }
+      }catch(err){
+        console.error(err);
+        show('Sin conexión: cambio guardado localmente', 'err');
+      }
     });
 
     /* ==== eliminar ==== */
-    tbody.addEventListener('click', e=>{
+    tbody.addEventListener('click', async (e)=>{
       const btn = e.target.closest('button[data-action="del"]'); if(!btn) return;
       const id  = btn.dataset.id;
-      const t   = tickets.find(x=>x.id===id);
 
+      // elimina en UI y cache
       tickets = tickets.filter(x=>x.id!==id); save(tickets); render();
 
-      fetch(WEB_APP_URL, {
-        method:'POST',
-        body: JSON.stringify({ op:'delete', id, row: t && t.row ? t.row : 0 })
-      }).catch(()=>{});
+      try{
+        await fetch(WEB_APP_URL, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({ action:'delete', id })
+        });
+      }catch(err){ console.error(err); }
     });
 
     /* ==== demo ==== */
@@ -232,7 +258,7 @@
         { titulo:'Sin internet piso 3', categoria:'Red', prioridad:'Alta',  reportante:'Laura M',  email:'laura@empresa.com',  descripcion:'Sin conectividad', estado:'Abierto' },
         { titulo:'Outlook no envía',   categoria:'Correo', prioridad:'Media', reportante:'Carlos R', email:'carlos@empresa.com', descripcion:'Queda en bandeja de salida', estado:'En Proceso' },
         { titulo:'Impresora contab',   categoria:'Impresión', prioridad:'Baja', reportante:'Diana P', email:'diana@empresa.com', descripcion:'Papel atascado', estado:'Cerrado' }
-      ].map((x,i)=>({ id:'T'+(now.getTime()-i).toString(), ...x, fecha:new Date(now.getTime()-i*3600000).toISOString() })); // 3600000=1h
+      ].map((x,i)=>({ id:'T'+(now.getTime()-i).toString(), ...x, fecha:new Date(now.getTime()-i*3600000).toISOString() })); // 1h entre items
       tickets = demo.concat(tickets); save(tickets); render();
     });
 
