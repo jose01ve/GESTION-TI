@@ -187,23 +187,39 @@
       tickets.unshift(t); save(tickets); render();
       show('Guardado local. Enviando a Sheets…');
 
-      try{
-        const r = await fetch(WEB_APP_URL, {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify({
-            action:'create',
-            id:t.id, titulo, categoria, prioridad,
-            reportadoPor: reportante, correo: email, descripcion,
-            estado: t.estado, fechaISO: t.fecha, adjuntoNombre:''
-          })
-        });
-        const d = await r.json().catch(()=>({}));
-        // guarda la fila si el backend la envía
-        if (d && (d.row || d.ok)) { t.row = d.row || 0; save(tickets); }
-      }catch(err){ console.error(err); }
-      form.reset();
-    });
+   try{
+  const r = await fetch(WEB_APP_URL, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify({
+      action:'create',
+      id: t.id,
+      titulo, categoria, prioridad,
+      reportadoPor: reportante,
+      correo: email,
+      descripcion,
+      estado: t.estado,
+      fechaISO: t.fecha,
+      adjuntoNombre: ''
+    })
+  });
+
+  const d = await r.json().catch(()=>({}));
+
+  if (!d || !d.ok){
+    console.error('CREATE fail:', d);
+    show('No se pudo crear en Sheets: ' + (d && d.error ? d.error : 'Error desconocido'), 'err');
+  } else {
+    // guarda la fila devuelta por el backend (si viene)
+    if (d.row) { t.row = d.row; save(tickets); }
+  }
+} catch(err){
+  console.error(err);
+  show('Sin conexión: guardado localmente', 'err');
+}
+
+form.reset();
+
 
     /* ==== cambiar estado (actualiza SOLO col H/I en Sheets) ==== */
     document.addEventListener('change', async (e)=>{
@@ -275,3 +291,4 @@
   </script>
 </body>
 </html>
+
