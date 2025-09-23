@@ -1,96 +1,277 @@
-/***** CONFIG *****/
-const SHEET_NAME_CANDIDATES = ['Reporte TI','ReporteTI']; // ajusta si usas otro
-const COL = { ID:1, TITULO:2, CATEGORIA:3, PRIORIDAD:4, REPOR:5, CORREO:6, DESC:7, ESTADO:8, FECHA:9, ADJ:10 };
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestión TI · Reporte de fallas</title>
+  <style>
+    :root{--bg:#eef2ff;--card:#fff;--text:#0d1333;--muted:#51608b;--border:rgba(13,19,51,.12);--ok:#2b8a3e;--warn:#f08c00;--bad:#e03131}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
+    header{position:sticky;top:0;background:#ffffffcc;backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+    .nav{max-width:1100px;margin:auto;padding:12px 16px;font-weight:800}
+    main{max-width:1100px;margin:16px auto;padding:0 16px;display:grid;gap:16px}
+    @media(min-width:960px){main{grid-template-columns:420px 1fr}}
+    .card{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 24px rgba(13,19,51,.08)}
+    .card h2{margin:0;padding:16px 16px 0}
+    .card .body{padding:16px}
+    form .grid{display:grid;gap:12px}
+    @media(min-width:560px){form .grid{grid-template-columns:1fr 1fr}}
+    label{font-size:.9rem;color:var(--muted);display:block;margin-bottom:6px}
+    input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fbfcff}
+    textarea{min-height:96px}
+    .btn{border:1px solid var(--border);background:#fff;border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
+    .btn.primary{border-color:#a3b0ff}
+    .btn.danger{border-color:#ffc9c9}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:8px}
+    .kpi{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px}
+    .kpi .label{font-size:.8rem;color:var(--muted)} .kpi .val{font-weight:800;font-size:1.2rem}
+    table{width:100%;border-collapse:separate;border-spacing:0 10px}
+    thead th{font-size:.85rem;color:var(--muted);text-align:left;padding:0 8px}
+    tbody tr{background:#fff;border:1px solid var(--border)}
+    tbody td{padding:10px 8px}
+    .badge{padding:4px 8px;border:1px solid var(--border);border-radius:999px;font-size:.78rem}
+    .prio-alta{background:#fff5f5}.prio-media{background:#fff4e6}.prio-baja{background:#ebfbee}
+    .e-abierto{color:var(--bad)}.e-proceso{color:var(--warn)}.e-cerrado{color:var(--ok)}
+    .notice{display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
+    footer{max-width:1100px;margin:6px auto 28px;padding:0 16px;color:var(--muted);font-size:.9rem}
+  </style>
+</head>
+<body>
+  <header><div class="nav">Gestión TI · <span style="color:#6c7bff">REPORTE DE FALLAS</span></div></header>
 
-/***** CORE *****/
-function getSheet(){
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  for (const n of SHEET_NAME_CANDIDATES){
-    const sh = ss.getSheetByName(n);
-    if (sh) return sh;
-  }
-  return ss.getSheets()[0]; // fallback
-}
+  <main>
+    <!-- Form -->
+    <section class="card">
+      <h2>REPORTE USUARIO</h2>
+      <div class="body">
+        <!-- evita navegación (405) -->
+        <form id="formTicket" action="javascript:void(0)" autocomplete="off">
+          <div class="grid">
+            <div><label for="titulo">Título *</label><input id="titulo" required placeholder="Ej. No hay internet en el piso 3"></div>
+            <div><label for="categoria">Categoría *</label>
+              <select id="categoria" required>
+                <option value="">Selecciona…</option>
+                <option>Red</option><option>Hardware</option><option>Software</option>
+                <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Otro</option>
+              </select>
+            </div>
+            <div><label for="prioridad">Prioridad *</label>
+              <select id="prioridad" required>
+                <option value="">Selecciona…</option><option>Alta</option><option>Media</option><option>Baja</option>
+              </select>
+            </div>
+            <div><label for="reportante">Reportado por *</label><input id="reportante" required placeholder="Tu nombre"></div>
+            <div><label for="email">Correo</label><input id="email" type="email" placeholder="tu@empresa.com"></div>
+            <div><label for="adj">Adjunto (opcional)</label><input id="adj" type="file" accept="image/*"></div>
+          </div>
 
-function doPost(e){
-  const out = o => ContentService.createTextOutput(JSON.stringify(o))
-                    .setMimeType(ContentService.MimeType.JSON);
-  let data = {};
-  try { data = JSON.parse(e.postData.contents || '{}'); }
-  catch { return out({ ok:false, error:'JSON inválido' }); }
+          <div style="margin-top:10px">
+            <label for="descripcion">Descripción *</label>
+            <textarea id="descripcion" required placeholder="Describe el problema, cuándo ocurre y a quién afecta"></textarea>
+          </div>
 
-  const lock = LockService.getScriptLock();
-  lock.tryLock(30000);
-  try {
-    const action = String(data.action||'').toLowerCase();
-    if (action === 'create')        return out(createTicket(data));
-    if (action === 'update_status') return out(updateStatus(data));
-    if (action === 'delete')        return out(deleteTicket(data));
-    return out({ ok:false, error:'Acción no soportada' });
-  } finally {
-    if (lock.hasLock()) lock.releaseLock();
-  }
-}
+          <div id="notice" class="notice"></div>
 
-function findRowById(sh, id){
-  if (!id) return -1;
-  const last = sh.getLastRow();
-  if (last < 2) return -1;
-  const ids = sh.getRange(2, COL.ID, last-1, 1).getValues().flat();
-  const i = ids.findIndex(v => String(v).trim() === String(id).trim());
-  return i === -1 ? -1 : i + 2; // +2 por encabezado y base 1
-}
+          <div class="row">
+            <button class="btn primary" type="submit">➕ Guardar reporte</button>
+            <button class="btn" type="button" id="btnDemo">🧪 Demo</button>
+            <button class="btn" type="reset">↺ Limpiar</button>
+          </div>
+        </form>
+      </div>
+    </section>
 
-function createTicket(d){
-  const sh   = getSheet();
-  const when = d.fechaISO ? new Date(d.fechaISO) : new Date();
-  const row0 = findRowById(sh, d.id);
-  const values = [
-    d.id||'', d.titulo||'', d.categoria||'', d.prioridad||'',
-    d.reportadoPor||'', d.correo||'', d.descripcion||'',
-    d.estado||'Abierto', when, d.adjuntoNombre||''
-  ];
-  const row = row0 > 0 ? row0 : sh.getLastRow() + 1;
-  sh.getRange(row, 1, 1, values.length).setValues([values]);
-  return { ok:true, row };
-}
+    <!-- Lista -->
+    <section class="card">
+      <h2>ESTADO DE REPORTE</h2>
+      <div class="body">
+        <div class="kpis">
+          <div class="kpi"><div class="label">Total</div><div class="val" id="kpiTotal">0</div></div>
+          <div class="kpi"><div class="label">Abiertos</div><div class="val" id="kpiAb">0</div></div>
+          <div class="kpi"><div class="label">En proceso</div><div class="val" id="kpiPr">0</div></div>
+          <div class="kpi"><div class="label">Cerrados</div><div class="val" id="kpiCe">0</div></div>
+        </div>
 
-function updateStatus(d){
-  const sh = getSheet();
-  let row = Number(d.row)||0;
+        <div style="overflow:auto">
+          <table>
+            <thead><tr><th>ID</th><th>Título</th><th>Categoría</th><th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
 
-  // si mandas 'row', validamos que el ID coincida
-  if (row > 1) {
-    const idAtRow = sh.getRange(row, COL.ID).getValue();
-    if (String(idAtRow).trim() !== String(d.id).trim()) row = 0;
-  }
-  if (row < 2) row = findRowById(sh, d.id);
-  if (row < 2) return { ok:false, error:'ID no encontrado' };
+  <footer>⚡ App HTML: guarda en este navegador y envía a Google Sheets si hay conexión.</footer>
 
-  sh.getRange(row, COL.ESTADO).setValue(d.status||'Abierto');
-  sh.getRange(row, COL.FECHA).setValue(new Date());
-  return { ok:true, row };
-}
+  <script>
+  (function(){
+    'use strict';
 
-function deleteTicket(d){
-  const sh = getSheet();
-  const row = findRowById(sh, d.id);
-  if (row < 2) return { ok:false, error:'ID no encontrado' };
-  sh.deleteRow(row);
-  return { ok:true };
-}
+    /* ==== CONFIG ====  */
+    const WEB_APP_URL = 'Pega_aquí_tu_WEB_APP_URL_de_Apps_Script';
 
-/* OPCIONAL: ejecutar 1 vez para limpiar duplicados por ID */
-function dedupeById(){
-  const sh = getSheet();
-  const last = sh.getLastRow();
-  if (last < 3) return;
-  const ids = sh.getRange(2, COL.ID, last-1, 1).getValues().flat();
-  const seen = new Set();
-  for (let i = ids.length; i >= 1; i--){
-    const id = String(ids[i-1]||'').trim();
-    if (!id) continue;
-    if (seen.has(id)) sh.deleteRow(i+1);
-    else seen.add(id);
-  }
-}
+    /* ==== helpers & estado ==== */
+    const $ = s => document.querySelector(s);
+    const notice = $('#notice');
+    const storeKey = 'tickets_fallas_v3'; // clave local
+    const load = () => { try{ return JSON.parse(localStorage.getItem(storeKey))||[] } catch { return [] } };
+    const save = v => localStorage.setItem(storeKey, JSON.stringify(v));
+    let tickets = load();
+
+    const tbody = $('#tbody'), kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe');
+    const form = $('#formTicket'), btnDemo = $('#btnDemo');
+
+    const show = (msg, kind='ok')=>{
+      notice.style.display='block';
+      notice.textContent = msg;
+      notice.style.borderColor = (kind==='ok') ? '#b2f2bb' : '#ffc9c9';
+      setTimeout(()=> notice.style.display='none', 1600);
+    };
+
+    const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
+    const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p}</span>`;
+    const tagE  = e => `<strong class="${e==='Abierto'?'e-abierto':e==='En Proceso'?'e-proceso':'e-cerrado'}">${e}</strong>`;
+    const fmt   = iso => new Date(iso).toLocaleString();
+
+    function counters(){
+      kpiTotal.textContent = tickets.length;
+      kpiAb.textContent = tickets.filter(t=>t.estado==='Abierto').length;
+      kpiPr.textContent = tickets.filter(t=>t.estado==='En Proceso').length;
+      kpiCe.textContent = tickets.filter(t=>t.estado==='Cerrado').length;
+    }
+    function render(){
+      counters();
+      tbody.innerHTML = tickets
+        .slice()
+        .sort((a,b)=>new Date(b.fecha)-new Date(a.fecha))
+        .map(t=>`
+        <tr>
+          <td>${t.id}</td>
+          <td>${esc(t.titulo)}</td>
+          <td>${esc(t.categoria)}</td>
+          <td>${badge(t.prioridad)}</td>
+          <td>${tagE(t.estado)}</td>
+          <td data-fecha-for="${t.id}">${fmt(t.fecha)}</td>
+          <td style="display:flex;gap:8px;flex-wrap:wrap">
+            <select class="estado-select" data-id="${t.id}">
+              <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
+              <option ${t.estado==='En Proceso'?'selected':''}>En Proceso</option>
+              <option ${t.estado==='Cerrado'?'selected':''}>Cerrado</option>
+            </select>
+            <button class="btn danger" data-action="del" data-id="${t.id}">Eliminar</button>
+          </td>
+        </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
+    }
+
+    /* ==== crear ==== */
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+
+      const titulo = $('#titulo').value.trim();
+      const categoria = $('#categoria').value;
+      const prioridad = $('#prioridad').value;
+      const reportante = $('#reportante').value.trim();
+      const email = $('#email').value.trim();
+      const descripcion = $('#descripcion').value.trim();
+
+      if(!titulo || !categoria || !prioridad || !reportante || !descripcion){
+        show('Completa los campos obligatorios', 'err'); return;
+      }
+
+      const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
+      const t = { id, titulo, categoria, prioridad, reportante, email, descripcion, estado:'Abierto', fecha:new Date().toISOString() };
+
+      // UI + cache
+      tickets.unshift(t); save(tickets); render();
+      show('Guardado local. Enviando a Sheets…');
+
+      try{
+        const r = await fetch(WEB_APP_URL, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({
+            action:'create',
+            id:t.id, titulo, categoria, prioridad,
+            reportadoPor: reportante, correo: email, descripcion,
+            estado: t.estado, fechaISO: t.fecha, adjuntoNombre:''
+          })
+        });
+        const d = await r.json().catch(()=>({}));
+        // guarda la fila si el backend la envía
+        if (d && (d.row || d.ok)) { t.row = d.row || 0; save(tickets); }
+      }catch(err){ console.error(err); }
+      form.reset();
+    });
+
+    /* ==== cambiar estado (actualiza SOLO col H/I en Sheets) ==== */
+    document.addEventListener('change', async (e)=>{
+      const sel = e.target.closest('.estado-select'); if(!sel) return;
+
+      const id = sel.dataset.id;
+      const status = sel.value;
+      const t = tickets.find(x=>x.id===id); if(!t) return;
+
+      // refresco optimista en UI
+      t.estado = status;
+      t.fecha = new Date().toISOString();
+      save(tickets); render();
+
+      try{
+        const r = await fetch(WEB_APP_URL, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({
+            action:'update_status',
+            id,
+            status,
+            row: (t.row || 0)            // <<< CAMBIO CLAVE: mandamos row si existe
+          })
+        });
+        const d = await r.json().catch(()=>({}));
+        if (!d || !d.ok){
+          show('No se pudo actualizar en Sheets', 'err');
+        } else {
+          const cell = document.querySelector(`[data-fecha-for="${id}"]`);
+          if (cell) cell.textContent = new Date().toLocaleString();
+        }
+      }catch(err){
+        console.error(err);
+        show('Sin conexión: cambio guardado localmente', 'err');
+      }
+    });
+
+    /* ==== eliminar ==== */
+    tbody.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('button[data-action="del"]'); if(!btn) return;
+      const id  = btn.dataset.id;
+
+      // elimina en UI y cache
+      tickets = tickets.filter(x=>x.id!==id); save(tickets); render();
+
+      try{
+        await fetch(WEB_APP_URL, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({ action:'delete', id })
+        });
+      }catch(err){ console.error(err); }
+    });
+
+    /* ==== demo ==== */
+    btnDemo.addEventListener('click', ()=>{
+      const now = new Date();
+      const demo = [
+        { titulo:'Sin internet piso 3', categoria:'Red', prioridad:'Alta',  reportante:'Laura M',  email:'laura@empresa.com',  descripcion:'Sin conectividad', estado:'Abierto' },
+        { titulo:'Outlook no envía',   categoria:'Correo', prioridad:'Media', reportante:'Carlos R', email:'carlos@empresa.com', descripcion:'Queda en bandeja de salida', estado:'En Proceso' },
+        { titulo:'Impresora contab',   categoria:'Impresión', prioridad:'Baja', reportante:'Diana P', email:'diana@empresa.com', descripcion:'Papel atascado', estado:'Cerrado' }
+      ].map((x,i)=>({ id:'T'+(now.getTime()-i).toString(), ...x, fecha:new Date(now.getTime()-i*3600000).toISOString() })); // 1h entre items
+      tickets = demo.concat(tickets); save(tickets); render();
+    });
+
+    render();
+  })();
+  </script>
+</body>
+</html>
