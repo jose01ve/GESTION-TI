@@ -45,7 +45,6 @@
     <section class="card">
       <h2>REPORTE USUARIO</h2>
       <div class="body">
-        <!-- evita navegación (405) -->
         <form id="formTicket" action="javascript:void(0)" autocomplete="off">
           <div class="grid">
             <div><label for="titulo">Título *</label><input id="titulo" required placeholder="Ej. No hay internet en el piso 3"></div>
@@ -110,12 +109,11 @@
     'use strict';
 
     /* ==== CONFIG ====  */
-    const WEB_APP_URL = 'Pega_aquí_tu_WEB_APP_URL_de_Apps_Script';
-
+   const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbydMqt7bo7Nm7ISiQ1cbbapTRwE38r3fmGOgi-g4rf3WA228TzQ5cqE5dtSwKubsNrvMw/exec';
     /* ==== helpers & estado ==== */
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
-    const storeKey = 'tickets_fallas_v3'; // clave local
+    const storeKey = 'tickets_fallas_v3'; // cache local
     const load = () => { try{ return JSON.parse(localStorage.getItem(storeKey))||[] } catch { return [] } };
     const save = v => localStorage.setItem(storeKey, JSON.stringify(v));
     let tickets = load();
@@ -127,7 +125,7 @@
       notice.style.display='block';
       notice.textContent = msg;
       notice.style.borderColor = (kind==='ok') ? '#b2f2bb' : '#ffc9c9';
-      setTimeout(()=> notice.style.display='none', 1600);
+      setTimeout(()=> notice.style.display='none', 1800);
     };
 
     const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
@@ -183,45 +181,43 @@
       const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
       const t = { id, titulo, categoria, prioridad, reportante, email, descripcion, estado:'Abierto', fecha:new Date().toISOString() };
 
-      // UI + cache
+      // UI + cache inmediato
       tickets.unshift(t); save(tickets); render();
       show('Guardado local. Enviando a Sheets…');
 
-   try{
-  const r = await fetch(WEB_APP_URL, {
-    method:'POST',
-    headers:{ 'Content-Type':'application/json' },
-    body: JSON.stringify({
-      action:'create',
-      id: t.id,
-      titulo, categoria, prioridad,
-      reportadoPor: reportante,
-      correo: email,
-      descripcion,
-      estado: t.estado,
-      fechaISO: t.fecha,
-      adjuntoNombre: ''
-    })
-  });
+      try{
+        const r = await fetch(WEB_APP_URL, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({
+            action:'create',
+            id: t.id,
+            titulo, categoria, prioridad,
+            reportadoPor: reportante,
+            correo: email,
+            descripcion,
+            estado: t.estado,
+            fechaISO: t.fecha,
+            adjuntoNombre: ''
+          })
+        });
 
-  const d = await r.json().catch(()=>({}));
+        const d = await r.json().catch(()=>({}));
 
-  if (!d || !d.ok){
-    console.error('CREATE fail:', d);
-    show('No se pudo crear en Sheets: ' + (d && d.error ? d.error : 'Error desconocido'), 'err');
-  } else {
-    // guarda la fila devuelta por el backend (si viene)
-    if (d.row) { t.row = d.row; save(tickets); }
-  }
-} catch(err){
-  console.error(err);
-  show('Sin conexión: guardado localmente', 'err');
-}
+        if (!d || !d.ok){
+          console.error('CREATE fail:', d);
+          show('No se pudo crear en Sheets: ' + (d && d.error ? d.error : 'Error desconocido'), 'err');
+        } else {
+          if (d.row) { t.row = d.row; save(tickets); }
+        }
+      } catch(err){
+        console.error(err);
+        show('Sin conexión: guardado localmente', 'err');
+      }
+      form.reset();
+    });
 
-form.reset();
-
-
-    /* ==== cambiar estado (actualiza SOLO col H/I en Sheets) ==== */
+    /* ==== cambiar estado (actualiza SOLO H/I) ==== */
     document.addEventListener('change', async (e)=>{
       const sel = e.target.closest('.estado-select'); if(!sel) return;
 
@@ -229,7 +225,7 @@ form.reset();
       const status = sel.value;
       const t = tickets.find(x=>x.id===id); if(!t) return;
 
-      // refresco optimista en UI
+      // refresco optimista
       t.estado = status;
       t.fecha = new Date().toISOString();
       save(tickets); render();
@@ -239,10 +235,10 @@ form.reset();
           method:'POST',
           headers:{ 'Content-Type':'application/json' },
           body: JSON.stringify({
-            action:'update_status',
+            action: 'update_status',
             id,
             status,
-            row: (t.row || 0)            // <<< CAMBIO CLAVE: mandamos row si existe
+            row: (t.row || 0)   // <-- clave: mandar la fila si la tenemos
           })
         });
         const d = await r.json().catch(()=>({}));
@@ -263,7 +259,6 @@ form.reset();
       const btn = e.target.closest('button[data-action="del"]'); if(!btn) return;
       const id  = btn.dataset.id;
 
-      // elimina en UI y cache
       tickets = tickets.filter(x=>x.id!==id); save(tickets); render();
 
       try{
@@ -282,7 +277,7 @@ form.reset();
         { titulo:'Sin internet piso 3', categoria:'Red', prioridad:'Alta',  reportante:'Laura M',  email:'laura@empresa.com',  descripcion:'Sin conectividad', estado:'Abierto' },
         { titulo:'Outlook no envía',   categoria:'Correo', prioridad:'Media', reportante:'Carlos R', email:'carlos@empresa.com', descripcion:'Queda en bandeja de salida', estado:'En Proceso' },
         { titulo:'Impresora contab',   categoria:'Impresión', prioridad:'Baja', reportante:'Diana P', email:'diana@empresa.com', descripcion:'Papel atascado', estado:'Cerrado' }
-      ].map((x,i)=>({ id:'T'+(now.getTime()-i).toString(), ...x, fecha:new Date(now.getTime()-i*3600000).toISOString() })); // 1h entre items
+      ].map((x,i)=>({ id:'T'+(now.getTime()-i).toString(), ...x, fecha:new Date(now.getTime()-i*3600000).toISOString() }));
       tickets = demo.concat(tickets); save(tickets); render();
     });
 
@@ -291,4 +286,3 @@ form.reset();
   </script>
 </body>
 </html>
-
