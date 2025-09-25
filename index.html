@@ -108,10 +108,8 @@
   (function(){
     'use strict';
 
-    /* ==== CONFIG ====  */
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw_trAQm0wENTxvCOq2mF0rQqAZZIrbiA_HrhorJ6U6Q4OuUAPmJT9Pkm2SSUirLb5pyw/exec';
 
-    /* ==== helpers & estado ==== */
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
     const storeKey = 'tickets_fallas_v3';
@@ -126,7 +124,7 @@
       notice.style.display='block';
       notice.textContent = msg;
       notice.style.borderColor = (kind==='ok') ? '#b2f2bb' : '#ffc9c9';
-      setTimeout(()=> notice.style.display='none', 1800);
+      setTimeout(()=> notice.style.display='none', 2000);
     };
 
     const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
@@ -164,6 +162,18 @@
         </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
+    // util: POST sin preflight (texto plano)
+    async function postJSON(payload){
+      const res = await fetch(WEB_APP_URL, {
+        method:'POST',
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' }, // evita preflight
+        body: JSON.stringify(payload)
+      });
+      // intenta parsear, y si no, retorna objeto con error de texto
+      try { return await res.json(); }
+      catch { return { ok:false, error:'Respuesta no-JSON (¿permisos o CORS?)' }; }
+    }
+
     /* ==== crear ==== */
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
@@ -185,34 +195,25 @@
       tickets.unshift(t); save(tickets); render();
       show('Guardado local. Enviando a Sheets…');
 
-      try{
-        const r = await fetch(WEB_APP_URL, {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify({
-            action:'create',
-            id: t.id,
-            titulo, categoria, prioridad,
-            reportadoPor: reportante,
-            correo: email,
-            descripcion,
-            estado: t.estado,
-            fechaISO: t.fecha,
-            adjuntoNombre: ''
-          })
-        });
-        const d = await r.json().catch(()=>({}));
+      const d = await postJSON({
+        action:'create',
+        id: t.id,
+        titulo, categoria, prioridad,
+        reportadoPor: reportante,
+        correo: email,
+        descripcion,
+        estado: t.estado,
+        fechaISO: t.fecha,
+        adjuntoNombre: ''
+      });
 
-        if (!d || !d.ok){
-          console.error('CREATE fail:', d);
-          show('No se pudo crear en Sheets: ' + (d && d.error ? d.error : 'Error desconocido'), 'err');
-        } else {
-          if (d.row) { t.row = d.row; save(tickets); }
-        }
-      } catch(err){
-        console.error(err);
-        show('Sin conexión: guardado localmente', 'err');
+      if (!d || !d.ok){
+        console.error('CREATE fail:', d);
+        show('No se pudo crear en Sheets: ' + (d && d.error ? d.error : 'error'), 'err');
+      } else if (d.row) {
+        t.row = d.row; save(tickets);
       }
+
       form.reset();
     });
 
@@ -228,27 +229,12 @@
       t.fecha = new Date().toISOString();
       save(tickets); render();
 
-      try{
-        const r = await fetch(WEB_APP_URL, {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify({
-            action: 'update_status',
-            id,
-            status,
-            row: (t.row || 0)
-          })
-        });
-        const d = await r.json().catch(()=>({}));
-        if (!d || !d.ok){
-          show('No se pudo actualizar en Sheets', 'err');
-        } else {
-          const cell = document.querySelector(`[data-fecha-for="${id}"]`);
-          if (cell) cell.textContent = new Date().toLocaleString();
-        }
-      }catch(err){
-        console.error(err);
-        show('Sin conexión: cambio guardado localmente', 'err');
+      const d = await postJSON({ action:'update_status', id, status, row:(t.row||0) });
+      if (!d || !d.ok){
+        show('No se pudo actualizar en Sheets', 'err');
+      } else {
+        const cell = document.querySelector(`[data-fecha-for="${id}"]`);
+        if (cell) cell.textContent = new Date().toLocaleString();
       }
     });
 
@@ -258,14 +244,7 @@
       const id  = btn.dataset.id;
 
       tickets = tickets.filter(x=>x.id!==id); save(tickets); render();
-
-      try{
-        await fetch(WEB_APP_URL, {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify({ action:'delete', id })
-        });
-      }catch(err){ console.error(err); }
+      await postJSON({ action:'delete', id });
     });
 
     /* ==== demo ==== */
@@ -284,4 +263,3 @@
   </script>
 </body>
 </html>
-
