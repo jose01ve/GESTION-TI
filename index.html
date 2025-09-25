@@ -34,7 +34,7 @@
     .prio-alta{background:#fff5f5}.prio-media{background:#fff4e6}.prio-baja{background:#ebfbee}
     .e-abierto{color:var(--bad)}.e-proceso{color:var(--warn)}.e-cerrado{color:var(--ok)}
     .notice{display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
-    footer{max-width:1100px;margin:6px auto 28px;padding:0 16px;color:var(--muted);font-size:.9rem}
+    footer{max-width:1100px;margin:6px auto 28px;padding:0 16px;color:#51608b;font-size:.9rem}
   </style>
 </head>
 <body>
@@ -102,18 +102,19 @@
     </section>
   </main>
 
-  <footer>⚡ App HTML: guarda en este navegador y envía a Google Sheets si hay conexión.</footer>
+  <footer>⚡ App HTML: guarda local y envía a Google Sheets si hay conexión.</footer>
 
   <script>
   (function(){
     'use strict';
 
     /* ==== CONFIG ====  */
-   const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbydMqt7bo7Nm7ISiQ1cbbapTRwE38r3fmGOgi-g4rf3WA228TzQ5cqE5dtSwKubsNrvMw/exec';
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbydMqt7bo7Nm7ISiQ1cbbapTRwE38r3fmGOgi-g4rf3WA228TzQ5cqE5dtSwKubsNrvMw/exec';
+
     /* ==== helpers & estado ==== */
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
-    const storeKey = 'tickets_fallas_v3'; // cache local
+    const storeKey = 'tickets_fallas_v3';
     const load = () => { try{ return JSON.parse(localStorage.getItem(storeKey))||[] } catch { return [] } };
     const save = v => localStorage.setItem(storeKey, JSON.stringify(v));
     let tickets = load();
@@ -181,7 +182,6 @@
       const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
       const t = { id, titulo, categoria, prioridad, reportante, email, descripcion, estado:'Abierto', fecha:new Date().toISOString() };
 
-      // UI + cache inmediato
       tickets.unshift(t); save(tickets); render();
       show('Guardado local. Enviando a Sheets…');
 
@@ -201,7 +201,6 @@
             adjuntoNombre: ''
           })
         });
-
         const d = await r.json().catch(()=>({}));
 
         if (!d || !d.ok){
@@ -217,7 +216,7 @@
       form.reset();
     });
 
-    /* ==== cambiar estado (actualiza SOLO H/I) ==== */
+    /* ==== cambiar estado ==== */
     document.addEventListener('change', async (e)=>{
       const sel = e.target.closest('.estado-select'); if(!sel) return;
 
@@ -225,7 +224,6 @@
       const status = sel.value;
       const t = tickets.find(x=>x.id===id); if(!t) return;
 
-      // refresco optimista
       t.estado = status;
       t.fecha = new Date().toISOString();
       save(tickets); render();
@@ -238,7 +236,7 @@
             action: 'update_status',
             id,
             status,
-            row: (t.row || 0)   // <-- clave: mandar la fila si la tenemos
+            row: (t.row || 0)
           })
         });
         const d = await r.json().catch(()=>({}));
