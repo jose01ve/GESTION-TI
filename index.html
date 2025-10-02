@@ -19,7 +19,6 @@
     label{font-size:.9rem;color:var(--muted);display:block;margin-bottom:6px}
     input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fbfcff}
     textarea{min-height:96px}
-    input[readonly]{background:#f5f7ff}
     .btn{border:1px solid var(--border);background:#fff;border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
     .btn.primary{border-color:#a3b0ff}
     .btn.danger{border-color:#ffc9c9}
@@ -36,7 +35,7 @@
     .e-abierto{color:var(--bad)}.e-proceso{color:var(--warn)}.e-cerrado{color:var(--ok)}
     .notice{display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
     footer{max-width:1100px;margin:6px auto 28px;padding:0 16px;color:#51608b;font-size:.9rem}
-    .help{font-size:.8rem;color:var(--muted)}
+    small.help{display:block; color:var(--muted); margin-top:4px}
   </style>
 </head>
 <body>
@@ -49,23 +48,18 @@
       <div class="body">
         <form id="formTicket" action="javascript:void(0)" autocomplete="off">
           <div class="grid">
-            <!-- 1) Analista Responsable -->
+            <!-- Analista -->
             <div>
               <label for="analista">Analista Responsable *</label>
-              <select id="analista" required>
-                <option value="">Selecciona…</option>
-                <option>Jose Salas</option>
-                <option>Sebastián Alejandro Cataño</option>
-                <option>Sebastián Posada Moreno</option>
-              </select>
+              <select id="analista" required></select>
             </div>
             <div>
-              <label for="email">Correo analista</label>
-              <input id="email" type="email" placeholder="auto" readonly>
-              <div class="help">Se rellena según el analista.</div>
+              <label for="correoAnalista">Correo analista</label>
+              <input id="correoAnalista" placeholder="auto" readonly />
+              <small class="help">Se rellena según el analista.</small>
             </div>
 
-            <!-- 2) Categoría -->
+            <!-- Categoría -->
             <div>
               <label for="categoria">Categoría *</label>
               <select id="categoria" required>
@@ -75,7 +69,7 @@
               </select>
             </div>
 
-            <!-- 3) Falla reportada -->
+            <!-- Falla reportada -->
             <div>
               <label for="falla">Falla reportada *</label>
               <select id="falla" required>
@@ -127,30 +121,34 @@
               </select>
             </div>
 
-            <!-- 4) Usuario quien reporta (tu base de datos) -->
+            <!-- Usuario reporta -->
             <div>
-              <label for="reportante">Usuario quien reporta *</label>
-              <input id="reportante" list="usuarios" required placeholder="Nombre del usuario">
-              <datalist id="usuarios"></datalist>
-              <div class="help">Se puede autocompletar con tu base de usuarios.</div>
+              <label for="usuario">Usuario quien reporta *</label>
+              <input id="usuario" list="listaUsuarios" placeholder="Nombre del usuario" required />
+              <datalist id="listaUsuarios"></datalist>
+              <small class="help">Se puede autocompletar con tu base de usuarios.</small>
             </div>
 
-            <!-- 5) Prioridad -->
+            <!-- Prioridad -->
             <div>
               <label for="prioridad">Prioridad *</label>
               <select id="prioridad" required>
-                <option value="">Selecciona…</option><option>Alta</option><option>Media</option><option>Baja</option>
+                <option value="">Selecciona…</option>
+                <option>Alta</option><option>Media</option><option>Baja</option>
               </select>
             </div>
 
-            <!-- 6) Adjunto (opcional) -->
-            <div><label for="adj">Adjunto (opcional)</label><input id="adj" type="file" accept="image/*"></div>
+            <!-- Adjunto -->
+            <div>
+              <label for="adj">Adjunto (opcional)</label>
+              <input id="adj" type="file" accept="image/*">
+            </div>
           </div>
 
-          <!-- 7) Descripción -->
+          <!-- Descripción -->
           <div style="margin-top:10px">
             <label for="descripcion">Descripción *</label>
-            <textarea id="descripcion" required placeholder="Describe la falla, contexto y área afectada"></textarea>
+            <textarea id="descripcion" required placeholder="Describe la falla (cuándo ocurre, a quién afecta, etc.)"></textarea>
           </div>
 
           <div id="notice" class="notice"></div>
@@ -196,41 +194,201 @@
   (function(){
     'use strict';
 
-    /* === CONFIGURACIÓN === */
+    // 1) URL del WebApp (Apps Script)
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw_trAQm0wENTxvCOq2mF0rQqAZZIrbiA_HrhorJ6U6Q4OuUAPmJT9Pkm2SSUirLb5pyw/exec';
 
-    // Mapea analista -> correo (se guarda automáticamente)
-    const ANALISTAS = {
-      'Jose Salas': 'jsalas@sedic.com.co',
-      'Sebastián Cataño': 'sebastian.catano@empresa.com',
-      'Sebastián Posada': 'sebastian.posada@empresa.com'
-    };
+    // 2) Analistas (rellena los correos reales)
+    const ANALISTAS = [
+      { nombre:'Jose Salas',        email:'jsalas@sedic.com.co' },     // ← ajusta si es diferente
+      { nombre:'Sebastián Cataño',  email:'scatano@sedic.com.co' },    // ← ajusta
+      { nombre:'Sebastián Posada',  email:'sposada@sedic.com.co' }     // ← ajusta
+    ];
 
-    // (Opcional) URL a CSV publicado con el listado de usuarios "quien reporta".
-    // Publica tu Google Sheet como CSV (Archivo > Compartir > Publicar en la web > CSV) y pega el link aquí:
-    const USERS_CSV_URL = ''; // ej. 'https://docs.google.com/spreadsheets/.../pub?output=csv'
+    // 3) (Opcional) Base de usuarios para autocompletar
+    const USUARIOS = [
+      'Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez'
+      // → puedes reemplazar por tu lista; también puedes poblarla desde Sheets más adelante.
+    ];
 
-    /* === UTILIDADES === */
+    // ===== util DOM =====
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
+
+    // Nueva clave de almacenamiento (esquema nuevo)
     const storeKey = 'tickets_fallas_v4';
     const load = () => { try{ return JSON.parse(localStorage.getItem(storeKey))||[] } catch { return [] } };
     const save = v => localStorage.setItem(storeKey, JSON.stringify(v));
     let tickets = load();
 
+    // Referencias UI
     const tbody = $('#tbody'), kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe');
     const form = $('#formTicket'), btnDemo = $('#btnDemo');
-    const selAnalista = $('#analista'); const inpCorreo = $('#email');
 
+    // Poblar selects/datalists
+    (function initCatalogos(){
+      // Analistas
+      const sel = $('#analista');
+      sel.innerHTML = '<option value="">Selecciona…</option>' +
+        ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
+
+      // Datalist usuarios
+      const dl = $('#listaUsuarios');
+      dl.innerHTML = USUARIOS.map(u=>`<option value="${u}">`).join('');
+
+      // Auto correo por analista
+      sel.addEventListener('change', ()=>{
+        const a = ANALISTAS.find(x=>x.nombre===sel.value);
+        $('#correoAnalista').value = a ? a.email : '';
+      });
+    })();
+
+    // Helpers
     const show = (msg, kind='ok')=>{
       notice.style.display='block';
       notice.textContent = msg;
       notice.style.borderColor = (kind==='ok') ? '#b2f2bb' : '#ffc9c9';
       setTimeout(()=> notice.style.display='none', 2200);
     };
-
     const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
     const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p}</span>`;
     const tagE  = e => `<strong class="${e==='Abierto'?'e-abierto':e==='En Proceso'?'e-proceso':'e-cerrado'}">${e}</strong>`;
-    const fmt   = iso
+    const fmt   = iso => new Date(iso).toLocaleString();
 
+    function counters(){
+      kpiTotal.textContent = tickets.length;
+      kpiAb.textContent = tickets.filter(t=>t.estado==='Abierto').length;
+      kpiPr.textContent = tickets.filter(t=>t.estado==='En Proceso').length;
+      kpiCe.textContent = tickets.filter(t=>t.estado==='Cerrado').length;
+    }
+    function render(){
+      counters();
+      tbody.innerHTML = tickets
+        .slice()
+        .sort((a,b)=>new Date(b.fecha)-new Date(a.fecha))
+        .map(t=>`
+        <tr>
+          <td>${t.id}</td>
+          <td>${esc(t.analista)}</td>
+          <td>${esc(t.categoria)}</td>
+          <td>${esc(t.falla)}</td>
+          <td>${badge(t.prioridad)}</td>
+          <td>${tagE(t.estado)}</td>
+          <td data-fecha-for="${t.id}">${fmt(t.fecha)}</td>
+          <td style="display:flex;gap:8px;flex-wrap:wrap">
+            <select class="estado-select" data-id="${t.id}">
+              <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
+              <option ${t.estado==='En Proceso'?'selected':''}>En Proceso</option>
+              <option ${t.estado==='Cerrado'?'selected':''}>Cerrado</option>
+            </select>
+            <button class="btn danger" data-action="del" data-id="${t.id}">Eliminar</button>
+          </td>
+        </tr>`).join('') || `<tr><td colspan="8" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
+    }
+
+    // POST sin preflight
+    async function postJSON(payload){
+      const res = await fetch(WEB_APP_URL, {
+        method:'POST',
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      try { return await res.json(); }
+      catch { return { ok:false, error:'Respuesta no-JSON (¿permisos o CORS?)' }; }
+    }
+
+    /* ==== crear ==== */
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+
+      const analista = $('#analista').value;
+      const correoAnalista = $('#correoAnalista').value.trim();
+      const categoria = $('#categoria').value;
+      const falla = $('#falla').value;
+      const usuario = $('#usuario').value.trim();
+      const prioridad = $('#prioridad').value;
+      const descripcion = $('#descripcion').value.trim();
+      // adjunto (nombre solo, no subimos archivo por ahora)
+      const adjInput = $('#adj'); const adjuntoNombre = adjInput.files?.[0]?.name || '';
+
+      if(!analista || !categoria || !falla || !usuario || !prioridad || !descripcion){
+        show('Completa los campos obligatorios', 'err'); return;
+      }
+
+      const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
+      const t = {
+        id, analista, correoAnalista, categoria, falla, usuario,
+        prioridad, descripcion, adjuntoNombre,
+        estado:'Abierto', fecha:new Date().toISOString()
+      };
+
+      tickets.unshift(t); save(tickets); render();
+      show('Guardado local. Enviando a Sheets…');
+
+      const d = await postJSON({
+        action:'create',
+        id: t.id,
+        analista, correoAnalista, categoria, falla,
+        usuario, prioridad, descripcion,
+        estado: t.estado,
+        fechaISO: t.fecha,
+        adjuntoNombre
+      });
+
+      if (!d || !d.ok){
+        console.error('CREATE fail:', d);
+        show('No se pudo crear en Sheets: ' + (d && d.error ? d.error : 'error'), 'err');
+      } else if (d.row) {
+        t.row = d.row; save(tickets);
+      }
+
+      form.reset();
+      // restablecer correo auto si ya estaba seleccionado analista
+      $('#correoAnalista').value = '';
+    });
+
+    /* ==== cambiar estado ==== */
+    document.addEventListener('change', async (e)=>{
+      const sel = e.target.closest('.estado-select'); if(!sel) return;
+
+      const id = sel.dataset.id;
+      const status = sel.value;
+      const t = tickets.find(x=>x.id===id); if(!t) return;
+
+      t.estado = status;
+      t.fecha = new Date().toISOString();
+      save(tickets); render();
+
+      const d = await postJSON({ action:'update_status', id, status, row:(t.row||0) });
+      if (!d || !d.ok){
+        show('No se pudo actualizar en Sheets', 'err');
+      } else {
+        const cell = document.querySelector(`[data-fecha-for="${id}"]`);
+        if (cell) cell.textContent = new Date().toLocaleString();
+      }
+    });
+
+    /* ==== eliminar ==== */
+    tbody.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('button[data-action="del"]'); if(!btn) return;
+      const id  = btn.dataset.id;
+
+      tickets = tickets.filter(x=>x.id!==id); save(tickets); render();
+      await postJSON({ action:'delete', id });
+    });
+
+    /* ==== demo ==== */
+    btnDemo.addEventListener('click', ()=>{
+      const now = new Date();
+      const demo = [
+        { analista:'Sebastián Cataño', correoAnalista:'scatano@sedic.com.co', categoria:'Hardware', falla:'Soporte a equipos informáticos', usuario:'Jairo Pelaez', prioridad:'Alta', descripcion:'Equipo no enciende', estado:'Abierto' },
+        { analista:'Jose Salas', correoAnalista:'jsalas@sedic.com.co', categoria:'Correo', falla:'Crear cuenta de correo', usuario:'Laura Mejía', prioridad:'Media', descripcion:'Ingreso nuevo', estado:'En Proceso' },
+        { analista:'Sebastián Posada', correoAnalista:'sposada@sedic.com.co', categoria:'Impresión', falla:'Requerimiento de Impresión', usuario:'Carlos Ramírez', prioridad:'Baja', descripcion:'No imprime a color', estado:'Cerrado' }
+      ].map((x,i)=>({ id:'T'+(now.getTime()-i).toString(), ...x, fecha:new Date(now.getTime()-i*3600000).toISOString() }));
+      tickets = demo.concat(tickets); save(tickets); render();
+    });
+
+    render();
+  })();
+  </script>
+</body>
+</html>
