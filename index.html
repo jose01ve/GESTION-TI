@@ -35,7 +35,7 @@
     .e-abierto{color:var(--bad)}.e-proceso{color:var(--warn)}.e-cerrado{color:var(--ok)}
     .notice{display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
     footer{max-width:1100px;margin:6px auto 28px;padding:0 16px;color:#51608b;font-size:.9rem}
-    small.help{display:block; color:var(--muted); margin-top:4px}
+    small.help{display:block;color:var(--muted);margin-top:4px}
   </style>
 </head>
 <body>
@@ -48,7 +48,6 @@
       <div class="body">
         <form id="formTicket" action="javascript:void(0)" autocomplete="off">
           <div class="grid">
-            <!-- Analista -->
             <div>
               <label for="analista">Analista Responsable *</label>
               <select id="analista" required></select>
@@ -58,8 +57,6 @@
               <input id="correoAnalista" placeholder="auto" readonly />
               <small class="help">Se rellena según el analista.</small>
             </div>
-
-            <!-- Categoría -->
             <div>
               <label for="categoria">Categoría *</label>
               <select id="categoria" required>
@@ -68,8 +65,6 @@
                 <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Otro</option>
               </select>
             </div>
-
-            <!-- Falla reportada -->
             <div>
               <label for="falla">Falla reportada *</label>
               <select id="falla" required>
@@ -120,16 +115,12 @@
                 <option>Gestión aplicaciones</option>
               </select>
             </div>
-
-            <!-- Usuario reporta -->
             <div>
               <label for="usuario">Usuario quien reporta *</label>
               <input id="usuario" list="listaUsuarios" placeholder="Nombre del usuario" required />
               <datalist id="listaUsuarios"></datalist>
               <small class="help">Se puede autocompletar con tu base de usuarios.</small>
             </div>
-
-            <!-- Prioridad -->
             <div>
               <label for="prioridad">Prioridad *</label>
               <select id="prioridad" required>
@@ -137,15 +128,12 @@
                 <option>Alta</option><option>Media</option><option>Baja</option>
               </select>
             </div>
-
-            <!-- Adjunto -->
             <div>
               <label for="adj">Adjunto (opcional)</label>
               <input id="adj" type="file" accept="image/*">
             </div>
           </div>
 
-          <!-- Descripción -->
           <div style="margin-top:10px">
             <label for="descripcion">Descripción *</label>
             <textarea id="descripcion" required placeholder="Describe la falla (cuándo ocurre, a quién afecta, etc.)"></textarea>
@@ -194,17 +182,13 @@
   (function(){
     'use strict';
 
-    // URL del WebApp
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw_trAQm0wENTxvCOq2mF0rQqAZZIrbiA_HrhorJ6U6Q4OuUAPmJT9Pkm2SSUirLb5pyw/exec';
 
-    // Analistas
     const ANALISTAS = [
       { nombre:'Jose Salas',        email:'jsalas@sedic.com.co' },
       { nombre:'Sebastián Cataño',  email:'scatano@sedic.com.co' },
       { nombre:'Sebastián Posada',  email:'sposada@sedic.com.co' }
     ];
-
-    // (Opcional) usuarios para autocompletar
     const USUARIOS = ['Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez'];
 
     const $ = s => document.querySelector(s);
@@ -218,7 +202,6 @@
     const tbody = $('#tbody'), kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe');
     const form = $('#formTicket'), btnDemo = $('#btnDemo');
 
-    // Catálogos
     (function initCatalogos(){
       const sel = $('#analista');
       sel.innerHTML = '<option value="">Selecciona…</option>' + ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
@@ -271,7 +254,6 @@
         </tr>`).join('') || `<tr><td colspan="8" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
-    // POST con diagnóstico robusto
     async function postJSON(payload){
       try{
         const res = await fetch(WEB_APP_URL, {
@@ -285,7 +267,6 @@
       }catch(err){ return { ok:false, error:'Fetch error: '+err.message }; }
     }
 
-    /* crear */
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const analista = $('#analista').value;
@@ -324,11 +305,9 @@
         t.row = d.row; save(tickets);
       }
 
-      form.reset();
-      $('#correoAnalista').value = '';
+      form.reset(); $('#correoAnalista').value = '';
     });
 
-    /* cambiar estado */
     document.addEventListener('change', async (e)=>{
       const sel = e.target.closest('.estado-select'); if(!sel) return;
       const id = sel.dataset.id;
@@ -347,7 +326,6 @@
       }
     });
 
-    /* eliminar */
     tbody.addEventListener('click', async (e)=>{
       const btn = e.target.closest('button[data-action="del"]'); if(!btn) return;
       const id  = btn.dataset.id;
@@ -355,7 +333,6 @@
       await postJSON({ action:'delete', id });
     });
 
-    /* demo */
     btnDemo.addEventListener('click', ()=>{
       const now = new Date();
       const demo = [
