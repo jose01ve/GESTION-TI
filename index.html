@@ -35,6 +35,7 @@
     .e-abierto{color:var(--bad)}.e-proceso{color:var(--warn)}.e-cerrado{color:var(--ok)}
     .notice{display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
     footer{max-width:1100px;margin:6px auto 28px;padding:0 16px;color:#51608b;font-size:.9rem}
+    small.help{display:block;color:var(--muted);margin-top:4px}
   </style>
 </head>
 <body>
@@ -47,27 +48,95 @@
       <div class="body">
         <form id="formTicket" action="javascript:void(0)" autocomplete="off">
           <div class="grid">
-            <div><label for="titulo">Título *</label><input id="titulo" required placeholder="Ej. No hay internet en el piso 3"></div>
-            <div><label for="categoria">Categoría *</label>
+            <div>
+              <label for="analista">Analista Responsable *</label>
+              <select id="analista" required></select>
+            </div>
+            <div>
+              <label for="correoAnalista">Correo analista</label>
+              <input id="correoAnalista" placeholder="auto" readonly />
+              <small class="help">Se rellena según el analista.</small>
+            </div>
+            <div>
+              <label for="categoria">Categoría *</label>
               <select id="categoria" required>
                 <option value="">Selecciona…</option>
                 <option>Red</option><option>Hardware</option><option>Software</option>
                 <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Otro</option>
               </select>
             </div>
-            <div><label for="prioridad">Prioridad *</label>
-              <select id="prioridad" required>
-                <option value="">Selecciona…</option><option>Alta</option><option>Media</option><option>Baja</option>
+            <div>
+              <label for="falla">Falla reportada *</label>
+              <select id="falla" required>
+                <option value="">Selecciona…</option>
+                <option>Soporte a equipos informáticos</option>
+                <option>Configuración equipo</option>
+                <option>Desbloquear cuenta de red</option>
+                <option>Préstamo Video Beam / Préstamo equipo</option>
+                <option>Crear acta</option>
+                <option>Instalación de PC-Dis \ Préstamo de equipo \ Dispositivo</option>
+                <option>Reposición de equipo</option>
+                <option>Retiro de equipo a usuario</option>
+                <option>Traslado de puesto</option>
+                <option>Instalación de software - Desinstalación \ Traslado SW</option>
+                <option>Desbloqueo punto de red</option>
+                <option>Adquisición de Software y Hardware</option>
+                <option>Asignación de puesto nuevo</option>
+                <option>Creación de cuentas de red</option>
+                <option>Eliminación de cuentas de red</option>
+                <option>Crear cuenta de correo \ Eliminar</option>
+                <option>Actualización de datos \ Información</option>
+                <option>Inventario de Equipos</option>
+                <option>Inventario de software</option>
+                <option>Actualización de cuentas de red</option>
+                <option>Asignar Permiso en servidores \ Retirar permisos</option>
+                <option>Permisos en Unidades compartidas</option>
+                <option>Soporte equipos CONSORCIO</option>
+                <option>Auditoria desde TIC a Interventoría</option>
+                <option>Instalación de Guayas</option>
+                <option>Backups información</option>
+                <option>Resolución de ECOS</option>
+                <option>Actualización de carpetas de información general</option>
+                <option>Actualización de información CADD</option>
+                <option>Capacitación</option>
+                <option>Reposición de equipos EPM</option>
+                <option>Asesoría general</option>
+                <option>Permisos en Skype Empresarial</option>
+                <option>Desinstalación de programas</option>
+                <option>Requerimiento de Impresión</option>
+                <option>Gestión en Vault</option>
+                <option>Permisos VPN</option>
+                <option>Gestión en obra</option>
+                <option>Crear cuenta de correo</option>
+                <option>Entrega de equipo por reintegro o reposición</option>
+                <option>Configurar Dispositivo móvil</option>
+                <option>Marcación de puestos</option>
+                <option>Recuperación de información</option>
+                <option>Gestión aplicaciones</option>
               </select>
             </div>
-            <div><label for="reportante">Reportado por *</label><input id="reportante" required placeholder="Tu nombre"></div>
-            <div><label for="email">Correo</label><input id="email" type="email" placeholder="tu@empresa.com"></div>
-            <div><label for="adj">Adjunto (opcional)</label><input id="adj" type="file" accept="image/*"></div>
+            <div>
+              <label for="usuario">Usuario quien reporta *</label>
+              <input id="usuario" list="listaUsuarios" placeholder="Nombre del usuario" required />
+              <datalist id="listaUsuarios"></datalist>
+              <small class="help">Se puede autocompletar con tu base de usuarios.</small>
+            </div>
+            <div>
+              <label for="prioridad">Prioridad *</label>
+              <select id="prioridad" required>
+                <option value="">Selecciona…</option>
+                <option>Alta</option><option>Media</option><option>Baja</option>
+              </select>
+            </div>
+            <div>
+              <label for="adj">Adjunto (opcional)</label>
+              <input id="adj" type="file" accept="image/*">
+            </div>
           </div>
 
           <div style="margin-top:10px">
             <label for="descripcion">Descripción *</label>
-            <textarea id="descripcion" required placeholder="Describe el problema, cuándo ocurre y a quién afecta"></textarea>
+            <textarea id="descripcion" required placeholder="Describe la falla (cuándo ocurre, a quién afecta, etc.)"></textarea>
           </div>
 
           <div id="notice" class="notice"></div>
@@ -94,7 +163,12 @@
 
         <div style="overflow:auto">
           <table>
-            <thead><tr><th>ID</th><th>Título</th><th>Categoría</th><th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
+            <thead>
+              <tr>
+                <th>ID</th><th>Analista</th><th>Categoría</th><th>Falla</th>
+                <th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th>
+              </tr>
+            </thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
@@ -110,9 +184,17 @@
 
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw_trAQm0wENTxvCOq2mF0rQqAZZIrbiA_HrhorJ6U6Q4OuUAPmJT9Pkm2SSUirLb5pyw/exec';
 
+    const ANALISTAS = [
+      { nombre:'Jose Salas',        email:'jsalas@sedic.com.co' },
+      { nombre:'Sebastián Cataño',  email:'scatano@sedic.com.co' },
+      { nombre:'Sebastián Posada',  email:'sposada@sedic.com.co' }
+    ];
+    const USUARIOS = ['Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez'];
+
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
-    const storeKey = 'tickets_fallas_v3';
+
+    const storeKey = 'tickets_fallas_v4';
     const load = () => { try{ return JSON.parse(localStorage.getItem(storeKey))||[] } catch { return [] } };
     const save = v => localStorage.setItem(storeKey, JSON.stringify(v));
     let tickets = load();
@@ -120,13 +202,22 @@
     const tbody = $('#tbody'), kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe');
     const form = $('#formTicket'), btnDemo = $('#btnDemo');
 
+    (function initCatalogos(){
+      const sel = $('#analista');
+      sel.innerHTML = '<option value="">Selecciona…</option>' + ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
+      $('#listaUsuarios').innerHTML = USUARIOS.map(u=>`<option value="${u}">`).join('');
+      sel.addEventListener('change', ()=>{
+        const a = ANALISTAS.find(x=>x.nombre===sel.value);
+        $('#correoAnalista').value = a ? a.email : '';
+      });
+    })();
+
     const show = (msg, kind='ok')=>{
       notice.style.display='block';
       notice.textContent = msg;
       notice.style.borderColor = (kind==='ok') ? '#b2f2bb' : '#ffc9c9';
-      setTimeout(()=> notice.style.display='none', 2000);
+      setTimeout(()=> notice.style.display='none', 2200);
     };
-
     const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
     const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p}</span>`;
     const tagE  = e => `<strong class="${e==='Abierto'?'e-abierto':e==='En Proceso'?'e-proceso':'e-cerrado'}">${e}</strong>`;
@@ -146,8 +237,9 @@
         .map(t=>`
         <tr>
           <td>${t.id}</td>
-          <td>${esc(t.titulo)}</td>
+          <td>${esc(t.analista)}</td>
           <td>${esc(t.categoria)}</td>
+          <td>${esc(t.falla)}</td>
           <td>${badge(t.prioridad)}</td>
           <td>${tagE(t.estado)}</td>
           <td data-fecha-for="${t.id}">${fmt(t.fecha)}</td>
@@ -159,38 +251,39 @@
             </select>
             <button class="btn danger" data-action="del" data-id="${t.id}">Eliminar</button>
           </td>
-        </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
+        </tr>`).join('') || `<tr><td colspan="8" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
-    // util: POST sin preflight (texto plano)
     async function postJSON(payload){
-      const res = await fetch(WEB_APP_URL, {
-        method:'POST',
-        headers:{ 'Content-Type':'text/plain;charset=utf-8' }, // evita preflight
-        body: JSON.stringify(payload)
-      });
-      // intenta parsear, y si no, retorna objeto con error de texto
-      try { return await res.json(); }
-      catch { return { ok:false, error:'Respuesta no-JSON (¿permisos o CORS?)' }; }
+      try{
+        const res = await fetch(WEB_APP_URL, {
+          method:'POST',
+          headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const text = await res.text();
+        try { return JSON.parse(text); }
+        catch { return { ok:false, http:res.status, error:'Respuesta no-JSON: '+text.slice(0,200) }; }
+      }catch(err){ return { ok:false, error:'Fetch error: '+err.message }; }
     }
 
-    /* ==== crear ==== */
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
-
-      const titulo = $('#titulo').value.trim();
+      const analista = $('#analista').value;
+      const correoAnalista = $('#correoAnalista').value.trim();
       const categoria = $('#categoria').value;
+      const falla = $('#falla').value;
+      const usuario = $('#usuario').value.trim();
       const prioridad = $('#prioridad').value;
-      const reportante = $('#reportante').value.trim();
-      const email = $('#email').value.trim();
       const descripcion = $('#descripcion').value.trim();
+      const adjInput = $('#adj'); const adjuntoNombre = adjInput.files?.[0]?.name || '';
 
-      if(!titulo || !categoria || !prioridad || !reportante || !descripcion){
+      if(!analista || !categoria || !falla || !usuario || !prioridad || !descripcion){
         show('Completa los campos obligatorios', 'err'); return;
       }
 
       const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
-      const t = { id, titulo, categoria, prioridad, reportante, email, descripcion, estado:'Abierto', fecha:new Date().toISOString() };
+      const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, adjuntoNombre, estado:'Abierto', fecha:new Date().toISOString() };
 
       tickets.unshift(t); save(tickets); render();
       show('Guardado local. Enviando a Sheets…');
@@ -198,13 +291,11 @@
       const d = await postJSON({
         action:'create',
         id: t.id,
-        titulo, categoria, prioridad,
-        reportadoPor: reportante,
-        correo: email,
-        descripcion,
+        analista, correoAnalista, categoria, falla,
+        usuario, prioridad, descripcion,
         estado: t.estado,
         fechaISO: t.fecha,
-        adjuntoNombre: ''
+        adjuntoNombre
       });
 
       if (!d || !d.ok){
@@ -214,19 +305,16 @@
         t.row = d.row; save(tickets);
       }
 
-      form.reset();
+      form.reset(); $('#correoAnalista').value = '';
     });
 
-    /* ==== cambiar estado ==== */
     document.addEventListener('change', async (e)=>{
       const sel = e.target.closest('.estado-select'); if(!sel) return;
-
       const id = sel.dataset.id;
       const status = sel.value;
       const t = tickets.find(x=>x.id===id); if(!t) return;
 
-      t.estado = status;
-      t.fecha = new Date().toISOString();
+      t.estado = status; t.fecha = new Date().toISOString();
       save(tickets); render();
 
       const d = await postJSON({ action:'update_status', id, status, row:(t.row||0) });
@@ -238,22 +326,19 @@
       }
     });
 
-    /* ==== eliminar ==== */
     tbody.addEventListener('click', async (e)=>{
       const btn = e.target.closest('button[data-action="del"]'); if(!btn) return;
       const id  = btn.dataset.id;
-
       tickets = tickets.filter(x=>x.id!==id); save(tickets); render();
       await postJSON({ action:'delete', id });
     });
 
-    /* ==== demo ==== */
     btnDemo.addEventListener('click', ()=>{
       const now = new Date();
       const demo = [
-        { titulo:'Sin internet piso 3', categoria:'Red', prioridad:'Alta',  reportante:'Laura M',  email:'laura@empresa.com',  descripcion:'Sin conectividad', estado:'Abierto' },
-        { titulo:'Outlook no envía',   categoria:'Correo', prioridad:'Media', reportante:'Carlos R', email:'carlos@empresa.com', descripcion:'Queda en bandeja de salida', estado:'En Proceso' },
-        { titulo:'Impresora contab',   categoria:'Impresión', prioridad:'Baja', reportante:'Diana P', email:'diana@empresa.com', descripcion:'Papel atascado', estado:'Cerrado' }
+        { analista:'Sebastián Cataño', correoAnalista:'scatano@sedic.com.co', categoria:'Hardware', falla:'Soporte a equipos informáticos', usuario:'Jairo Pelaez', prioridad:'Alta', descripcion:'Equipo no enciende', estado:'Abierto' },
+        { analista:'Jose Salas', correoAnalista:'jsalas@sedic.com.co', categoria:'Correo', falla:'Crear cuenta de correo', usuario:'Laura Mejía', prioridad:'Media', descripcion:'Ingreso nuevo', estado:'En Proceso' },
+        { analista:'Sebastián Posada', correoAnalista:'sposada@sedic.com.co', categoria:'Impresión', falla:'Requerimiento de Impresión', usuario:'Carlos Ramírez', prioridad:'Baja', descripcion:'No imprime a color', estado:'Cerrado' }
       ].map((x,i)=>({ id:'T'+(now.getTime()-i).toString(), ...x, fecha:new Date(now.getTime()-i*3600000).toISOString() }));
       tickets = demo.concat(tickets); save(tickets); render();
     });
@@ -263,4 +348,8 @@
   </script>
 </body>
 </html>
+
+
+
+
 
