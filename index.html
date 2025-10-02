@@ -194,55 +194,41 @@
   (function(){
     'use strict';
 
-    // 1) URL del WebApp (Apps Script)
+    // URL del WebApp
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw_trAQm0wENTxvCOq2mF0rQqAZZIrbiA_HrhorJ6U6Q4OuUAPmJT9Pkm2SSUirLb5pyw/exec';
 
-    // 2) Analistas (rellena los correos reales)
+    // Analistas
     const ANALISTAS = [
-      { nombre:'Jose Salas',        email:'jsalas@sedic.com.co' },     // ← ajusta si es diferente
-      { nombre:'Sebastián Cataño',  email:'scatano@sedic.com.co' },    // ← ajusta
-      { nombre:'Sebastián Posada',  email:'sposada@sedic.com.co' }     // ← ajusta
+      { nombre:'Jose Salas',        email:'jsalas@sedic.com.co' },
+      { nombre:'Sebastián Cataño',  email:'scatano@sedic.com.co' },
+      { nombre:'Sebastián Posada',  email:'sposada@sedic.com.co' }
     ];
 
-    // 3) (Opcional) Base de usuarios para autocompletar
-    const USUARIOS = [
-      'Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez'
-      // → puedes reemplazar por tu lista; también puedes poblarla desde Sheets más adelante.
-    ];
+    // (Opcional) usuarios para autocompletar
+    const USUARIOS = ['Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez'];
 
-    // ===== util DOM =====
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
 
-    // Nueva clave de almacenamiento (esquema nuevo)
     const storeKey = 'tickets_fallas_v4';
     const load = () => { try{ return JSON.parse(localStorage.getItem(storeKey))||[] } catch { return [] } };
     const save = v => localStorage.setItem(storeKey, JSON.stringify(v));
     let tickets = load();
 
-    // Referencias UI
     const tbody = $('#tbody'), kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe');
     const form = $('#formTicket'), btnDemo = $('#btnDemo');
 
-    // Poblar selects/datalists
+    // Catálogos
     (function initCatalogos(){
-      // Analistas
       const sel = $('#analista');
-      sel.innerHTML = '<option value="">Selecciona…</option>' +
-        ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
-
-      // Datalist usuarios
-      const dl = $('#listaUsuarios');
-      dl.innerHTML = USUARIOS.map(u=>`<option value="${u}">`).join('');
-
-      // Auto correo por analista
+      sel.innerHTML = '<option value="">Selecciona…</option>' + ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
+      $('#listaUsuarios').innerHTML = USUARIOS.map(u=>`<option value="${u}">`).join('');
       sel.addEventListener('change', ()=>{
         const a = ANALISTAS.find(x=>x.nombre===sel.value);
         $('#correoAnalista').value = a ? a.email : '';
       });
     })();
 
-    // Helpers
     const show = (msg, kind='ok')=>{
       notice.style.display='block';
       notice.textContent = msg;
@@ -285,21 +271,23 @@
         </tr>`).join('') || `<tr><td colspan="8" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
-    // POST sin preflight
+    // POST con diagnóstico robusto
     async function postJSON(payload){
-      const res = await fetch(WEB_APP_URL, {
-        method:'POST',
-        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      });
-      try { return await res.json(); }
-      catch { return { ok:false, error:'Respuesta no-JSON (¿permisos o CORS?)' }; }
+      try{
+        const res = await fetch(WEB_APP_URL, {
+          method:'POST',
+          headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const text = await res.text();
+        try { return JSON.parse(text); }
+        catch { return { ok:false, http:res.status, error:'Respuesta no-JSON: '+text.slice(0,200) }; }
+      }catch(err){ return { ok:false, error:'Fetch error: '+err.message }; }
     }
 
-    /* ==== crear ==== */
+    /* crear */
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
-
       const analista = $('#analista').value;
       const correoAnalista = $('#correoAnalista').value.trim();
       const categoria = $('#categoria').value;
@@ -307,7 +295,6 @@
       const usuario = $('#usuario').value.trim();
       const prioridad = $('#prioridad').value;
       const descripcion = $('#descripcion').value.trim();
-      // adjunto (nombre solo, no subimos archivo por ahora)
       const adjInput = $('#adj'); const adjuntoNombre = adjInput.files?.[0]?.name || '';
 
       if(!analista || !categoria || !falla || !usuario || !prioridad || !descripcion){
@@ -315,11 +302,7 @@
       }
 
       const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
-      const t = {
-        id, analista, correoAnalista, categoria, falla, usuario,
-        prioridad, descripcion, adjuntoNombre,
-        estado:'Abierto', fecha:new Date().toISOString()
-      };
+      const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, adjuntoNombre, estado:'Abierto', fecha:new Date().toISOString() };
 
       tickets.unshift(t); save(tickets); render();
       show('Guardado local. Enviando a Sheets…');
@@ -342,20 +325,17 @@
       }
 
       form.reset();
-      // restablecer correo auto si ya estaba seleccionado analista
       $('#correoAnalista').value = '';
     });
 
-    /* ==== cambiar estado ==== */
+    /* cambiar estado */
     document.addEventListener('change', async (e)=>{
       const sel = e.target.closest('.estado-select'); if(!sel) return;
-
       const id = sel.dataset.id;
       const status = sel.value;
       const t = tickets.find(x=>x.id===id); if(!t) return;
 
-      t.estado = status;
-      t.fecha = new Date().toISOString();
+      t.estado = status; t.fecha = new Date().toISOString();
       save(tickets); render();
 
       const d = await postJSON({ action:'update_status', id, status, row:(t.row||0) });
@@ -367,16 +347,15 @@
       }
     });
 
-    /* ==== eliminar ==== */
+    /* eliminar */
     tbody.addEventListener('click', async (e)=>{
       const btn = e.target.closest('button[data-action="del"]'); if(!btn) return;
       const id  = btn.dataset.id;
-
       tickets = tickets.filter(x=>x.id!==id); save(tickets); render();
       await postJSON({ action:'delete', id });
     });
 
-    /* ==== demo ==== */
+    /* demo */
     btnDemo.addEventListener('click', ()=>{
       const now = new Date();
       const demo = [
@@ -392,4 +371,3 @@
   </script>
 </body>
 </html>
-
