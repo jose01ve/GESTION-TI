@@ -22,7 +22,7 @@
     body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
     header{position:sticky;top:0;z-index:10;background:transparent;padding:10px 0}
     .brand{max-width:1400px;margin:auto;position:relative;display:flex;justify-content:center;align-items:center}
-    .logo{height:64px;max-width:90%;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.1))}
+    .logo{height:88px;max-width:95%;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.1))}
     .theme{position:absolute;right:16px;top:6px;display:flex;gap:8px;align-items:center}
     .theme label{font-size:.85rem;color:var(--muted)}
     .theme select{padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field);color:var(--text)}
@@ -73,14 +73,20 @@
     .ac-list li[aria-selected="true"], .ac-list li:hover{background:#f6f7ff}
     body[data-theme="dark"] .ac-list li[aria-selected="true"], body[data-theme="dark"] .ac-list li:hover{background:#1f2937}
 
-    /* Cositas varias */
     .hidden{display:none !important}
   </style>
 </head>
 <body data-theme="light">
   <header>
     <div class="brand">
-      <img class="logo" src="./logo-empresas.jpg" alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango">
+      <!-- LOGO centrado, más grande y con ruta correcta + fallback -->
+      <img
+        class="logo"
+        src="Imagen/logo-empresas.jpg"
+        alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango"
+        loading="lazy"
+        onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';"
+      >
       <div class="theme">
         <label for="themePick">Tema:</label>
         <select id="themePick">
@@ -275,7 +281,6 @@
 
     /* ====== Tema ====== */
     const themePick = $('#themePick');
-    // recuerda último tema
     const savedTheme = localStorage.getItem('ui_theme') || 'light';
     document.body.setAttribute('data-theme', savedTheme);
     themePick.value = savedTheme;
@@ -295,14 +300,19 @@
       });
     })();
 
-    /* ====== Autocomplete simple para "usuario" ====== */
+    /* ====== Autocomplete simple para "usuario" (ignora tildes) ====== */
     const inputUsuario = $('#usuario');
     const acList = $('#acList');
 
+    const norm = (s) =>
+      String(s||'')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // sin tildes
+        .toLowerCase().trim();
+
     function filtraUsuarios(q){
-      q = q.trim().toLowerCase();
-      if (!q) return [];
-      return USUARIOS.filter(u => u.toLowerCase().includes(q)).slice(0,8);
+      const nq = norm(q);
+      if (!nq) return [];
+      return USUARIOS.filter(u => norm(u).includes(nq)).slice(0,8);
     }
     function pintaLista(items){
       if (!items.length){ acList.hidden = true; acList.innerHTML=''; return; }
@@ -310,12 +320,10 @@
       acList.hidden = false;
     }
     inputUsuario.addEventListener('input', ()=>{
-      const items = filtraUsuarios(inputUsuario.value);
-      pintaLista(items);
+      pintaLista(filtraUsuarios(inputUsuario.value));
     });
     inputUsuario.addEventListener('focus', ()=>{
-      const items = filtraUsuarios(inputUsuario.value);
-      pintaLista(items);
+      pintaLista(filtraUsuarios(inputUsuario.value));
     });
     document.addEventListener('click', (e)=>{
       if (e.target.closest('#acList li')){
@@ -431,7 +439,7 @@
       $('#correoAnalista').value = '';
     });
 
-    /* ====== cambiar estado ====== */
+    /* ====== cambiar estado / prioridad ====== */
     document.addEventListener('change', async (e)=>{
       const selE = e.target.closest('.estado-select');
       const selP = e.target.closest('.prio-select');
@@ -462,7 +470,6 @@
         t.prioridad = pr; t.fecha = new Date().toISOString();
         save(tickets); render();
 
-        // requiere acción en Apps Script: update_priority
         const d2 = await postJSON({ action:'update_priority', id, prioridad: pr, row:(t.row||0) });
         if (!d2 || !d2.ok) show('No se pudo actualizar la prioridad en Sheets', 'err');
       }
@@ -482,4 +489,3 @@
   </script>
 </body>
 </html>
-
