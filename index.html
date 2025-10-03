@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gestión TI · Reporte de fallas</title>
   <style>
+
+    /* Branding en el header */
+.branding{display:flex;align-items:center;gap:12px}
+.branding .title{font-weight:800}
+.branding .title .accent{color:#6c7bff}
+.branding img.logo{
+  height:56px; max-width:100%; object-fit:contain;
+  border-radius:6px;
+}
+@media (max-width:560px){
+  .branding img.logo{height:44px}
+}
+
     :root{--bg:#eef2ff;--card:#fff;--text:#0d1333;--muted:#51608b;--border:rgba(13,19,51,.12);--ok:#2b8a3e;--warn:#f08c00;--bad:#e03131}
     *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
     header{position:sticky;top:0;background:#ffffffcc;backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
@@ -51,7 +64,21 @@
   </style>
 </head>
 <body>
-  <header><div class="nav">Gestión TI · <span style="color:#6c7bff">REPORTE DE FALLAS</span></div></header>
+  
+
+
+  <header>
+  <div class="nav">
+    <div class="branding">
+      <!-- OJO con la extensión: usa .jpg si tu archivo es JPG -->
+      <img class="logo" src="Imagen/logo-empresas.jpg"
+           alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango"
+           width="320" height="64">
+      <div class="title">Gestión TI · <span class="accent">REPORTE DE FALLAS</span></div>
+    </div>
+  </div>
+</header>
+
 
   <main>
     <!-- Form -->
@@ -455,3 +482,4 @@
   </script>
 </body>
 </html>
+
