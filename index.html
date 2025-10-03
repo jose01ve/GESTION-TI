@@ -20,9 +20,11 @@
     /* ====== Base ====== */
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
-    header{position:sticky;top:0;z-index:10;background:transparent;padding:10px 0}
-    .brand{max-width:1400px;margin:auto;position:relative;display:flex;justify-content:center;align-items:center}
-    .logo{height:88px;max-width:95%;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.1))}
+    header{position:sticky;top:0;z-index:10;background:transparent;padding:10px 0 6px}
+    .brand{max-width:1400px;margin:auto;position:relative;display:flex;justify-content:center;align-items:center;gap:10px}
+    /* Marco suave para el logo (evita que se vea “pegado”/sobrepuesto) */
+    .logo-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:8px 16px;box-shadow:0 6px 16px rgba(13,19,51,.06)}
+    .logo{height:72px;max-width:95%;object-fit:contain;display:block;filter:none}
     .theme{position:absolute;right:16px;top:6px;display:flex;gap:8px;align-items:center}
     .theme label{font-size:.85rem;color:var(--muted)}
     .theme select{padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field);color:var(--text)}
@@ -65,9 +67,9 @@
     footer{max-width:1400px;margin:6px auto 28px;padding:0 16px;color:var(--muted);font-size:.9rem}
     small.help{display:block;color:var(--muted);margin-top:4px}
 
-    /* Autocomplete simple (no lista desplegable del navegador) */
+    /* Autocomplete simple */
     .ac{position:relative}
-    .ac-list{position:absolute;left:0;right:0;top:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 24px rgba(13,19,51,.08);margin-top:6px;max-height:220px;overflow:auto;padding:6px;display:none;z-index:5}
+    .ac-list{position:absolute;left:0;right:0;top:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 24px rgba(13,19,51,.08);margin-top:6px;max-height:220px;overflow:auto;padding:6px;z-index:5}
     .ac-list[hidden]{display:none}
     .ac-list li{list-style:none;padding:8px 12px;cursor:pointer;border-radius:10px}
     .ac-list li[aria-selected="true"], .ac-list li:hover{background:#f6f7ff}
@@ -79,14 +81,15 @@
 <body data-theme="light">
   <header>
     <div class="brand">
-      <!-- LOGO centrado, más grande y con ruta correcta + fallback -->
-      <img
-        class="logo"
-        src="Imagen/logo-empresas.jpg"
-        alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango"
-        loading="lazy"
-        onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';"
-      >
+      <div class="logo-card">
+        <img
+          class="logo"
+          src="Imagen/logo-empresas.jpg"
+          alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango"
+          loading="lazy"
+          onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';"
+        >
+      </div>
       <div class="theme">
         <label for="themePick">Tema:</label>
         <select id="themePick">
@@ -214,7 +217,6 @@
 
           <div class="row">
             <button class="btn primary" type="submit">➕ Guardar reporte</button>
-            <!-- <button class="btn" type="button" id="btnDemo">🧪 Demo</button> -->
             <button class="btn" type="reset">↺ Limpiar</button>
           </div>
         </form>
@@ -264,7 +266,7 @@
 
     // Base usuarios para sugerencias (puedes reemplazar por tu lista)
     const USUARIOS = [
-      'Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez',
+      'Jairo Pelaez','Óscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez',
       'Juan Carlos Betancur','Lina Areiza','María López','Andrés Gómez','Sofía Ríos'
     ];
 
@@ -300,7 +302,7 @@
       });
     })();
 
-    /* ====== Autocomplete simple para "usuario" (ignora tildes) ====== */
+    /* ====== Autocomplete para "usuario" (ignora tildes) ====== */
     const inputUsuario = $('#usuario');
     const acList = $('#acList');
 
@@ -319,12 +321,8 @@
       acList.innerHTML = items.map((t,i)=>`<li ${i===0?'aria-selected="true"':''}>${t}</li>`).join('');
       acList.hidden = false;
     }
-    inputUsuario.addEventListener('input', ()=>{
-      pintaLista(filtraUsuarios(inputUsuario.value));
-    });
-    inputUsuario.addEventListener('focus', ()=>{
-      pintaLista(filtraUsuarios(inputUsuario.value));
-    });
+    inputUsuario.addEventListener('input', ()=>{ pintaLista(filtraUsuarios(inputUsuario.value)); });
+    inputUsuario.addEventListener('focus', ()=>{ pintaLista(filtraUsuarios(inputUsuario.value)); });
     document.addEventListener('click', (e)=>{
       if (e.target.closest('#acList li')){
         inputUsuario.value = e.target.textContent;
@@ -464,7 +462,7 @@
       // Prioridad
       if(selP){
         const id = selP.dataset.id;
-        const pr = selP.value;
+        a const pr = selP.value;
         const t = tickets.find(x=>x.id===id); if(!t) return;
 
         t.prioridad = pr; t.fecha = new Date().toISOString();
