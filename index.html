@@ -3,21 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title> ADMINISTRACIÓN GESTIÓN TI </title>
+  <title>Gestión TI · Reporte de fallas</title>
   <style>
-
-    /* Branding en el header */
-.branding{display:flex;align-items:center;gap:12px}
-.branding .title{font-weight:800}
-.branding .title .accent{color:#6c7bff}
-.branding img.logo{
-  height:56px; max-width:100%; object-fit:contain;
-  border-radius:6px;
-}
-@media (max-width:560px){
-  .branding img.logo{height:44px}
-}
-
     :root{--bg:#eef2ff;--card:#fff;--text:#0d1333;--muted:#51608b;--border:rgba(13,19,51,.12);--ok:#2b8a3e;--warn:#f08c00;--bad:#e03131}
     *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
     header{position:sticky;top:0;background:#ffffffcc;backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
@@ -49,42 +36,10 @@
     .notice{display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
     footer{max-width:1100px;margin:6px auto 28px;padding:0 16px;color:#51608b;font-size:.9rem}
     small.help{display:block;color:var(--muted);margin-top:4px}
-
-    /* ===== Autocomplete para "Usuario quien reporta" ===== */
-    .ac-wrap{position:relative}
-    .ac-list{
-      position:absolute; z-index:40; left:0; right:0; margin-top:6px;
-      max-height:220px; overflow:auto; list-style:none; padding:6px 0;
-      background:#fff; border:1px solid var(--border); border-radius:12px;
-      box-shadow:0 10px 24px rgba(13,19,51,.08)
-    }
-    .ac-list[hidden]{display:none}
-    .ac-list li{padding:8px 12px; cursor:pointer}
-    .ac-list li[aria-selected="true"], .ac-list li:hover{background:#f6f7ff}
   </style>
 </head>
 <body>
-
-  <header>
-  <div class="nav">
-    <!-- Selector de tema -->
-    <div class="theme-switch" aria-label="Cambiar tema">
-      <button class="theme-swatch" data-theme="light" style="--swatch:#eef2ff" title="Claro" aria-pressed="false"></button>
-      <button class="theme-swatch" data-theme="dark"  style="--swatch:#0f1220" title="Oscuro" aria-pressed="false"></button>
-      <button class="theme-swatch" data-theme="mint"  style="--swatch:#c9ffe8" title="Mint"   aria-pressed="false"></button>
-      <button class="theme-swatch" data-theme="slate" style="--swatch:#d5deea" title="Slate"  aria-pressed="false"></button>
-    </div>
-
-    <!-- Branding centrado -->
-    <div class="branding">
-      <!-- Ajusta la ruta/extension según tu archivo en el repo -->
-      <img class="logo" src="Imagen/logo-empresas.jpg" alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango">
-      <div class="title">Gestión TI · <span class="accent">REPORTE DE FALLAS</span></div>
-    </div>
-  </div>
-</header>
-
-
+  <header><div class="nav">Gestión TI · <span style="color:#6c7bff">REPORTE DE FALLAS</span></div></header>
 
   <main>
     <!-- Form -->
@@ -166,14 +121,12 @@
               </select>
             </div>
 
-            <!-- Usuario reporta: AUTOCOMPLETE -->
+            <!-- Usuario reporta -->
             <div>
               <label for="usuario">Usuario quien reporta *</label>
-              <div class="ac-wrap">
-                <input id="usuario" type="text" placeholder="Nombre o apellido" autocomplete="off" required />
-                <ul id="usuarioList" class="ac-list" hidden></ul>
-              </div>
-              <small class="help">Escribe parte del nombre o apellido y selecciona.</small>
+              <input id="usuario" list="listaUsuarios" placeholder="Nombre del usuario" required />
+              <datalist id="listaUsuarios"></datalist>
+              <small class="help">Se puede autocompletar con tu base de usuarios.</small>
             </div>
 
             <!-- Prioridad -->
@@ -226,7 +179,6 @@
               <tr>
                 <th>ID</th><th>Analista</th><th>Categoría</th><th>Falla</th>
                 <th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th>
-                <link rel="icon" href="Imagen/logo-empresas.jpg" type="image/jpeg">
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -251,11 +203,8 @@
       { nombre:'Sebastián Posada',  email:'sposada@sedic.com.co' }
     ];
 
-    // Base para el autocomplete de usuarios
-    const USUARIOS = [
-      'Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez',
-      'Diana Pérez','Juan Carlos Betancur','Lina Areiza','Juan Gomez','Marcela Pareja','Jhon Madrid','Jorge Patiño','Jose llinas'
-    ];
+    // Autocompletar (puedes reemplazar por tu base)
+    const USUARIOS = ['Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez','Juan Carlos Betancur','Lina Areiza'];
 
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
@@ -267,85 +216,16 @@
     const tbody = $('#tbody'), kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe');
     const form = $('#formTicket'), btnDemo = $('#btnDemo');
 
-    // Poblar analistas y correo auto
+    // Poblar catálogos
     (function initCatalogos(){
       const sel = $('#analista');
       sel.innerHTML = '<option value="">Selecciona…</option>' +
         ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
+      $('#listaUsuarios').innerHTML = USUARIOS.map(u=>`<option value="${u}">`).join('');
       sel.addEventListener('change', ()=>{
         const a = ANALISTAS.find(x=>x.nombre===sel.value);
         $('#correoAnalista').value = a ? a.email : '';
       });
-    })();
-
-    // ===== Autocomplete para "usuario" =====
-    (function usuarioAutocomplete(){
-      const input = document.getElementById('usuario');
-      const list  = document.getElementById('usuarioList');
-
-      const norm = s => String(s||'').toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
-
-      function render(opts){
-        list.innerHTML = '';
-        const frag = document.createDocumentFragment();
-        opts.forEach((name, i) => {
-          const li = document.createElement('li');
-          li.textContent = name;
-          li.setAttribute('role','option');
-          li.setAttribute('aria-selected', i===0 ? 'true' : 'false');
-          li.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            select(name);
-          });
-          frag.appendChild(li);
-        });
-        list.appendChild(frag);
-        list.hidden = opts.length === 0;
-      }
-
-      function select(name){
-        input.value = name;
-        list.hidden = true;
-      }
-
-      function move(highlight){
-        const items = [...list.querySelectorAll('li')];
-        if (!items.length) return;
-        const idx = items.findIndex(li => li.getAttribute('aria-selected')==='true');
-        let next = idx + highlight;
-        if (next < 0) next = items.length - 1;
-        if (next >= items.length) next = 0;
-        items.forEach(li => li.setAttribute('aria-selected','false'));
-        items[next].setAttribute('aria-selected','true');
-        items[next].scrollIntoView({block:'nearest'});
-      }
-
-      function currentHighlighted(){
-        const el = list.querySelector('li[aria-selected="true"]');
-        return el ? el.textContent : null;
-      }
-
-      function filter(){
-        const q = norm(input.value);
-        if (!q){ list.hidden = true; return; }
-        const uniq = Array.from(new Set(USUARIOS));
-        const matches = uniq.filter(n => norm(n).includes(q)).slice(0, 12);
-        render(matches);
-      }
-
-      input.addEventListener('input', filter);
-      input.addEventListener('focus', filter);
-      input.addEventListener('keydown', (e)=>{
-        if (list.hidden) return;
-        if (e.key === 'ArrowDown'){ e.preventDefault(); move(+1); }
-        else if (e.key === 'ArrowUp'){ e.preventDefault(); move(-1); }
-        else if (e.key === 'Enter'){
-          const pick = currentHighlighted();
-          if (pick){ e.preventDefault(); select(pick); }
-        } else if (e.key === 'Escape'){ list.hidden = true; }
-      });
-      input.addEventListener('blur', ()=> setTimeout(()=> list.hidden = true, 120));
     })();
 
     const show = (msg, kind='ok')=>{
@@ -464,31 +344,6 @@
       }
     });
 
-    <script>
-  // === Tema persistente ===
-  (function(){
-    const KEY = 'ti_theme';
-    const saved = localStorage.getItem(KEY) || 'light';
-    document.documentElement.setAttribute('data-theme', saved);
-
-    const btns = document.querySelectorAll('.theme-swatch');
-    btns.forEach(b=>{
-      if (b.dataset.theme === saved) b.setAttribute('aria-pressed','true');
-      b.addEventListener('click', ()=>{
-        const t = b.dataset.theme;
-        document.documentElement.setAttribute('data-theme', t);
-        localStorage.setItem(KEY, t);
-        btns.forEach(x=>x.setAttribute('aria-pressed', String(x===b)));
-      });
-    });
-  })();
-</script>
-
-
-
-
-    
-
     /* eliminar */
     tbody.addEventListener('click', async (e)=>{
       const btn = e.target.closest('button[data-action="del"]'); if(!btn) return;
@@ -514,10 +369,6 @@
   </script>
 </body>
 </html>
-
-
-
-
 
 
 
