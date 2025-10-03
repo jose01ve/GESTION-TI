@@ -5,41 +5,92 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gestión TI · Reporte de fallas</title>
   <style>
-    :root{--bg:#eef2ff;--card:#fff;--text:#0d1333;--muted:#51608b;--border:rgba(13,19,51,.12);--ok:#2b8a3e;--warn:#f08c00;--bad:#e03131}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
-    header{position:sticky;top:0;background:#ffffffcc;backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
-    .nav{max-width:1100px;margin:auto;padding:12px 16px;font-weight:800}
-    main{max-width:1100px;margin:16px auto;padding:0 16px;display:grid;gap:16px}
-    @media(min-width:960px){main{grid-template-columns:420px 1fr}}
-    .card{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 24px rgba(13,19,51,.08)}
+    /* ====== Temas (variables) ====== */
+    :root{
+      --bg:#eef2ff; --card:#fff; --text:#0d1333; --muted:#51608b; --border:rgba(13,19,51,.12);
+      --ok:#2b8a3e; --warn:#f08c00; --bad:#e03131; --field:#fbfcff;
+    }
+    body[data-theme="dark"]{
+      --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9aa4bf; --border:rgba(255,255,255,.15); --field:#0b1220;
+    }
+    body[data-theme="mint"]{
+      --bg:#e6fff4; --card:#ffffff; --text:#0d1333; --muted:#4d6a61; --border:rgba(13,19,51,.12); --field:#f7fffb;
+    }
+
+    /* ====== Base ====== */
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
+    header{position:sticky;top:0;z-index:10;background:transparent;padding:10px 0}
+    .brand{max-width:1400px;margin:auto;position:relative;display:flex;justify-content:center;align-items:center}
+    .logo{height:64px;max-width:90%;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.1))}
+    .theme{position:absolute;right:16px;top:6px;display:flex;gap:8px;align-items:center}
+    .theme label{font-size:.85rem;color:var(--muted)}
+    .theme select{padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field);color:var(--text)}
+
+    main{max-width:1400px;margin:8px auto 16px;padding:0 16px;display:grid;gap:16px}
+    @media(min-width:1080px){main{grid-template-columns:520px 1fr}}
+
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 24px rgba(13,19,51,.08)}
     .card h2{margin:0;padding:16px 16px 0}
     .card .body{padding:16px}
+
     form .grid{display:grid;gap:12px}
     @media(min-width:560px){form .grid{grid-template-columns:1fr 1fr}}
+
     label{font-size:.9rem;color:var(--muted);display:block;margin-bottom:6px}
-    input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#fbfcff}
+    input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--field);color:var(--text)}
     textarea{min-height:96px}
-    .btn{border:1px solid var(--border);background:#fff;border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
+    .btn{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
     .btn.primary{border-color:#a3b0ff}
     .btn.danger{border-color:#ffc9c9}
     .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+
     .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:8px}
-    .kpi{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px}
+    .kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
     .kpi .label{font-size:.8rem;color:var(--muted)} .kpi .val{font-weight:800;font-size:1.2rem}
-    table{width:100%;border-collapse:separate;border-spacing:0 10px}
+
+    table{width:100%;border-collapse:separate;border-spacing:0 10px;color:var(--text)}
     thead th{font-size:.85rem;color:var(--muted);text-align:left;padding:0 8px}
-    tbody tr{background:#fff;border:1px solid var(--border)}
+    tbody tr{background:var(--card);border:1px solid var(--border)}
     tbody td{padding:10px 8px}
+
     .badge{padding:4px 8px;border:1px solid var(--border);border-radius:999px;font-size:.78rem}
     .prio-alta{background:#fff5f5}.prio-media{background:#fff4e6}.prio-baja{background:#ebfbee}
+    body[data-theme="dark"] .prio-alta{background:#402b2b} 
+    body[data-theme="dark"] .prio-media{background:#3e2f18}
+    body[data-theme="dark"] .prio-baja{background:#1b3b2a}
+
     .e-abierto{color:var(--bad)}.e-proceso{color:var(--warn)}.e-cerrado{color:var(--ok)}
     .notice{display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
-    footer{max-width:1100px;margin:6px auto 28px;padding:0 16px;color:#51608b;font-size:.9rem}
+    footer{max-width:1400px;margin:6px auto 28px;padding:0 16px;color:var(--muted);font-size:.9rem}
     small.help{display:block;color:var(--muted);margin-top:4px}
+
+    /* Autocomplete simple (no lista desplegable del navegador) */
+    .ac{position:relative}
+    .ac-list{position:absolute;left:0;right:0;top:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 24px rgba(13,19,51,.08);margin-top:6px;max-height:220px;overflow:auto;padding:6px;display:none;z-index:5}
+    .ac-list[hidden]{display:none}
+    .ac-list li{list-style:none;padding:8px 12px;cursor:pointer;border-radius:10px}
+    .ac-list li[aria-selected="true"], .ac-list li:hover{background:#f6f7ff}
+    body[data-theme="dark"] .ac-list li[aria-selected="true"], body[data-theme="dark"] .ac-list li:hover{background:#1f2937}
+
+    /* Cositas varias */
+    .hidden{display:none !important}
   </style>
 </head>
-<body>
-  <header><div class="nav">Gestión TI · <span style="color:#6c7bff">REPORTE DE FALLAS</span></div></header>
+<body data-theme="light">
+  <header>
+    <div class="brand">
+      <img class="logo" src="./logo-empresas.jpg" alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango">
+      <div class="theme">
+        <label for="themePick">Tema:</label>
+        <select id="themePick">
+          <option value="light">Claro</option>
+          <option value="dark">Oscuro</option>
+          <option value="mint">Verde</option>
+        </select>
+      </div>
+    </div>
+  </header>
 
   <main>
     <!-- Form -->
@@ -53,7 +104,9 @@
               <label for="analista">Analista Responsable *</label>
               <select id="analista" required></select>
             </div>
-            <div>
+
+            <!-- Correo analista (oculto pero activo) -->
+            <div class="hidden">
               <label for="correoAnalista">Correo analista</label>
               <input id="correoAnalista" placeholder="auto" readonly />
               <small class="help">Se rellena según el analista.</small>
@@ -121,12 +174,12 @@
               </select>
             </div>
 
-            <!-- Usuario reporta -->
-            <div>
+            <!-- Usuario reporta (buscador con sugerencias) -->
+            <div class="ac">
               <label for="usuario">Usuario quien reporta *</label>
-              <input id="usuario" list="listaUsuarios" placeholder="Nombre del usuario" required />
-              <datalist id="listaUsuarios"></datalist>
-              <small class="help">Se puede autocompletar con tu base de usuarios.</small>
+              <input id="usuario" placeholder="Escribe nombre o apellido" required />
+              <ul id="acList" class="ac-list" hidden></ul>
+              <small class="help">Escribe y elige entre las sugerencias.</small>
             </div>
 
             <!-- Prioridad -->
@@ -148,14 +201,14 @@
           <!-- Descripción -->
           <div style="margin-top:10px">
             <label for="descripcion">Descripción *</label>
-            <textarea id="descripcion" required placeholder="Describe el problema reportado,"></textarea>
+            <textarea id="descripcion" required placeholder="Describe el problema reportado…"></textarea>
           </div>
 
           <div id="notice" class="notice"></div>
 
           <div class="row">
             <button class="btn primary" type="submit">➕ Guardar reporte</button>
-            <button class="btn" type="button" id="btnDemo">🧪 Demo</button>
+            <!-- <button class="btn" type="button" id="btnDemo">🧪 Demo</button> -->
             <button class="btn" type="reset">↺ Limpiar</button>
           </div>
         </form>
@@ -177,7 +230,7 @@
           <table>
             <thead>
               <tr>
-                <th>ID</th><th>Analista</th><th>Categoría</th><th>Falla</th>
+                <th>ID</th><th>Analista</th><th>Categoría</th><th>Falla</th><th>Usuario</th>
                 <th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th>
               </tr>
             </thead>
@@ -203,38 +256,83 @@
       { nombre:'Sebastián Posada',  email:'sposada@sedic.com.co' }
     ];
 
-    // Autocompletar (puedes reemplazar por tu base)
-    const USUARIOS = ['Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez','Juan Carlos Betancur','Lina Areiza'];
+    // Base usuarios para sugerencias (puedes reemplazar por tu lista)
+    const USUARIOS = [
+      'Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez',
+      'Juan Carlos Betancur','Lina Areiza','María López','Andrés Gómez','Sofía Ríos'
+    ];
 
+    /* ====== util DOM ====== */
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
-    const storeKey = 'tickets_fallas_v4';
+    const storeKey = 'tickets_fallas_v5';
     const load = () => { try{ return JSON.parse(localStorage.getItem(storeKey))||[] } catch { return [] } };
     const save = v => localStorage.setItem(storeKey, JSON.stringify(v));
     let tickets = load();
 
     const tbody = $('#tbody'), kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe');
-    const form = $('#formTicket'), btnDemo = $('#btnDemo');
+    const form = $('#formTicket');
 
-    // Poblar catálogos
+    /* ====== Tema ====== */
+    const themePick = $('#themePick');
+    // recuerda último tema
+    const savedTheme = localStorage.getItem('ui_theme') || 'light';
+    document.body.setAttribute('data-theme', savedTheme);
+    themePick.value = savedTheme;
+    themePick.addEventListener('change', ()=>{
+      document.body.setAttribute('data-theme', themePick.value);
+      localStorage.setItem('ui_theme', themePick.value);
+    });
+
+    /* ====== Catálogos ====== */
     (function initCatalogos(){
       const sel = $('#analista');
       sel.innerHTML = '<option value="">Selecciona…</option>' +
         ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
-      $('#listaUsuarios').innerHTML = USUARIOS.map(u=>`<option value="${u}">`).join('');
       sel.addEventListener('change', ()=>{
         const a = ANALISTAS.find(x=>x.nombre===sel.value);
         $('#correoAnalista').value = a ? a.email : '';
       });
     })();
 
+    /* ====== Autocomplete simple para "usuario" ====== */
+    const inputUsuario = $('#usuario');
+    const acList = $('#acList');
+
+    function filtraUsuarios(q){
+      q = q.trim().toLowerCase();
+      if (!q) return [];
+      return USUARIOS.filter(u => u.toLowerCase().includes(q)).slice(0,8);
+    }
+    function pintaLista(items){
+      if (!items.length){ acList.hidden = true; acList.innerHTML=''; return; }
+      acList.innerHTML = items.map((t,i)=>`<li ${i===0?'aria-selected="true"':''}>${t}</li>`).join('');
+      acList.hidden = false;
+    }
+    inputUsuario.addEventListener('input', ()=>{
+      const items = filtraUsuarios(inputUsuario.value);
+      pintaLista(items);
+    });
+    inputUsuario.addEventListener('focus', ()=>{
+      const items = filtraUsuarios(inputUsuario.value);
+      pintaLista(items);
+    });
+    document.addEventListener('click', (e)=>{
+      if (e.target.closest('#acList li')){
+        inputUsuario.value = e.target.textContent;
+        acList.hidden = true;
+      }else if(!e.target.closest('.ac')){
+        acList.hidden = true;
+      }
+    });
+
+    /* ====== UI helpers ====== */
     const show = (msg, kind='ok')=>{
       notice.style.display='block';
       notice.textContent = msg;
       notice.style.borderColor = (kind==='ok') ? '#b2f2bb' : '#ffc9c9';
-      setTimeout(()=> notice.style.display='none', 2000);
+      setTimeout(()=> notice.style.display='none', 2200);
     };
-
     const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
     const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p}</span>`;
     const tagE  = e => `<strong class="${e==='Abierto'?'e-abierto':e==='En Proceso'?'e-proceso':'e-cerrado'}">${e}</strong>`;
@@ -246,6 +344,7 @@
       kpiPr.textContent = tickets.filter(t=>t.estado==='En Proceso').length;
       kpiCe.textContent = tickets.filter(t=>t.estado==='Cerrado').length;
     }
+
     function render(){
       counters();
       tbody.innerHTML = tickets
@@ -257,18 +356,24 @@
           <td>${esc(t.analista)}</td>
           <td>${esc(t.categoria)}</td>
           <td>${esc(t.falla)}</td>
+          <td>${esc(t.usuario||'')}</td>
           <td>${badge(t.prioridad)}</td>
           <td>${tagE(t.estado)}</td>
           <td data-fecha-for="${t.id}">${fmt(t.fecha)}</td>
-          <td style="display:flex;gap:8px;flex-wrap:wrap">
+          <td style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <select class="estado-select" data-id="${t.id}">
               <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
               <option ${t.estado==='En Proceso'?'selected':''}>En Proceso</option>
               <option ${t.estado==='Cerrado'?'selected':''}>Cerrado</option>
             </select>
+            <select class="prio-select" data-id="${t.id}">
+              <option ${t.prioridad==='Alta'?'selected':''}>Alta</option>
+              <option ${t.prioridad==='Media'?'selected':''}>Media</option>
+              <option ${t.prioridad==='Baja'?'selected':''}>Baja</option>
+            </select>
             <button class="btn danger" data-action="del" data-id="${t.id}">Eliminar</button>
           </td>
-        </tr>`).join('') || `<tr><td colspan="8" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
+        </tr>`).join('') || `<tr><td colspan="9" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
     // POST sin preflight
@@ -282,7 +387,7 @@
       catch { return { ok:false, error:'Respuesta no-JSON (¿permisos o CORS?)' }; }
     }
 
-    /* crear */
+    /* ====== crear ticket ====== */
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
 
@@ -322,29 +427,48 @@
         t.row = d.row; save(tickets);
       }
 
-      form.reset(); $('#correoAnalista').value = '';
+      form.reset();
+      $('#correoAnalista').value = '';
     });
 
-    /* cambiar estado */
+    /* ====== cambiar estado ====== */
     document.addEventListener('change', async (e)=>{
-      const sel = e.target.closest('.estado-select'); if(!sel) return;
-      const id = sel.dataset.id;
-      const status = sel.value;
-      const t = tickets.find(x=>x.id===id); if(!t) return;
+      const selE = e.target.closest('.estado-select');
+      const selP = e.target.closest('.prio-select');
 
-      t.estado = status; t.fecha = new Date().toISOString();
-      save(tickets); render();
+      // Estado
+      if(selE){
+        const id = selE.dataset.id;
+        const status = selE.value;
+        const t = tickets.find(x=>x.id===id); if(!t) return;
 
-      const d = await postJSON({ action:'update_status', id, status, row:(t.row||0) });
-      if (!d || !d.ok){
-        show('No se pudo actualizar en Sheets', 'err');
-      } else {
-        const cell = document.querySelector(`[data-fecha-for="${id}"]`);
-        if (cell) cell.textContent = new Date().toLocaleString();
+        t.estado = status; t.fecha = new Date().toISOString();
+        save(tickets); render();
+
+        const d = await postJSON({ action:'update_status', id, status, row:(t.row||0) });
+        if (!d || !d.ok) show('No se pudo actualizar el estado en Sheets', 'err');
+        else {
+          const cell = document.querySelector(`[data-fecha-for="${id}"]`);
+          if (cell) cell.textContent = new Date().toLocaleString();
+        }
+      }
+
+      // Prioridad
+      if(selP){
+        const id = selP.dataset.id;
+        const pr = selP.value;
+        const t = tickets.find(x=>x.id===id); if(!t) return;
+
+        t.prioridad = pr; t.fecha = new Date().toISOString();
+        save(tickets); render();
+
+        // requiere acción en Apps Script: update_priority
+        const d2 = await postJSON({ action:'update_priority', id, prioridad: pr, row:(t.row||0) });
+        if (!d2 || !d2.ok) show('No se pudo actualizar la prioridad en Sheets', 'err');
       }
     });
 
-    /* eliminar */
+    /* ====== eliminar ====== */
     tbody.addEventListener('click', async (e)=>{
       const btn = e.target.closest('button[data-action="del"]'); if(!btn) return;
       const id  = btn.dataset.id;
@@ -353,24 +477,8 @@
       await postJSON({ action:'delete', id });
     });
 
-    /* demo */
-    btnDemo.addEventListener('click', ()=>{
-      const now = new Date();
-      const demo = [
-        { analista:'Sebastián Cataño', correoAnalista:'scatano@sedic.com.co', categoria:'Hardware', falla:'Soporte a equipos informáticos', usuario:'Jairo Pelaez', prioridad:'Alta', descripcion:'Equipo no enciende', estado:'Abierto' },
-        { analista:'Jose Salas', correoAnalista:'jsalas@sedic.com.co', categoria:'Correo', falla:'Crear cuenta de correo', usuario:'Laura Mejía', prioridad:'Media', descripcion:'Ingreso nuevo', estado:'En Proceso' },
-        { analista:'Sebastián Posada', correoAnalista:'sposada@sedic.com.co', categoria:'Impresión', falla:'Requerimiento de Impresión', usuario:'Carlos Ramírez', prioridad:'Baja', descripcion:'No imprime a color', estado:'Cerrado' }
-      ].map((x,i)=>({ id:'T'+(now.getTime()-i).toString(), ...x, fecha:new Date(now.getTime()-i*3600000).toISOString() }));
-      tickets = demo.concat(tickets); save(tickets); render();
-    });
-
     render();
   })();
   </script>
 </body>
 </html>
-
-
-
-
-
