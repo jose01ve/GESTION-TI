@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gestión TI · Reporte de fallas</title>
   <style>
+    /* ====== Temas ====== */
     :root{
       --bg:#eef2ff; --card:#fff; --text:#0d1333; --muted:#51608b; --border:rgba(13,19,51,.12);
       --field:#fbfcff; --ok:#2b8a3e; --warn:#f08c00; --bad:#e03131; --accent:#6475ff;
@@ -22,19 +23,31 @@
       --field:#f8fbff; --accent:#009be9;
     }
 
+    /* ====== Base ====== */
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
 
+    /* ====== Header ====== */
     header{position:sticky;top:0;z-index:10;background:transparent;padding:8px 0}
-    .brand{max-width:1440px;margin:auto;position:relative;display:flex;justify-content:center;align-items:center}
+    .brand{max-width:1280px;margin:0 auto;position:relative;display:flex;justify-content:center;align-items:center}
     .logo{height:72px;max-width:95%;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.08))}
     .controls{position:absolute;right:12px;top:0;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
     .chip{font-size:.85rem;color:var(--muted)}
     .ctl{height:36px;padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field);color:var(--text)}
     .btn-sm{height:36px;padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--card);cursor:pointer}
+    /* Tema del tamaño de un botón "Guardar" */
+    #themePick{width:92px;height:36px}
 
-    main{max-width:1440px;margin:8px auto 16px;padding:0 16px;display:grid;gap:16px}
-    @media(min-width:1100px){main{grid-template-columns:640px 1fr}}
+    /* ====== Layout (centrado tirando a la izquierda) ====== */
+    main{
+      width:min(1200px, 96vw);
+      margin:8px auto 16px;            /* centrado */
+      padding:0 12px;
+      display:grid; gap:16px;
+    }
+    @media(min-width:1100px){
+      main{ grid-template-columns:600px 1fr; }   /* columna izq más compacta */
+    }
     @media(max-width:1099.98px){main{grid-template-columns:1fr}}
 
     .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 20px rgba(13,19,51,.06)}
@@ -69,7 +82,7 @@
     .e-abierto{color:var(--bad)}.e-proceso{color:var(--warn)}.e-cerrado{color:var(--ok)}.e-cancelado{color:#6b7280}
 
     .notice{display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
-    footer{max-width:1440px;margin:6px auto 28px;padding:0 16px;color:var(--muted);font-size:.9rem}
+    footer{max-width:1200px;margin:6px auto 28px;padding:0 12px;color:var(--muted);font-size:.9rem}
     small.help{display:block;color:var(--muted);margin-top:4px}
 
     /* Autocomplete */
@@ -88,9 +101,6 @@
     .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}
     .toolbar select{padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field)}
     .muted{color:var(--muted);font-size:.9rem}
-
-    /* ancho de la barra de color: 1 cm */
-    #accentPick{width:1ml;height:36px;padding:0}
   </style>
 </head>
 <body data-theme="mint">
@@ -99,17 +109,18 @@
       <img class="logo" src="Imagen/logo-empresas.jpg" alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango"
            loading="lazy" onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';">
       <div class="controls">
+        <span id="whoami" class="chip">Identidad: (no detectada)</span>
         <input id="keyInput" class="ctl" placeholder="Clave (Pablo, etc.)" style="width:160px" />
         <button id="saveKey" class="btn-sm">Guardar</button>
         <button id="clearKey" class="btn-sm" title="Olvidar">✕</button>
 
+        <!-- Solo selector de tema (compacto, tamaño botón) -->
         <select id="themePick" class="ctl">
           <option value="mint">Verde</option>
           <option value="blue">Azul</option>
           <option value="light">Claro</option>
           <option value="dark">Oscuro</option>
         </select>
-   
       </div>
     </div>
   </header>
@@ -290,7 +301,7 @@
   (function(){
     'use strict';
 
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwvmToOtUn8kV74N8aniPguTCj2yRNQSKUp9lAOU9zyOa7hAapWYZcer05AZd3Qg98aSg/exec';
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxn4kTw0XGkXH2gyLPcqWiCE_zgQdJw0506HY-If2Dsid4fA0Vv06V3rmNRikIjjp44Hg/exec';
     const AUTO_REFRESH_MS = 30000;
 
     /* ====== Catálogos ====== */
@@ -323,16 +334,16 @@
     const tbody = $('#tbody'), kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe'), kpiCa=$('#kpiCa');
     const form = $('#formTicket'); const syncBadge = $('#syncBadge'); const who = $('#whoami');
 
-    /* ====== Tema + color ====== */
-    const themePick = $('#themePick'); const accentPick = $('#accentPick'); const accentHex = $('#accentHex');
-    function setAccent(hex){ if(!/^#([0-9a-f]{6}|[0-9a-f]{3})$/i.test(hex||'')) return;
-      document.documentElement.style.setProperty('--accent', hex); accentHex.value=hex.toLowerCase(); accentPick.value=hex.toLowerCase();
-      localStorage.setItem('ui_accent', hex.toLowerCase()); }
+    /* ====== Tema (solo selector) ====== */
+    const themePick = $('#themePick');
     (function initTheme(){
-      const savedTheme = localStorage.getItem('ui_theme') || 'mint'; document.body.setAttribute('data-theme', savedTheme); themePick.value=savedTheme;
-      const savedAccent = localStorage.getItem('ui_accent') || (savedTheme==='blue'?'#009be9':'#6475ff'); setAccent(savedAccent);
-      themePick.addEventListener('change', ()=>{ document.body.setAttribute('data-theme', themePick.value); localStorage.setItem('ui_theme', themePick.value); if(themePick.value==='blue') setAccent('#009be9'); });
-      accentPick.addEventListener('input', ()=> setAccent(accentPick.value)); accentHex.addEventListener('change', ()=> setAccent(accentHex.value.trim()));
+      const savedTheme = localStorage.getItem('ui_theme') || 'mint';
+      document.body.setAttribute('data-theme', savedTheme);
+      themePick.value = savedTheme;
+      themePick.addEventListener('change', ()=>{
+        document.body.setAttribute('data-theme', themePick.value);
+        localStorage.setItem('ui_theme', themePick.value);
+      });
     })();
 
     /* ====== Clave (modelo B) ====== */
@@ -436,7 +447,6 @@
         const data = await res.json();
         identity = data && data.ok ? data.me : null;
         who.textContent = identity ? `Identidad: ${identity.name} (${identity.role})` : 'Identidad: (no detectada)';
-        // permisos visuales
         const isAdmin = identity && identity.role==='admin';
         viewSelect.disabled = !isAdmin; if (!isAdmin) viewSelect.value = 'mis';
         if (identity && !analystSelect.value) analystSelect.value = identity.name;
@@ -465,7 +475,7 @@
         } else {
           ticketsRemote = null; lastSource='Local'; render();
         }
-      }catch(err){ console.warn('Remoto falló', err); ticketsRemote = null; lastSource='Local'; render(); }
+      }catch(err){ ticketsRemote = null; lastSource='Local'; render(); }
     }
 
     /* ====== POST ====== */
@@ -486,15 +496,15 @@
       const prioridad = $('#prioridad').value;
       const descripcion = $('#descripcion').value.trim(); // opcional
       const adjInput = $('#adj'); const adjuntoNombre = adjInput.files?.[0]?.name || '';
-      if(!analista || !categoria || !falla || !usuario || !prioridad){ show('Completa los campos obligatorios','err'); return; }
+      if(!analista || !categoria || !falla || !usuario || !prioridad){ notice.style.display='block'; notice.textContent='Completa los campos obligatorios'; notice.style.borderColor='#ffc9c9'; setTimeout(()=> notice.style.display='none', 2200); return; }
 
       const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
       const nowISO = new Date().toISOString();
       const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, adjuntoNombre, estado:'Abierto', fecha: nowISO };
-      ticketsLocal.unshift(t); saveLocal(ticketsLocal); lastSource='Local'; render(); show('Guardado local. Enviando a Sheets…');
+      ticketsLocal.unshift(t); saveLocal(ticketsLocal); lastSource='Local'; render();
 
       const d = await postJSON({ action:'create', id:t.id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, estado:t.estado, fechaISO: nowISO, adjuntoNombre });
-      if (!d || !d.ok){ console.error('CREATE fail:', d); show('No se pudo crear en Sheets', 'err'); }
+      if (!d || !d.ok){ notice.style.display='block'; notice.textContent='No se pudo crear en Sheets'; notice.style.borderColor='#ffc9c9'; setTimeout(()=> notice.style.display='none', 2200); }
       else { fetchRemote(); }
       form.reset(); $('#correoAnalista').value='';
     });
@@ -511,7 +521,7 @@
         if (tL){ tL.estado=status; tL.fecha=new Date().toISOString(); if(status==='Cancelado') tL.motivo=reason; saveLocal(ticketsLocal); }
         lastSource='Local'; render();
         const d = await postJSON({ action:'update_status', id, status, reason });
-        if (!d || !d.ok) show('No se pudo actualizar el estado en Sheets','err'); else fetchRemote();
+        if (d && d.ok) fetchRemote();
       }
 
       if (selP){
@@ -520,15 +530,14 @@
         if (tL){ tL.prioridad=pr; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
         lastSource='Local'; render();
         const d2 = await postJSON({ action:'update_priority', id, prioridad: pr });
-        if (!d2 || !d2.ok) show('No se pudo actualizar la prioridad en Sheets','err'); else fetchRemote();
+        if (d2 && d2.ok) fetchRemote();
       }
     });
 
     async function init(){
       await fetchWhoAmI();
-      if (identity && !analystSelect.value) analystSelect.value = identity.name;
-      render();               // primer render rápido (local)
-      fetchRemote();          // luego sincroniza Sheets y cambia a “Fuente: Sheets”
+      render();               // primer render rápido con local
+      fetchRemote();          // cambia a “Sheets” cuando llega
       setInterval(()=>{ if(!document.hidden) fetchRemote(); }, AUTO_REFRESH_MS);
     }
     init();
@@ -536,6 +545,3 @@
   </script>
 </body>
 </html>
-
-
-
