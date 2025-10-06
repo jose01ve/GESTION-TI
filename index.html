@@ -56,7 +56,7 @@
 
     .badge{padding:4px 8px;border:1px solid var(--border);border-radius:999px;font-size:.78rem}
     .prio-alta{background:#fff5f5}.prio-media{background:#fff4e6}.prio-baja{background:#ebfbee}
-    body[data-theme="dark"] .prio-alta{background:#402b2b} 
+    body[data-theme="dark"] .prio-alta{background:#402b2b}
     body[data-theme="dark"] .prio-media{background:#3e2f18}
     body[data-theme="dark"] .prio-baja{background:#1b3b2a}
 
@@ -65,7 +65,7 @@
     footer{max-width:1400px;margin:6px auto 28px;padding:0 16px;color:var(--muted);font-size:.9rem}
     small.help{display:block;color:var(--muted);margin-top:4px}
 
-    /* Autocomplete simple (no lista desplegable del navegador) */
+    /* Autocomplete simple */
     .ac{position:relative}
     .ac-list{position:absolute;left:0;right:0;top:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 24px rgba(13,19,51,.08);margin-top:6px;max-height:220px;overflow:auto;padding:6px;display:none;z-index:5}
     .ac-list[hidden]{display:none}
@@ -74,12 +74,16 @@
     body[data-theme="dark"] .ac-list li[aria-selected="true"], body[data-theme="dark"] .ac-list li:hover{background:#1f2937}
 
     .hidden{display:none !important}
+
+    /* Barra de filtros de la lista */
+    .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}
+    .toolbar select{padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field)}
+    .muted{color:var(--muted);font-size:.9rem}
   </style>
 </head>
 <body data-theme="light">
   <header>
     <div class="brand">
-      <!-- LOGO centrado, más grande y con ruta correcta + fallback -->
       <img
         class="logo"
         src="Imagen/logo-empresas.jpg"
@@ -111,7 +115,7 @@
               <select id="analista" required></select>
             </div>
 
-            <!-- Correo analista (oculto pero activo) -->
+            <!-- Correo analista (oculto) -->
             <div class="hidden">
               <label for="correoAnalista">Correo analista</label>
               <input id="correoAnalista" placeholder="auto" readonly />
@@ -180,7 +184,7 @@
               </select>
             </div>
 
-            <!-- Usuario reporta (buscador con sugerencias) -->
+            <!-- Usuario reporta -->
             <div class="ac">
               <label for="usuario">Usuario quien reporta *</label>
               <input id="usuario" placeholder="Escribe nombre o apellido" required />
@@ -214,7 +218,6 @@
 
           <div class="row">
             <button class="btn primary" type="submit">➕ Guardar reporte</button>
-            <!-- <button class="btn" type="button" id="btnDemo">🧪 Demo</button> -->
             <button class="btn" type="reset">↺ Limpiar</button>
           </div>
         </form>
@@ -225,6 +228,23 @@
     <section class="card">
       <h2>ESTADO DE REPORTE</h2>
       <div class="body">
+        <!-- Barra de filtros compartidos -->
+        <div class="toolbar">
+          <span class="muted">Vista:</span>
+          <select id="viewSelect" title="Ámbito">
+            <option value="todos">Todos</option>
+            <option value="mis">Asignados a mí</option>
+          </select>
+          <span class="muted">Analista:</span>
+          <select id="analystSelect">
+            <option value="">Todos los analistas</option>
+            <option>Jose Salas</option>
+            <option>Sebastián Cataño</option>
+            <option>Sebastián Posada</option>
+          </select>
+          <span id="syncBadge" class="muted">Fuente: <strong>—</strong></span>
+        </div>
+
         <div class="kpis">
           <div class="kpi"><div class="label">Total</div><div class="val" id="kpiTotal">0</div></div>
           <div class="kpi"><div class="label">Abiertos</div><div class="val" id="kpiAb">0</div></div>
@@ -247,13 +267,16 @@
     </section>
   </main>
 
-  <footer>⚡ App HTML: guarda en este navegador y envía a Google Sheets si hay conexión.</footer>
+  <footer>⚡ App HTML: guarda en este navegador y, si hay backend, sincroniza con Google Sheets.</footer>
 
   <script>
   (function(){
     'use strict';
 
+    /* ====== CONFIG ====== */
+    // Cambia por tu URL de despliegue si es otra:
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwB0YqcKuTYWABlGTldWNwohSlH0hPHS4U8iwb4y1k-zUE33bG_ZzFDvObH1c6qze6aiA/exec';
+    const AUTO_REFRESH_MS = 30000; // 30s
 
     // Analistas (nombre → correo)
     const ANALISTAS = [
@@ -262,22 +285,25 @@
       { nombre:'Sebastián Posada',  email:'sposada@sedic.com.co' }
     ];
 
-    // Base usuarios para sugerencias (puedes reemplazar por tu lista)
+    // Base usuarios para sugerencias (ejemplo)
     const USUARIOS = [
       'Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez',
       'Juan Carlos Betancur','Lina Areiza','María López','Andrés Gómez','Sofía Ríos'
     ];
 
-    /* ====== util DOM ====== */
+    /* ====== util DOM / storage ====== */
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
-    const storeKey = 'tickets_fallas_v5';
-    const load = () => { try{ return JSON.parse(localStorage.getItem(storeKey))||[] } catch { return [] } };
-    const save = v => localStorage.setItem(storeKey, JSON.stringify(v));
-    let tickets = load();
+    const localKey = 'tickets_fallas_v5';
+    const loadLocal = () => { try{ return JSON.parse(localStorage.getItem(localKey))||[] } catch { return [] } };
+    const saveLocal = v => localStorage.setItem(localKey, JSON.stringify(v));
+    let ticketsLocal = loadLocal();       // lo que ya estaba en este navegador
+    let ticketsRemote = null;             // lo que llega de Sheets
+    let lastSource = 'Local';
 
     const tbody = $('#tbody'), kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe');
     const form = $('#formTicket');
+    const syncBadge = $('#syncBadge');
 
     /* ====== Tema ====== */
     const themePick = $('#themePick');
@@ -297,42 +323,50 @@
       sel.addEventListener('change', ()=>{
         const a = ANALISTAS.find(x=>x.nombre===sel.value);
         $('#correoAnalista').value = a ? a.email : '';
+        // También fijamos en la barra de vista por comodidad
+        if (sel.value) {
+          $('#analystSelect').value = sel.value;
+          persistView();
+          render();
+        }
       });
     })();
 
-    /* ====== Autocomplete simple para "usuario" (ignora tildes) ====== */
+    /* ====== Autocomplete simple para "usuario" ====== */
     const inputUsuario = $('#usuario');
     const acList = $('#acList');
-
-    const norm = (s) =>
-      String(s||'')
-        .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // sin tildes
-        .toLowerCase().trim();
-
-    function filtraUsuarios(q){
-      const nq = norm(q);
-      if (!nq) return [];
-      return USUARIOS.filter(u => norm(u).includes(nq)).slice(0,8);
-    }
+    const norm = (s) => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    function filtraUsuarios(q){ const nq = norm(q); if(!nq) return []; return USUARIOS.filter(u => norm(u).includes(nq)).slice(0,8); }
     function pintaLista(items){
       if (!items.length){ acList.hidden = true; acList.innerHTML=''; return; }
       acList.innerHTML = items.map((t,i)=>`<li ${i===0?'aria-selected="true"':''}>${t}</li>`).join('');
       acList.hidden = false;
     }
-    inputUsuario.addEventListener('input', ()=>{
-      pintaLista(filtraUsuarios(inputUsuario.value));
-    });
-    inputUsuario.addEventListener('focus', ()=>{
-      pintaLista(filtraUsuarios(inputUsuario.value));
-    });
+    inputUsuario.addEventListener('input', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
+    inputUsuario.addEventListener('focus', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
     document.addEventListener('click', (e)=>{
-      if (e.target.closest('#acList li')){
-        inputUsuario.value = e.target.textContent;
-        acList.hidden = true;
-      }else if(!e.target.closest('.ac')){
-        acList.hidden = true;
-      }
+      if (e.target.closest('#acList li')){ inputUsuario.value = e.target.textContent; acList.hidden = true; }
+      else if(!e.target.closest('.ac')){ acList.hidden = true; }
     });
+
+    /* ====== Barra de vista/analista ====== */
+    const viewSelect = $('#viewSelect');
+    const analystSelect = $('#analystSelect');
+
+    // Cargar preferencia o URL (?analyst=...&view=mis)
+    (function initView(){
+      const params = new URLSearchParams(location.search);
+      const saved = JSON.parse(localStorage.getItem('tickets_view')||'{}');
+      analystSelect.value = params.get('analyst') || saved.analyst || '';
+      viewSelect.value    = params.get('view')    || saved.view    || 'todos';
+      persistView();
+    })();
+
+    function persistView(){
+      localStorage.setItem('tickets_view', JSON.stringify({ analyst: analystSelect.value, view: viewSelect.value }));
+    }
+    viewSelect.addEventListener('change', ()=>{ persistView(); render(); });
+    analystSelect.addEventListener('change', ()=>{ persistView(); render(); });
 
     /* ====== UI helpers ====== */
     const show = (msg, kind='ok')=>{
@@ -346,28 +380,64 @@
     const tagE  = e => `<strong class="${e==='Abierto'?'e-abierto':e==='En Proceso'?'e-proceso':'e-cerrado'}">${e}</strong>`;
     const fmt   = iso => new Date(iso).toLocaleString();
 
-    function counters(){
-      kpiTotal.textContent = tickets.length;
-      kpiAb.textContent = tickets.filter(t=>t.estado==='Abierto').length;
-      kpiPr.textContent = tickets.filter(t=>t.estado==='En Proceso').length;
-      kpiCe.textContent = tickets.filter(t=>t.estado==='Cerrado').length;
+    function computeCounters(rows){
+      const c = { total: rows.length, abiertos:0, en_proceso:0, cerrados:0 };
+      rows.forEach(t=>{
+        const s = String(t.estado||'').toLowerCase();
+        if (s==='abierto') c.abiertos++;
+        else if (s==='en proceso') c.en_proceso++;
+        else if (s==='cerrado') c.cerrados++;
+      });
+      return c;
+    }
+    function setCounters(c){
+      kpiTotal.textContent = c.total;
+      kpiAb.textContent = c.abiertos;
+      kpiPr.textContent = c.en_proceso;
+      kpiCe.textContent = c.cerrados;
     }
 
-    function render(){
-      counters();
-      tbody.innerHTML = tickets
-        .slice()
-        .sort((a,b)=>new Date(b.fecha)-new Date(a.fecha))
-        .map(t=>`
+    /* ====== Origen de datos para la tabla ====== */
+    function currentRows(){
+      // Preferimos remoto si existe; si no, local
+      const base = Array.isArray(ticketsRemote) ? ticketsRemote : ticketsLocal;
+      lastSource = Array.isArray(ticketsRemote) ? 'Sheets' : 'Local';
+      // Filtros:
+      const analyst = analystSelect.value.trim();
+      const view = viewSelect.value; // 'todos' | 'mis'
+      let rows = base.slice();
+
+      if (view === 'mis' && analyst){
+        const aN = norm(analyst);
+        rows = rows.filter(x => norm(x.analista) === aN);
+      }
+      // Por defecto mostramos pendientes (no cerrados) para “mis”; para “todos” mostramos todos.
+      if (view === 'mis'){
+        rows = rows.filter(x => String(x.estado||'').toLowerCase() !== 'cerrado');
+      }
+      // Orden por fecha desc
+      rows.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
+      return rows;
+    }
+
+    function render(countersFromAPI){
+      const rows = currentRows();
+      // Counters
+      if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI);
+      else setCounters(computeCounters(rows));
+      // Badge fuente
+      syncBadge.innerHTML = `Fuente: <strong>${lastSource}</strong>`;
+      // Body
+      tbody.innerHTML = rows.map(t=>`
         <tr>
-          <td>${t.id}</td>
-          <td>${esc(t.analista)}</td>
-          <td>${esc(t.categoria)}</td>
-          <td>${esc(t.falla)}</td>
+          <td>${t.id||''}</td>
+          <td>${esc(t.analista||'')}</td>
+          <td>${esc(t.categoria||'')}</td>
+          <td>${esc(t.falla||'')}</td>
           <td>${esc(t.usuario||'')}</td>
-          <td>${badge(t.prioridad)}</td>
-          <td>${tagE(t.estado)}</td>
-          <td data-fecha-for="${t.id}">${fmt(t.fecha)}</td>
+          <td>${badge(t.prioridad||'')}</td>
+          <td>${tagE(t.estado||'')}</td>
+          <td data-fecha-for="${t.id}">${fmt(t.fecha||new Date())}</td>
           <td style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <select class="estado-select" data-id="${t.id}">
               <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
@@ -384,7 +454,41 @@
         </tr>`).join('') || `<tr><td colspan="9" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
-    // POST sin preflight
+    /* ====== Lectura REMOTA (Sheets) ====== */
+    async function fetchRemote(){
+      try{
+        const params = new URLSearchParams();
+        params.set('action','list');
+        // Enviamos preferencia actual para que el backend pueda filtrar si desea
+        const analyst = analystSelect.value.trim();
+        if (analyst) params.set('analyst', analyst);
+        params.set('view', viewSelect.value);           // 'mis' | 'todos'
+        params.set('state', viewSelect.value==='mis' ? 'pendientes' : 'todos');
+        params.set('limit','1000');
+
+        const url = WEB_APP_URL + '?' + params.toString();
+        const res = await fetch(url, { method:'GET', mode:'cors' });
+        const data = await res.json();
+
+        if (data && data.ok && Array.isArray(data.items)){
+          // Normalizamos nombres de campos por si el backend envía capitalización distinta
+          ticketsRemote = data.items.map(x=>({
+            id: x.id, analista: x.analista, categoria: x.categoria, falla: x.falla,
+            usuario: x.usuario, prioridad: x.prioridad, estado: x.estado, fecha: x.fecha, adjunto: x.adjunto, row: x.row
+          }));
+          render(data.counters);
+        } else {
+          ticketsRemote = null;
+          render();
+        }
+      }catch(err){
+        console.warn('No se pudo leer remoto:', err);
+        ticketsRemote = null;
+        render();
+      }
+    }
+
+    /* ====== POST sin preflight (ya lo tenías) ====== */
     async function postJSON(payload){
       const res = await fetch(WEB_APP_URL, {
         method:'POST',
@@ -413,26 +517,25 @@
       }
 
       const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
-      const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, adjuntoNombre, estado:'Abierto', fecha:new Date().toISOString() };
+      const nowISO = new Date().toISOString();
+      const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, adjuntoNombre, estado:'Abierto', fecha: nowISO };
 
-      tickets.unshift(t); save(tickets); render();
-      show('Guardado local. Enviando a Sheets…');
+      // Guardar local inmediato
+      ticketsLocal.unshift(t); saveLocal(ticketsLocal); render(); show('Guardado local. Enviando a Sheets…');
 
       const d = await postJSON({
         action:'create',
-        id: t.id,
-        analista, correoAnalista, categoria, falla,
+        id: t.id, analista, correoAnalista, categoria, falla,
         usuario, prioridad, descripcion,
-        estado: t.estado,
-        fechaISO: t.fecha,
-        adjuntoNombre
+        estado: t.estado, fechaISO: nowISO, adjuntoNombre
       });
 
       if (!d || !d.ok){
         console.error('CREATE fail:', d);
         show('No se pudo crear en Sheets: ' + (d && d.error ? d.error : 'error'), 'err');
       } else if (d.row) {
-        t.row = d.row; save(tickets);
+        // intentamos reflejar en remoto refrescando
+        fetchRemote();
       }
 
       form.reset();
@@ -448,30 +551,29 @@
       if(selE){
         const id = selE.dataset.id;
         const status = selE.value;
-        const t = tickets.find(x=>x.id===id); if(!t) return;
 
-        t.estado = status; t.fecha = new Date().toISOString();
-        save(tickets); render();
+        // Actualiza local
+        const tL = ticketsLocal.find(x=>x.id===id);
+        if (tL){ tL.estado = status; tL.fecha = new Date().toISOString(); saveLocal(ticketsLocal); }
 
-        const d = await postJSON({ action:'update_status', id, status, row:(t.row||0) });
+        render();
+        const d = await postJSON({ action:'update_status', id, status });
         if (!d || !d.ok) show('No se pudo actualizar el estado en Sheets', 'err');
-        else {
-          const cell = document.querySelector(`[data-fecha-for="${id}"]`);
-          if (cell) cell.textContent = new Date().toLocaleString();
-        }
+        else fetchRemote();
       }
 
       // Prioridad
       if(selP){
         const id = selP.dataset.id;
         const pr = selP.value;
-        const t = tickets.find(x=>x.id===id); if(!t) return;
 
-        t.prioridad = pr; t.fecha = new Date().toISOString();
-        save(tickets); render();
+        const tL = ticketsLocal.find(x=>x.id===id);
+        if (tL){ tL.prioridad = pr; tL.fecha = new Date().toISOString(); saveLocal(ticketsLocal); }
 
-        const d2 = await postJSON({ action:'update_priority', id, prioridad: pr, row:(t.row||0) });
+        render();
+        const d2 = await postJSON({ action:'update_priority', id, prioridad: pr });
         if (!d2 || !d2.ok) show('No se pudo actualizar la prioridad en Sheets', 'err');
+        else fetchRemote();
       }
     });
 
@@ -480,13 +582,33 @@
       const btn = e.target.closest('button[data-action="del"]'); if(!btn) return;
       const id  = btn.dataset.id;
 
-      tickets = tickets.filter(x=>x.id!==id); save(tickets); render();
-      await postJSON({ action:'delete', id });
+      ticketsLocal = ticketsLocal.filter(x=>x.id!==id); saveLocal(ticketsLocal); render();
+      const d = await postJSON({ action:'delete', id });
+      if (!d || !d.ok) show('No se pudo eliminar en Sheets', 'err');
+      else fetchRemote();
     });
 
-    render();
+    /* ====== Inicialización ====== */
+    function initialAnalystFromView(){
+      // Si eligieron "mis" y no hay analista, intenta tomar el del formulario.
+      if (viewSelect.value==='mis' && !analystSelect.value){
+        const val = $('#analista').value;
+        if (val) analystSelect.value = val;
+      }
+    }
+
+    function init(){
+      // tema, vista ya cargados
+      initialAnalystFromView();
+      render();
+      // primer intento remoto
+      fetchRemote();
+      // auto refresh cuando la pestaña está visible
+      setInterval(()=>{ if(!document.hidden) fetchRemote(); }, AUTO_REFRESH_MS);
+    }
+    init();
+
   })();
   </script>
 </body>
 </html>
-
