@@ -8,51 +8,68 @@
     :root{ --bg:#eef2ff; --card:#fff; --text:#0d1333; --muted:#51608b; --border:rgba(13,19,51,.12); --ok:#2b8a3e; --warn:#f08c00; --bad:#e03131; --field:#fbfcff }
     body[data-theme="dark"]{ --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9aa4bf; --border:rgba(255,255,255,.15); --field:#0b1220 }
     body[data-theme="mint"]{ --bg:#e6fff4; --card:#ffffff; --text:#0d1333; --muted:#4d6a61; --border:rgba(13,19,51,.12); --field:#f7fffb }
+
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
     header{position:sticky;top:0;z-index:10;background:transparent;padding:10px 0}
-    .brand{max-width:1400px;margin:auto;position:relative;display:flex;justify-content:center;align-items:center}
+    .brand{max-width:1680px;margin:auto;position:relative;display:flex;justify-content:center;align-items:center}
     .logo{height:88px;max-width:95%;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.1))}
-    .theme{position:absolute;right:16px;top:6px;display:flex;gap:8px;align-items:center}
+    .theme{position:absolute;right:16px;top:6px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:56%}
     .theme label{font-size:.85rem;color:var(--muted)}
-    .theme select{padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field);color:var(--text)}
-    main{max-width:1400px;margin:8px auto 16px;padding:0 16px;display:grid;gap:16px}
-    @media(min-width:1080px){main{grid-template-columns:520px 1fr}}
+    .theme select,.theme input{padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field);color:var(--text)}
+    .theme small{color:var(--muted)}
+    .theme .btn-sm{padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--card);cursor:pointer}
+
+    main{max-width:1680px;margin:8px auto 16px;padding:0 16px;display:grid;gap:16px}
+    /* más ancho para ambas tarjetas */
+    @media(min-width:1200px){main{grid-template-columns:640px 1fr}}
+
     .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 24px rgba(13,19,51,.08)}
     .card h2{margin:0;padding:16px 16px 0}
     .card .body{padding:16px}
+
     form .grid{display:grid;gap:12px}
     @media(min-width:560px){form .grid{grid-template-columns:1fr 1fr}}
+
     label{font-size:.9rem;color:var(--muted);display:block;margin-bottom:6px}
     input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--field);color:var(--text)}
     textarea{min-height:96px}
     .btn{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
     .btn.primary{border-color:#a3b0ff}
     .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:8px}
+
+    /* KPIs: ancho mínimo para evitar cortes */
+    .kpis{display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:12px;margin-bottom:8px}
     .kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
-    .kpi .label{font-size:.8rem;color:var(--muted)} .kpi .val{font-weight:800;font-size:1.2rem}
+    .kpi .label{font-size:.88rem;color:var(--muted);white-space:nowrap}
+    .kpi .val{font-weight:800;font-size:1.25rem}
+
     table{width:100%;border-collapse:separate;border-spacing:0 10px;color:var(--text)}
-    thead th{font-size:.85rem;color:var(--muted);text-align:left;padding:0 8px}
+    thead th{font-size:.85rem;color:var(--muted);text-align:left;padding:0 8px;white-space:nowrap}
     tbody tr{background:var(--card);border:1px solid var(--border)}
-    tbody td{padding:10px 8px}
-    .badge{padding:4px 8px;border:1px solid var(--border);border-radius:999px;font-size:.78rem}
+    tbody td{padding:10px 8px;vertical-align:top}
+
+    .badge{padding:4px 8px;border:1px solid var(--border);border-radius:999px;font-size:.78rem;white-space:nowrap}
     .prio-alta{background:#fff5f5}.prio-media{background:#fff4e6}.prio-baja{background:#ebfbee}
     body[data-theme="dark"] .prio-alta{background:#402b2b}
     body[data-theme="dark"] .prio-media{background:#3e2f18}
     body[data-theme="dark"] .prio-baja{background:#1b3b2a}
+
     .e-abierto{color:var(--bad)}.e-proceso{color:var(--warn)}.e-cerrado{color:var(--ok)}.e-cancelado{color:#6b7280}
     .notice{display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
-    footer{max-width:1400px;margin:6px auto 28px;padding:0 16px;color:var(--muted);font-size:.9rem}
+    footer{max-width:1680px;margin:6px auto 28px;padding:0 16px;color:var(--muted);font-size:.9rem}
     small.help{display:block;color:var(--muted);margin-top:4px}
+
+    /* Autocomplete */
     .ac{position:relative}
     .ac-list{position:absolute;left:0;right:0;top:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 24px rgba(13,19,51,.08);margin-top:6px;max-height:220px;overflow:auto;padding:6px;display:none;z-index:5}
     .ac-list[hidden]{display:none}
     .ac-list li{list-style:none;padding:8px 12px;cursor:pointer;border-radius:10px}
     .ac-list li[aria-selected="true"], .ac-list li:hover{background:#f6f7ff}
     body[data-theme="dark"] .ac-list li[aria-selected="true"], body[data-theme="dark"] .ac-list li:hover{background:#1f2937}
+
     .hidden{display:none!important}
-    .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}
+    .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}
     .toolbar select{padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field)}
     .muted{color:var(--muted);font-size:.9rem}
   </style>
@@ -63,22 +80,26 @@
       <img class="logo" src="Imagen/logo-empresas.jpg" alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango"
            loading="lazy" onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';">
       <div class="theme">
-        <span id="whoami" class="muted">Identidad: —</span>
+        <small id="whoami">Identidad: (no detectada)</small>
+        <input id="keyInput" placeholder="Clave (Pablo, etc.)" style="width:180px">
+        <button id="saveKey" class="btn-sm">Guardar</button>
+        <button id="clearKey" class="btn-sm" title="Olvidar clave">✕</button>
         <label for="themePick">Tema:</label>
-        <select id="themePick"><option value="light">Claro</option><option value="dark">Oscuro</option><option value="mint">Verde</option></select>
+        <select id="themePick"><option value="light">Verde</option><option value="dark">Oscuro</option><option value="mint">Mint</option></select>
       </div>
     </div>
   </header>
 
   <main>
-    <!-- Form -->
+    <!-- Formulario -->
     <section class="card">
       <h2>REPORTE USUARIO</h2>
       <div class="body">
         <form id="formTicket" action="javascript:void(0)" autocomplete="off">
           <div class="grid">
             <div><label for="analista">Analista Responsable *</label><select id="analista" required></select></div>
-            <div class="hidden"><label for="correoAnalista">Correo analista</label><input id="correoAnalista" readonly /><small class="help">Se rellena según el analista.</small></div>
+            <div class="hidden"><label for="correoAnalista">Correo analista</label><input id="correoAnalista" readonly /></div>
+
             <div><label for="categoria">Categoría *</label>
               <select id="categoria" required>
                 <option value="">Selecciona…</option>
@@ -86,6 +107,7 @@
                 <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Otro</option>
               </select>
             </div>
+
             <div><label for="falla">Servicio prestado *</label>
               <select id="falla" required>
                 <option value="">Selecciona…</option>
@@ -135,17 +157,20 @@
                 <option>Gestión aplicaciones</option>
               </select>
             </div>
+
             <div class="ac">
               <label for="usuario">Usuario quien reporta *</label>
               <input id="usuario" placeholder="Escribe nombre o apellido" required />
               <ul id="acList" class="ac-list" hidden></ul>
               <small class="help">Escribe y elige entre las sugerencias.</small>
             </div>
+
             <div><label for="prioridad">Prioridad *</label>
               <select id="prioridad" required>
                 <option value="">Selecciona…</option><option>Alta</option><option>Media</option><option>Baja</option>
               </select>
             </div>
+
             <div><label for="adj">Adjunto (opcional)</label><input id="adj" type="file" accept="image/*"></div>
           </div>
 
@@ -228,8 +253,14 @@
       { nombre:'Pablo Calle',       email:'soportesistemasve@gmail.com' }
     ];
 
-    const USUARIOS = ['Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez','Juan Carlos Betancur','Lina Areiza','María López','Andrés Gómez','Sofía Ríos'];
+    /* --- Autocomplete usuarios (extendido) --- */
+    const USUARIOS = [
+      'Marcela Pareja','Juan Carlos Betancur','Diego Guerrero','Heidy Zambrano',
+      'Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez',
+      'Lina Areiza','María López','Andrés Gómez','Sofía Ríos','Mario Velez','Aide'
+    ];
 
+    /* ====== util DOM / storage ====== */
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
     const localKey = 'tickets_fallas_v6';
@@ -239,16 +270,30 @@
     let ticketsRemote = null;
     let lastSource = 'Local';
     let identity = null; // {name,email,role}
+    let AUTH_KEY = '';   // clave para externos
 
     const tbody = $('#tbody'), kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe'), kpiCa=$('#kpiCa');
     const form = $('#formTicket'); const syncBadge = $('#syncBadge'); const who = $('#whoami');
 
+    /* ====== Tema ====== */
     const themePick = $('#themePick');
     const savedTheme = localStorage.getItem('ui_theme') || 'light';
     document.body.setAttribute('data-theme', savedTheme); themePick.value = savedTheme;
     themePick.addEventListener('change', ()=>{ document.body.setAttribute('data-theme', themePick.value); localStorage.setItem('ui_theme', themePick.value); });
 
-    // Catálogo analistas + correo
+    /* ====== Clave (modelo B para externos) ====== */
+    const keyInput = $('#keyInput'), saveKeyBtn = $('#saveKey'), clearKeyBtn = $('#clearKey');
+    (function initKey(){
+      const urlKey = new URLSearchParams(location.search).get('key') || '';
+      const stored = localStorage.getItem('auth_key') || '';
+      AUTH_KEY = urlKey || stored || '';
+      if (urlKey && urlKey !== stored) localStorage.setItem('auth_key', urlKey);
+      keyInput.value = AUTH_KEY;
+    })();
+    saveKeyBtn.addEventListener('click', ()=>{ AUTH_KEY = keyInput.value.trim(); localStorage.setItem('auth_key', AUTH_KEY); fetchWhoAmI().then(fetchRemote); });
+    clearKeyBtn.addEventListener('click', ()=>{ AUTH_KEY=''; keyInput.value=''; localStorage.removeItem('auth_key'); fetchWhoAmI().then(fetchRemote); });
+
+    /* ====== Catálogo analistas + correo ====== */
     (function initCatalogos(){
       const sel = $('#analista');
       sel.innerHTML = '<option value="">Selecciona…</option>' + ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
@@ -258,7 +303,7 @@
       });
     })();
 
-    // Autocomplete usuarios
+    /* ====== Autocomplete simple usuarios ====== */
     const inputUsuario = $('#usuario'); const acList = $('#acList');
     const norm = (s)=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
     function filtraUsuarios(q){ const n=norm(q); if(!n) return []; return USUARIOS.filter(u=>norm(u).includes(n)).slice(0,8); }
@@ -267,13 +312,12 @@
     inputUsuario.addEventListener('focus', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
     document.addEventListener('click', (e)=>{ if (e.target.closest('#acList li')){ inputUsuario.value = e.target.textContent; acList.hidden = true; } else if(!e.target.closest('.ac')) { acList.hidden = true; } });
 
-    // Barra filtros
+    /* ====== Barra filtros ====== */
     const viewSelect = $('#viewSelect');
     const analystSelect = $('#analystSelect');
     const statusSelect = $('#statusSelect');
     const monthSelect  = $('#monthSelect');
 
-    // Rellenar meses últimos 12 en YYYY-MM
     (function fillMonths(){
       const now = new Date(); const items = ['<option value="">Todos</option>'];
       for (let i=0;i<12;i++){
@@ -285,7 +329,6 @@
       monthSelect.innerHTML = items.join('');
     })();
 
-    // Prefs guardadas
     (function initView(){
       const saved = JSON.parse(localStorage.getItem('tickets_view')||'{}');
       viewSelect.value   = saved.view || 'mis';
@@ -296,7 +339,7 @@
     function persistView(){ localStorage.setItem('tickets_view', JSON.stringify({ view:viewSelect.value, analyst:analystSelect.value, status:statusSelect.value, month:monthSelect.value })); }
     [viewSelect,analystSelect,statusSelect,monthSelect].forEach(el => el.addEventListener('change', ()=>{ persistView(); fetchRemote(); }));
 
-    // Helpers UI
+    /* ====== Helpers UI ====== */
     const show = (msg, kind='ok')=>{ notice.style.display='block'; notice.textContent=msg; notice.style.borderColor=(kind==='ok')?'#b2f2bb':'#ffc9c9'; setTimeout(()=> notice.style.display='none', 2200); };
     const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
     const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p||''}</span>`;
@@ -314,16 +357,13 @@
     }
     function setCounters(c){ kpiTotal.textContent=c.total; kpiAb.textContent=c.abiertos; kpiPr.textContent=c.en_proceso; kpiCe.textContent=c.cerrados; kpiCa.textContent=c.cancelados; }
 
-    // Fuente actual de datos
     function currentRows(){
       const base = Array.isArray(ticketsRemote) ? ticketsRemote : ticketsLocal;
       lastSource = Array.isArray(ticketsRemote) ? 'Sheets' : 'Local';
-      // Filtro adicional de estado local si usuario lo puso (cuando backend no lo aplicó)
       let rows = base.slice();
       const st = statusSelect.value;
       if (st==='pendientes'){ rows = rows.filter(x => !['Cerrado','Cancelado'].includes(String(x.estado))); }
-      else if (st && st!==''){ rows = rows.filter(x => String(x.estado)===st); }
-      // Orden por fecha
+      else if (st) rows = rows.filter(x => String(x.estado)===st);
       rows.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
       return rows;
     }
@@ -359,31 +399,34 @@
         </tr>`).join('') || `<tr><td colspan="10" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
-    // Lectura REMOTA (usa modelo B: whoami + list)
+    /* ====== WHOAMI + LIST con key ====== */
     async function fetchWhoAmI(){
       try{
-        const url = WEB_APP_URL + '?action=whoami';
-        const res = await fetch(url);
+        const params = new URLSearchParams({ action:'whoami' });
+        if (AUTH_KEY) params.set('key', AUTH_KEY);
+        const res = await fetch(WEB_APP_URL + '?' + params.toString());
         const data = await res.json();
         identity = data && data.ok ? data.me : null;
         who.textContent = identity ? `Identidad: ${identity.name} (${identity.role})` : 'Identidad: (no detectada)';
-      }catch{ identity = null; }
+        // Si hay identidad, setear automáticamente el analista de la barra
+        if (identity && !analystSelect.value) analystSelect.value = identity.name;
+        // Si no es admin, bloquear "todos"
+        viewSelect.disabled = !(identity && identity.role==='admin');
+        if (viewSelect.disabled) viewSelect.value = 'mis';
+      }catch{ identity = null; who.textContent = 'Identidad: (no detectada)'; }
     }
 
     async function fetchRemote(){
       try{
         const params = new URLSearchParams();
         params.set('action','list');
-        // Vista/admin: si no soy admin, backend fuerza 'mis'
         params.set('view', viewSelect.value);
-        // Analista: si backend tiene identidad, la usa. Para externos podemos enviar ?key en el enlace (no aquí).
         if (analystSelect.value) params.set('analyst', analystSelect.value);
-        // Estado
-        const st = statusSelect.value;
-        if (st==='pendientes') params.set('state','pendientes'); else if (st) params.set('status', st);
-        // Mes
+        if (statusSelect.value==='pendientes') params.set('state','pendientes');
+        else if (statusSelect.value) params.set('status', statusSelect.value);
         if (monthSelect.value) params.set('ym', monthSelect.value);
         params.set('limit','1500');
+        if (AUTH_KEY) params.set('key', AUTH_KEY);
 
         const res = await fetch(WEB_APP_URL + '?' + params.toString());
         const data = await res.json();
@@ -395,13 +438,14 @@
       }catch(err){ console.warn('Remoto falló', err); ticketsRemote = null; render(); }
     }
 
-    // POST plano
+    /* ====== POST (incluye key si existe) ====== */
     async function postJSON(payload){
+      if (AUTH_KEY) payload.key = AUTH_KEY;
       const res = await fetch(WEB_APP_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
       try { return await res.json(); } catch { return { ok:false, error:'Respuesta no-JSON' }; }
     }
 
-    // Crear ticket
+    /* ====== crear ticket ====== */
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const analista = $('#analista').value;
@@ -425,7 +469,7 @@
       form.reset(); $('#correoAnalista').value='';
     });
 
-    // Cambios de estado/prioridad
+    /* ====== cambios estado / prioridad ====== */
     document.addEventListener('change', async (e)=>{
       const selE = e.target.closest('.estado-select');
       const selP = e.target.closest('.prio-select');
@@ -433,9 +477,7 @@
       if (selE){
         const id = selE.dataset.id; const status = selE.value;
         let reason = '';
-        if (status === 'Cancelado'){
-          reason = prompt('Motivo de cancelación:') || '';
-        }
+        if (status === 'Cancelado') reason = prompt('Motivo de cancelación:') || '';
         const tL = ticketsLocal.find(x=>x.id===id);
         if (tL){ tL.estado=status; tL.fecha=new Date().toISOString(); if(status==='Cancelado') tL.motivo=reason; saveLocal(ticketsLocal); }
         render();
@@ -453,13 +495,12 @@
       }
     });
 
-    // Init
+    /* ====== Init ====== */
     async function init(){
-      // identidad (si existe) + primer fetch
+      // identidad y primera carga
       await fetchWhoAmI();
-      // si no soy admin, bloquea opción 'todos' visualmente
-      if (!identity || identity.role!=='admin'){ viewSelect.value='mis'; viewSelect.disabled = true; }
-      else { viewSelect.disabled = false; }
+      // si identidad existe, fija analista del filtro
+      if (identity && !analystSelect.value) analystSelect.value = identity.name;
       render();
       fetchRemote();
       setInterval(()=>{ if(!document.hidden) fetchRemote(); }, AUTO_REFRESH_MS);
