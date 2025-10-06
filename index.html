@@ -45,8 +45,25 @@
 /* más a la izquierda */
     
 @media (min-width: 1100px){
-  main{ grid-template-columns: 40 60; }
+
+  /* Contenedor de las dos vistas: centrado y sin sesgo */
+main{
+  max-width: 1280px;            /* ancho total del conjunto */
+  width: calc(100% - 32px);     /* respira en bordes en pantallas chicas */
+  margin: 8px auto 16px;        /* <-- centrado (auto izquierda/derecha) */
+  padding: 0 16px;
+  display: grid;
+  gap: 24px;
+  grid-template-columns: 50px 50px;  /* izquierda más compacta, derecha fluida */
 }
+
+/* En pantallas pequeñas, apila una debajo de la otra */
+@media (max-width: 1100px){
+  main{
+    grid-template-columns: 1fr;
+  }
+}
+
 
 
 
@@ -560,6 +577,7 @@
   </script>
 </body>
 </html>
+
 
 
 
