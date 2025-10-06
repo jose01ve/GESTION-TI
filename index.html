@@ -5,19 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gestión TI · Reporte de fallas</title>
   <style>
-    /* ====== Temas (variables) ====== */
-    :root{
-      --bg:#eef2ff; --card:#fff; --text:#0d1333; --muted:#51608b; --border:rgba(13,19,51,.12);
-      --ok:#2b8a3e; --warn:#f08c00; --bad:#e03131; --field:#fbfcff;
-    }
-    body[data-theme="dark"]{
-      --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9aa4bf; --border:rgba(255,255,255,.15); --field:#0b1220;
-    }
-    body[data-theme="mint"]{
-      --bg:#e6fff4; --card:#ffffff; --text:#0d1333; --muted:#4d6a61; --border:rgba(13,19,51,.12); --field:#f7fffb;
-    }
-
-    /* ====== Base ====== */
+    :root{ --bg:#eef2ff; --card:#fff; --text:#0d1333; --muted:#51608b; --border:rgba(13,19,51,.12); --ok:#2b8a3e; --warn:#f08c00; --bad:#e03131; --field:#fbfcff }
+    body[data-theme="dark"]{ --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9aa4bf; --border:rgba(255,255,255,.15); --field:#0b1220 }
+    body[data-theme="mint"]{ --bg:#e6fff4; --card:#ffffff; --text:#0d1333; --muted:#4d6a61; --border:rgba(13,19,51,.12); --field:#f7fffb }
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
     header{position:sticky;top:0;z-index:10;background:transparent;padding:10px 0}
@@ -26,56 +16,42 @@
     .theme{position:absolute;right:16px;top:6px;display:flex;gap:8px;align-items:center}
     .theme label{font-size:.85rem;color:var(--muted)}
     .theme select{padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field);color:var(--text)}
-
     main{max-width:1400px;margin:8px auto 16px;padding:0 16px;display:grid;gap:16px}
     @media(min-width:1080px){main{grid-template-columns:520px 1fr}}
-
     .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 24px rgba(13,19,51,.08)}
     .card h2{margin:0;padding:16px 16px 0}
     .card .body{padding:16px}
-
     form .grid{display:grid;gap:12px}
     @media(min-width:560px){form .grid{grid-template-columns:1fr 1fr}}
-
     label{font-size:.9rem;color:var(--muted);display:block;margin-bottom:6px}
     input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--field);color:var(--text)}
     textarea{min-height:96px}
     .btn{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
     .btn.primary{border-color:#a3b0ff}
-    .btn.danger{border-color:#ffc9c9}
     .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-
-    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:8px}
+    .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:8px}
     .kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
     .kpi .label{font-size:.8rem;color:var(--muted)} .kpi .val{font-weight:800;font-size:1.2rem}
-
     table{width:100%;border-collapse:separate;border-spacing:0 10px;color:var(--text)}
     thead th{font-size:.85rem;color:var(--muted);text-align:left;padding:0 8px}
     tbody tr{background:var(--card);border:1px solid var(--border)}
     tbody td{padding:10px 8px}
-
     .badge{padding:4px 8px;border:1px solid var(--border);border-radius:999px;font-size:.78rem}
     .prio-alta{background:#fff5f5}.prio-media{background:#fff4e6}.prio-baja{background:#ebfbee}
     body[data-theme="dark"] .prio-alta{background:#402b2b}
     body[data-theme="dark"] .prio-media{background:#3e2f18}
     body[data-theme="dark"] .prio-baja{background:#1b3b2a}
-
-    .e-abierto{color:var(--bad)}.e-proceso{color:var(--warn)}.e-cerrado{color:var(--ok)}
+    .e-abierto{color:var(--bad)}.e-proceso{color:var(--warn)}.e-cerrado{color:var(--ok)}.e-cancelado{color:#6b7280}
     .notice{display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
     footer{max-width:1400px;margin:6px auto 28px;padding:0 16px;color:var(--muted);font-size:.9rem}
     small.help{display:block;color:var(--muted);margin-top:4px}
-
-    /* Autocomplete simple */
     .ac{position:relative}
     .ac-list{position:absolute;left:0;right:0;top:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 24px rgba(13,19,51,.08);margin-top:6px;max-height:220px;overflow:auto;padding:6px;display:none;z-index:5}
     .ac-list[hidden]{display:none}
     .ac-list li{list-style:none;padding:8px 12px;cursor:pointer;border-radius:10px}
     .ac-list li[aria-selected="true"], .ac-list li:hover{background:#f6f7ff}
     body[data-theme="dark"] .ac-list li[aria-selected="true"], body[data-theme="dark"] .ac-list li:hover{background:#1f2937}
-
-    .hidden{display:none !important}
-
-    /* Barra de filtros de la lista */
+    .hidden{display:none!important}
     .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}
     .toolbar select{padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field)}
     .muted{color:var(--muted);font-size:.9rem}
@@ -84,20 +60,12 @@
 <body data-theme="light">
   <header>
     <div class="brand">
-      <img
-        class="logo"
-        src="Imagen/logo-empresas.jpg"
-        alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango"
-        loading="lazy"
-        onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';"
-      >
+      <img class="logo" src="Imagen/logo-empresas.jpg" alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango"
+           loading="lazy" onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';">
       <div class="theme">
+        <span id="whoami" class="muted">Identidad: —</span>
         <label for="themePick">Tema:</label>
-        <select id="themePick">
-          <option value="light">Claro</option>
-          <option value="dark">Oscuro</option>
-          <option value="mint">Verde</option>
-        </select>
+        <select id="themePick"><option value="light">Claro</option><option value="dark">Oscuro</option><option value="mint">Verde</option></select>
       </div>
     </div>
   </header>
@@ -109,32 +77,16 @@
       <div class="body">
         <form id="formTicket" action="javascript:void(0)" autocomplete="off">
           <div class="grid">
-            <!-- Analista -->
-            <div>
-              <label for="analista">Analista Responsable *</label>
-              <select id="analista" required></select>
-            </div>
-
-            <!-- Correo analista (oculto) -->
-            <div class="hidden">
-              <label for="correoAnalista">Correo analista</label>
-              <input id="correoAnalista" placeholder="auto" readonly />
-              <small class="help">Se rellena según el analista.</small>
-            </div>
-
-            <!-- Categoría -->
-            <div>
-              <label for="categoria">Categoría *</label>
+            <div><label for="analista">Analista Responsable *</label><select id="analista" required></select></div>
+            <div class="hidden"><label for="correoAnalista">Correo analista</label><input id="correoAnalista" readonly /><small class="help">Se rellena según el analista.</small></div>
+            <div><label for="categoria">Categoría *</label>
               <select id="categoria" required>
                 <option value="">Selecciona…</option>
                 <option>Red</option><option>Hardware</option><option>Software</option>
                 <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Otro</option>
               </select>
             </div>
-
-            <!-- Servicio prestado -->
-            <div>
-              <label for="falla">Servicio prestado *</label>
+            <div><label for="falla">Servicio prestado *</label>
               <select id="falla" required>
                 <option value="">Selecciona…</option>
                 <option>Soporte a equipos informáticos</option>
@@ -183,39 +135,26 @@
                 <option>Gestión aplicaciones</option>
               </select>
             </div>
-
-            <!-- Usuario reporta -->
             <div class="ac">
               <label for="usuario">Usuario quien reporta *</label>
               <input id="usuario" placeholder="Escribe nombre o apellido" required />
               <ul id="acList" class="ac-list" hidden></ul>
               <small class="help">Escribe y elige entre las sugerencias.</small>
             </div>
-
-            <!-- Prioridad -->
-            <div>
-              <label for="prioridad">Prioridad *</label>
+            <div><label for="prioridad">Prioridad *</label>
               <select id="prioridad" required>
-                <option value="">Selecciona…</option>
-                <option>Alta</option><option>Media</option><option>Baja</option>
+                <option value="">Selecciona…</option><option>Alta</option><option>Media</option><option>Baja</option>
               </select>
             </div>
-
-            <!-- Adjunto -->
-            <div>
-              <label for="adj">Adjunto (opcional)</label>
-              <input id="adj" type="file" accept="image/*">
-            </div>
+            <div><label for="adj">Adjunto (opcional)</label><input id="adj" type="file" accept="image/*"></div>
           </div>
 
-          <!-- Descripción -->
           <div style="margin-top:10px">
             <label for="descripcion">Descripción *</label>
             <textarea id="descripcion" required placeholder="Describe el problema reportado…"></textarea>
           </div>
 
           <div id="notice" class="notice"></div>
-
           <div class="row">
             <button class="btn primary" type="submit">➕ Guardar reporte</button>
             <button class="btn" type="reset">↺ Limpiar</button>
@@ -228,21 +167,26 @@
     <section class="card">
       <h2>ESTADO DE REPORTE</h2>
       <div class="body">
-        <!-- Barra de filtros compartidos -->
         <div class="toolbar">
           <span class="muted">Vista:</span>
-          <select id="viewSelect" title="Ámbito">
-            <option value="todos">Todos</option>
-            <option value="mis">Asignados a mí</option>
-          </select>
+          <select id="viewSelect"><option value="mis">Asignados a mí</option><option value="todos">Todos (admin)</option></select>
           <span class="muted">Analista:</span>
           <select id="analystSelect">
-            <option value="">Todos los analistas</option>
-            <option>Jose Salas</option>
-            <option>Sebastián Cataño</option>
-            <option>Sebastián Posada</option>
+            <option value="">(auto)</option>
+            <option>Jose Salas</option><option>Sebastián Cataño</option><option>Sebastián Posada</option><option>Pablo Calle</option>
           </select>
-          <span id="syncBadge" class="muted">Fuente: <strong>—</strong></span>
+          <span class="muted">Estado:</span>
+          <select id="statusSelect">
+            <option value="">Todos</option>
+            <option value="pendientes">Pendientes</option>
+            <option value="Abierto">Abierto</option>
+            <option value="En Proceso">En Proceso</option>
+            <option value="Cerrado">Cerrado</option>
+            <option value="Cancelado">Cancelado</option>
+          </select>
+          <span class="muted">Mes:</span>
+          <select id="monthSelect"><option value="">Todos</option></select>
+          <span id="syncBadge" class="muted">Fuente: —</span>
         </div>
 
         <div class="kpis">
@@ -250,6 +194,7 @@
           <div class="kpi"><div class="label">Abiertos</div><div class="val" id="kpiAb">0</div></div>
           <div class="kpi"><div class="label">En proceso</div><div class="val" id="kpiPr">0</div></div>
           <div class="kpi"><div class="label">Cerrados</div><div class="val" id="kpiCe">0</div></div>
+          <div class="kpi"><div class="label">Cancelados</div><div class="val" id="kpiCa">0</div></div>
         </div>
 
         <div style="overflow:auto">
@@ -257,7 +202,7 @@
             <thead>
               <tr>
                 <th>ID</th><th>Analista</th><th>Categoría</th><th>Falla</th><th>Usuario</th>
-                <th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th>
+                <th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Motivo</th><th>Acciones</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -267,167 +212,126 @@
     </section>
   </main>
 
-  <footer>⚡ App HTML: guarda en este navegador y, si hay backend, sincroniza con Google Sheets.</footer>
+  <footer>⚡ App HTML sincroniza con Google Sheets. Eliminación deshabilitada; usar estado “Cancelado”.</footer>
 
   <script>
   (function(){
     'use strict';
 
-    /* ====== CONFIG ====== */
-    // Cambia por tu URL de despliegue si es otra:
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzd67J3uzReq0r6yibSlZtBQQHkl9N7PTtqudVcrUufa4CFetvhukp6eRPiH3kp5PnJJQ/exec';
-    const AUTO_REFRESH_MS = 30000; // 30s
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxIXzCA1yjgBfPgxLN2JvVR53oR3wj0vF8SaBzpXDv9Mnq6I639MCmQRLAB_Hdqz-T_lQ/exec';
+    const AUTO_REFRESH_MS = 30000;
 
-    // Analistas (nombre → correo)
     const ANALISTAS = [
       { nombre:'Jose Salas',        email:'jsalas@sedic.com.co' },
       { nombre:'Sebastián Cataño',  email:'scatano@sedic.com.co' },
-      { nombre:'Sebastián Posada',  email:'sposada@sedic.com.co' }
+      { nombre:'Sebastián Posada',  email:'sposada@sedic.com.co' },
+      { nombre:'Pablo Calle',       email:'soportesistemasve@gmail.com' }
     ];
 
-    // Base usuarios para sugerencias (ejemplo)
-    const USUARIOS = [
-      'Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez',
-      'Juan Carlos Betancur','Lina Areiza','María López','Andrés Gómez','Sofía Ríos'
-    ];
+    const USUARIOS = ['Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez','Juan Carlos Betancur','Lina Areiza','María López','Andrés Gómez','Sofía Ríos'];
 
-    /* ====== util DOM / storage ====== */
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
-    const localKey = 'tickets_fallas_v5';
+    const localKey = 'tickets_fallas_v6';
     const loadLocal = () => { try{ return JSON.parse(localStorage.getItem(localKey))||[] } catch { return [] } };
     const saveLocal = v => localStorage.setItem(localKey, JSON.stringify(v));
-    let ticketsLocal = loadLocal();       // lo que ya estaba en este navegador
-    let ticketsRemote = null;             // lo que llega de Sheets
+    let ticketsLocal = loadLocal();
+    let ticketsRemote = null;
     let lastSource = 'Local';
+    let identity = null; // {name,email,role}
 
-    const tbody = $('#tbody'), kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe');
-    const form = $('#formTicket');
-    const syncBadge = $('#syncBadge');
+    const tbody = $('#tbody'), kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe'), kpiCa=$('#kpiCa');
+    const form = $('#formTicket'); const syncBadge = $('#syncBadge'); const who = $('#whoami');
 
-    /* ====== Tema ====== */
     const themePick = $('#themePick');
     const savedTheme = localStorage.getItem('ui_theme') || 'light';
-    document.body.setAttribute('data-theme', savedTheme);
-    themePick.value = savedTheme;
-    themePick.addEventListener('change', ()=>{
-      document.body.setAttribute('data-theme', themePick.value);
-      localStorage.setItem('ui_theme', themePick.value);
-    });
+    document.body.setAttribute('data-theme', savedTheme); themePick.value = savedTheme;
+    themePick.addEventListener('change', ()=>{ document.body.setAttribute('data-theme', themePick.value); localStorage.setItem('ui_theme', themePick.value); });
 
-    /* ====== Catálogos ====== */
+    // Catálogo analistas + correo
     (function initCatalogos(){
       const sel = $('#analista');
-      sel.innerHTML = '<option value="">Selecciona…</option>' +
-        ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
+      sel.innerHTML = '<option value="">Selecciona…</option>' + ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
       sel.addEventListener('change', ()=>{
         const a = ANALISTAS.find(x=>x.nombre===sel.value);
         $('#correoAnalista').value = a ? a.email : '';
-        // También fijamos en la barra de vista por comodidad
-        if (sel.value) {
-          $('#analystSelect').value = sel.value;
-          persistView();
-          render();
-        }
       });
     })();
 
-    /* ====== Autocomplete simple para "usuario" ====== */
-    const inputUsuario = $('#usuario');
-    const acList = $('#acList');
-    const norm = (s) => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-    function filtraUsuarios(q){ const nq = norm(q); if(!nq) return []; return USUARIOS.filter(u => norm(u).includes(nq)).slice(0,8); }
-    function pintaLista(items){
-      if (!items.length){ acList.hidden = true; acList.innerHTML=''; return; }
-      acList.innerHTML = items.map((t,i)=>`<li ${i===0?'aria-selected="true"':''}>${t}</li>`).join('');
-      acList.hidden = false;
-    }
+    // Autocomplete usuarios
+    const inputUsuario = $('#usuario'); const acList = $('#acList');
+    const norm = (s)=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    function filtraUsuarios(q){ const n=norm(q); if(!n) return []; return USUARIOS.filter(u=>norm(u).includes(n)).slice(0,8); }
+    function pintaLista(items){ if(!items.length){ acList.hidden=true; acList.innerHTML=''; return; } acList.innerHTML=items.map((t,i)=>`<li ${i===0?'aria-selected="true"':''}>${t}</li>`).join(''); acList.hidden=false; }
     inputUsuario.addEventListener('input', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
     inputUsuario.addEventListener('focus', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
-    document.addEventListener('click', (e)=>{
-      if (e.target.closest('#acList li')){ inputUsuario.value = e.target.textContent; acList.hidden = true; }
-      else if(!e.target.closest('.ac')){ acList.hidden = true; }
-    });
+    document.addEventListener('click', (e)=>{ if (e.target.closest('#acList li')){ inputUsuario.value = e.target.textContent; acList.hidden = true; } else if(!e.target.closest('.ac')) { acList.hidden = true; } });
 
-    /* ====== Barra de vista/analista ====== */
+    // Barra filtros
     const viewSelect = $('#viewSelect');
     const analystSelect = $('#analystSelect');
+    const statusSelect = $('#statusSelect');
+    const monthSelect  = $('#monthSelect');
 
-    // Cargar preferencia o URL (?analyst=...&view=mis)
-    (function initView(){
-      const params = new URLSearchParams(location.search);
-      const saved = JSON.parse(localStorage.getItem('tickets_view')||'{}');
-      analystSelect.value = params.get('analyst') || saved.analyst || '';
-      viewSelect.value    = params.get('view')    || saved.view    || 'todos';
-      persistView();
+    // Rellenar meses últimos 12 en YYYY-MM
+    (function fillMonths(){
+      const now = new Date(); const items = ['<option value="">Todos</option>'];
+      for (let i=0;i<12;i++){
+        const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+        const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        const label = d.toLocaleDateString('es-CO', { month:'long', year:'numeric' });
+        items.push(`<option value="${ym}">${label}</option>`);
+      }
+      monthSelect.innerHTML = items.join('');
     })();
 
-    function persistView(){
-      localStorage.setItem('tickets_view', JSON.stringify({ analyst: analystSelect.value, view: viewSelect.value }));
-    }
-    viewSelect.addEventListener('change', ()=>{ persistView(); render(); });
-    analystSelect.addEventListener('change', ()=>{ persistView(); render(); });
+    // Prefs guardadas
+    (function initView(){
+      const saved = JSON.parse(localStorage.getItem('tickets_view')||'{}');
+      viewSelect.value   = saved.view || 'mis';
+      analystSelect.value= saved.analyst || '';
+      statusSelect.value = saved.status || '';
+      monthSelect.value  = saved.month || '';
+    })();
+    function persistView(){ localStorage.setItem('tickets_view', JSON.stringify({ view:viewSelect.value, analyst:analystSelect.value, status:statusSelect.value, month:monthSelect.value })); }
+    [viewSelect,analystSelect,statusSelect,monthSelect].forEach(el => el.addEventListener('change', ()=>{ persistView(); fetchRemote(); }));
 
-    /* ====== UI helpers ====== */
-    const show = (msg, kind='ok')=>{
-      notice.style.display='block';
-      notice.textContent = msg;
-      notice.style.borderColor = (kind==='ok') ? '#b2f2bb' : '#ffc9c9';
-      setTimeout(()=> notice.style.display='none', 2200);
-    };
+    // Helpers UI
+    const show = (msg, kind='ok')=>{ notice.style.display='block'; notice.textContent=msg; notice.style.borderColor=(kind==='ok')?'#b2f2bb':'#ffc9c9'; setTimeout(()=> notice.style.display='none', 2200); };
     const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
-    const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p}</span>`;
-    const tagE  = e => `<strong class="${e==='Abierto'?'e-abierto':e==='En Proceso'?'e-proceso':'e-cerrado'}">${e}</strong>`;
-    const fmt   = iso => new Date(iso).toLocaleString();
+    const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p||''}</span>`;
+    const tagE  = e => {
+      const s = String(e||''); const cls = (s==='Abierto')?'e-abierto':(s==='En Proceso')?'e-proceso':(s==='Cerrado')?'e-cerrado':'e-cancelado';
+      return `<strong class="${cls}">${s}</strong>`;
+    };
+    const fmt = iso => { const d = (iso instanceof Date) ? iso : new Date(iso); return isNaN(d) ? '' : d.toLocaleString(); };
 
     function computeCounters(rows){
-      const c = { total: rows.length, abiertos:0, en_proceso:0, cerrados:0 };
-      rows.forEach(t=>{
-        const s = String(t.estado||'').toLowerCase();
-        if (s==='abierto') c.abiertos++;
-        else if (s==='en proceso') c.en_proceso++;
-        else if (s==='cerrado') c.cerrados++;
-      });
+      const c = { total:rows.length, abiertos:0, en_proceso:0, cerrados:0, cancelados:0 };
+      rows.forEach(t=>{ const s=String(t.estado||'').toLowerCase();
+        if(s==='abierto') c.abiertos++; else if(s==='en proceso') c.en_proceso++; else if(s==='cerrado') c.cerrados++; else if(s==='cancelado') c.cancelados++; });
       return c;
     }
-    function setCounters(c){
-      kpiTotal.textContent = c.total;
-      kpiAb.textContent = c.abiertos;
-      kpiPr.textContent = c.en_proceso;
-      kpiCe.textContent = c.cerrados;
-    }
+    function setCounters(c){ kpiTotal.textContent=c.total; kpiAb.textContent=c.abiertos; kpiPr.textContent=c.en_proceso; kpiCe.textContent=c.cerrados; kpiCa.textContent=c.cancelados; }
 
-    /* ====== Origen de datos para la tabla ====== */
+    // Fuente actual de datos
     function currentRows(){
-      // Preferimos remoto si existe; si no, local
       const base = Array.isArray(ticketsRemote) ? ticketsRemote : ticketsLocal;
       lastSource = Array.isArray(ticketsRemote) ? 'Sheets' : 'Local';
-      // Filtros:
-      const analyst = analystSelect.value.trim();
-      const view = viewSelect.value; // 'todos' | 'mis'
+      // Filtro adicional de estado local si usuario lo puso (cuando backend no lo aplicó)
       let rows = base.slice();
-
-      if (view === 'mis' && analyst){
-        const aN = norm(analyst);
-        rows = rows.filter(x => norm(x.analista) === aN);
-      }
-      // Por defecto mostramos pendientes (no cerrados) para “mis”; para “todos” mostramos todos.
-      if (view === 'mis'){
-        rows = rows.filter(x => String(x.estado||'').toLowerCase() !== 'cerrado');
-      }
-      // Orden por fecha desc
+      const st = statusSelect.value;
+      if (st==='pendientes'){ rows = rows.filter(x => !['Cerrado','Cancelado'].includes(String(x.estado))); }
+      else if (st && st!==''){ rows = rows.filter(x => String(x.estado)===st); }
+      // Orden por fecha
       rows.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
       return rows;
     }
 
     function render(countersFromAPI){
       const rows = currentRows();
-      // Counters
-      if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI);
-      else setCounters(computeCounters(rows));
-      // Badge fuente
+      if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI); else setCounters(computeCounters(rows));
       syncBadge.innerHTML = `Fuente: <strong>${lastSource}</strong>`;
-      // Body
       tbody.innerHTML = rows.map(t=>`
         <tr>
           <td>${t.id||''}</td>
@@ -437,72 +341,69 @@
           <td>${esc(t.usuario||'')}</td>
           <td>${badge(t.prioridad||'')}</td>
           <td>${tagE(t.estado||'')}</td>
-          <td data-fecha-for="${t.id}">${fmt(t.fecha||new Date())}</td>
+          <td>${fmt(t.fecha)}</td>
+          <td>${esc(t.motivo||'')}</td>
           <td style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <select class="estado-select" data-id="${t.id}">
               <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
               <option ${t.estado==='En Proceso'?'selected':''}>En Proceso</option>
               <option ${t.estado==='Cerrado'?'selected':''}>Cerrado</option>
+              <option ${t.estado==='Cancelado'?'selected':''}>Cancelado</option>
             </select>
             <select class="prio-select" data-id="${t.id}">
               <option ${t.prioridad==='Alta'?'selected':''}>Alta</option>
               <option ${t.prioridad==='Media'?'selected':''}>Media</option>
               <option ${t.prioridad==='Baja'?'selected':''}>Baja</option>
             </select>
-            <button class="btn danger" data-action="del" data-id="${t.id}">Eliminar</button>
           </td>
-        </tr>`).join('') || `<tr><td colspan="9" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
+        </tr>`).join('') || `<tr><td colspan="10" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
-    /* ====== Lectura REMOTA (Sheets) ====== */
+    // Lectura REMOTA (usa modelo B: whoami + list)
+    async function fetchWhoAmI(){
+      try{
+        const url = WEB_APP_URL + '?action=whoami';
+        const res = await fetch(url);
+        const data = await res.json();
+        identity = data && data.ok ? data.me : null;
+        who.textContent = identity ? `Identidad: ${identity.name} (${identity.role})` : 'Identidad: (no detectada)';
+      }catch{ identity = null; }
+    }
+
     async function fetchRemote(){
       try{
         const params = new URLSearchParams();
         params.set('action','list');
-        // Enviamos preferencia actual para que el backend pueda filtrar si desea
-        const analyst = analystSelect.value.trim();
-        if (analyst) params.set('analyst', analyst);
-        params.set('view', viewSelect.value);           // 'mis' | 'todos'
-        params.set('state', viewSelect.value==='mis' ? 'pendientes' : 'todos');
-        params.set('limit','1000');
+        // Vista/admin: si no soy admin, backend fuerza 'mis'
+        params.set('view', viewSelect.value);
+        // Analista: si backend tiene identidad, la usa. Para externos podemos enviar ?key en el enlace (no aquí).
+        if (analystSelect.value) params.set('analyst', analystSelect.value);
+        // Estado
+        const st = statusSelect.value;
+        if (st==='pendientes') params.set('state','pendientes'); else if (st) params.set('status', st);
+        // Mes
+        if (monthSelect.value) params.set('ym', monthSelect.value);
+        params.set('limit','1500');
 
-        const url = WEB_APP_URL + '?' + params.toString();
-        const res = await fetch(url, { method:'GET', mode:'cors' });
+        const res = await fetch(WEB_APP_URL + '?' + params.toString());
         const data = await res.json();
-
         if (data && data.ok && Array.isArray(data.items)){
-          // Normalizamos nombres de campos por si el backend envía capitalización distinta
-          ticketsRemote = data.items.map(x=>({
-            id: x.id, analista: x.analista, categoria: x.categoria, falla: x.falla,
-            usuario: x.usuario, prioridad: x.prioridad, estado: x.estado, fecha: x.fecha, adjunto: x.adjunto, row: x.row
-          }));
+          ticketsRemote = data.items;
+          if (data.me){ identity = data.me; who.textContent = `Identidad: ${identity.name} (${identity.role})`; }
           render(data.counters);
-        } else {
-          ticketsRemote = null;
-          render();
-        }
-      }catch(err){
-        console.warn('No se pudo leer remoto:', err);
-        ticketsRemote = null;
-        render();
-      }
+        } else { ticketsRemote = null; render(); }
+      }catch(err){ console.warn('Remoto falló', err); ticketsRemote = null; render(); }
     }
 
-    /* ====== POST sin preflight (ya lo tenías) ====== */
+    // POST plano
     async function postJSON(payload){
-      const res = await fetch(WEB_APP_URL, {
-        method:'POST',
-        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      });
-      try { return await res.json(); }
-      catch { return { ok:false, error:'Respuesta no-JSON (¿permisos o CORS?)' }; }
+      const res = await fetch(WEB_APP_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+      try { return await res.json(); } catch { return { ok:false, error:'Respuesta no-JSON' }; }
     }
 
-    /* ====== crear ticket ====== */
+    // Crear ticket
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
-
       const analista = $('#analista').value;
       const correoAnalista = $('#correoAnalista').value.trim();
       const categoria = $('#categoria').value;
@@ -511,105 +412,60 @@
       const prioridad = $('#prioridad').value;
       const descripcion = $('#descripcion').value.trim();
       const adjInput = $('#adj'); const adjuntoNombre = adjInput.files?.[0]?.name || '';
-
-      if(!analista || !categoria || !falla || !usuario || !prioridad || !descripcion){
-        show('Completa los campos obligatorios', 'err'); return;
-      }
+      if(!analista || !categoria || !falla || !usuario || !prioridad || !descripcion){ show('Completa los campos obligatorios','err'); return; }
 
       const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
       const nowISO = new Date().toISOString();
       const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, adjuntoNombre, estado:'Abierto', fecha: nowISO };
-
-      // Guardar local inmediato
       ticketsLocal.unshift(t); saveLocal(ticketsLocal); render(); show('Guardado local. Enviando a Sheets…');
 
-      const d = await postJSON({
-        action:'create',
-        id: t.id, analista, correoAnalista, categoria, falla,
-        usuario, prioridad, descripcion,
-        estado: t.estado, fechaISO: nowISO, adjuntoNombre
-      });
-
-      if (!d || !d.ok){
-        console.error('CREATE fail:', d);
-        show('No se pudo crear en Sheets: ' + (d && d.error ? d.error : 'error'), 'err');
-      } else if (d.row) {
-        // intentamos reflejar en remoto refrescando
-        fetchRemote();
-      }
-
-      form.reset();
-      $('#correoAnalista').value = '';
+      const d = await postJSON({ action:'create', id:t.id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, estado:t.estado, fechaISO: nowISO, adjuntoNombre });
+      if (!d || !d.ok){ console.error('CREATE fail:', d); show('No se pudo crear en Sheets', 'err'); }
+      else { fetchRemote(); }
+      form.reset(); $('#correoAnalista').value='';
     });
 
-    /* ====== cambiar estado / prioridad ====== */
+    // Cambios de estado/prioridad
     document.addEventListener('change', async (e)=>{
       const selE = e.target.closest('.estado-select');
       const selP = e.target.closest('.prio-select');
 
-      // Estado
-      if(selE){
-        const id = selE.dataset.id;
-        const status = selE.value;
-
-        // Actualiza local
+      if (selE){
+        const id = selE.dataset.id; const status = selE.value;
+        let reason = '';
+        if (status === 'Cancelado'){
+          reason = prompt('Motivo de cancelación:') || '';
+        }
         const tL = ticketsLocal.find(x=>x.id===id);
-        if (tL){ tL.estado = status; tL.fecha = new Date().toISOString(); saveLocal(ticketsLocal); }
-
+        if (tL){ tL.estado=status; tL.fecha=new Date().toISOString(); if(status==='Cancelado') tL.motivo=reason; saveLocal(ticketsLocal); }
         render();
-        const d = await postJSON({ action:'update_status', id, status });
-        if (!d || !d.ok) show('No se pudo actualizar el estado en Sheets', 'err');
-        else fetchRemote();
+        const d = await postJSON({ action:'update_status', id, status, reason });
+        if (!d || !d.ok) show('No se pudo actualizar el estado en Sheets','err'); else fetchRemote();
       }
 
-      // Prioridad
-      if(selP){
-        const id = selP.dataset.id;
-        const pr = selP.value;
-
+      if (selP){
+        const id = selP.dataset.id; const pr = selP.value;
         const tL = ticketsLocal.find(x=>x.id===id);
-        if (tL){ tL.prioridad = pr; tL.fecha = new Date().toISOString(); saveLocal(ticketsLocal); }
-
+        if (tL){ tL.prioridad=pr; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
         render();
         const d2 = await postJSON({ action:'update_priority', id, prioridad: pr });
-        if (!d2 || !d2.ok) show('No se pudo actualizar la prioridad en Sheets', 'err');
-        else fetchRemote();
+        if (!d2 || !d2.ok) show('No se pudo actualizar la prioridad en Sheets','err'); else fetchRemote();
       }
     });
 
-    /* ====== eliminar ====== */
-    tbody.addEventListener('click', async (e)=>{
-      const btn = e.target.closest('button[data-action="del"]'); if(!btn) return;
-      const id  = btn.dataset.id;
-
-      ticketsLocal = ticketsLocal.filter(x=>x.id!==id); saveLocal(ticketsLocal); render();
-      const d = await postJSON({ action:'delete', id });
-      if (!d || !d.ok) show('No se pudo eliminar en Sheets', 'err');
-      else fetchRemote();
-    });
-
-    /* ====== Inicialización ====== */
-    function initialAnalystFromView(){
-      // Si eligieron "mis" y no hay analista, intenta tomar el del formulario.
-      if (viewSelect.value==='mis' && !analystSelect.value){
-        const val = $('#analista').value;
-        if (val) analystSelect.value = val;
-      }
-    }
-
-    function init(){
-      // tema, vista ya cargados
-      initialAnalystFromView();
+    // Init
+    async function init(){
+      // identidad (si existe) + primer fetch
+      await fetchWhoAmI();
+      // si no soy admin, bloquea opción 'todos' visualmente
+      if (!identity || identity.role!=='admin'){ viewSelect.value='mis'; viewSelect.disabled = true; }
+      else { viewSelect.disabled = false; }
       render();
-      // primer intento remoto
       fetchRemote();
-      // auto refresh cuando la pestaña está visible
       setInterval(()=>{ if(!document.hidden) fetchRemote(); }, AUTO_REFRESH_MS);
     }
     init();
-
   })();
   </script>
 </body>
 </html>
-
