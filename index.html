@@ -47,15 +47,25 @@
 @media (min-width: 1100px){
 
   /* Contenedor de las dos vistas: centrado y sin sesgo */
+/* Contenedor de las dos vistas */
 main{
-  max-width: 1280px;            /* ancho total del conjunto */
-  width: calc(100% - 32px);     /* respira en bordes en pantallas chicas */
-  margin: 8px auto 16px;        /* <-- centrado (auto izquierda/derecha) */
-  padding: 0 16px;
+  max-width: 1320px;           /* ⬅ ancho total del conjunto (sube/baja) */
+  width: calc(100% - 32px);
+  margin: 8px auto 16px;       /* ⬅ centrado (auto a izq/der) */
+  padding: 0 28px 0 8px;       /* ⬅ sesgo hacia la izquierda: der=28px, izq=8px */
   display: grid;
-  gap: 24px;
-  grid-template-columns: 30px 70px;  /* izquierda más compacta, derecha fluida */
+  gap: 24px;                   /* ⬅ separación entre tarjetas */
+  grid-template-columns: 560px 1fr;  /* ⬅ ancho del panel izquierdo y el derecho fluye */
 }
+
+/* En pantallas pequeñas, apilar */
+@media (max-width: 1100px){
+  main{
+    grid-template-columns: 1fr;
+    padding: 0 12px;
+  }
+}
+
 
 /* En pantallas pequeñas, apila una debajo de la otra */
 @media (max-width: 1100px){
@@ -577,6 +587,7 @@ main{
   </script>
 </body>
 </html>
+
 
 
 
