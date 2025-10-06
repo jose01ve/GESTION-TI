@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gestión TI · Reporte de fallas</title>
   <style>
-    /* ====== Temas (variables) ====== */
     :root{
       --bg:#eef2ff; --card:#fff; --text:#0d1333; --muted:#51608b; --border:rgba(13,19,51,.12);
       --field:#fbfcff; --ok:#2b8a3e; --warn:#f08c00; --bad:#e03131; --accent:#6475ff;
@@ -14,12 +13,10 @@
       --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9aa4bf; --border:rgba(255,255,255,.15);
       --field:#0b1220; --accent:#93c5fd;
     }
-    /* Verde */
     body[data-theme="mint"]{
       --bg:#e6fff4; --card:#ffffff; --text:#0d1333; --muted:#4d6a61; --border:rgba(13,19,51,.12);
       --field:#f7fffb; --accent:#16a34a;
     }
-    /* Azul solicitado (#009be9) */
     body[data-theme="blue"]{
       --bg:#e7f5ff; --card:#ffffff; --text:#0d1333; --muted:#476481; --border:rgba(13,19,51,.12);
       --field:#f8fbff; --accent:#009be9;
@@ -28,20 +25,16 @@
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
 
-    /* ====== Header compacto ====== */
     header{position:sticky;top:0;z-index:10;background:transparent;padding:8px 0}
     .brand{max-width:1440px;margin:auto;position:relative;display:flex;justify-content:center;align-items:center}
     .logo{height:72px;max-width:95%;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.08))}
-    .controls{position:absolute;right:12px;top:0;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    .controls{position:absolute;right:12px;top:0;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
     .chip{font-size:.85rem;color:var(--muted)}
     .ctl{height:36px;padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field);color:var(--text)}
     .btn-sm{height:36px;padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--card);cursor:pointer}
 
-    /* ====== Layout sin scroll horizontal ====== */
     main{max-width:1440px;margin:8px auto 16px;padding:0 16px;display:grid;gap:16px}
-    /* Dos columnas cómodas en laptop (≥1100px) */
     @media(min-width:1100px){main{grid-template-columns:640px 1fr}}
-    /* En pantallas más pequeñas apila sin overflow */
     @media(max-width:1099.98px){main{grid-template-columns:1fr}}
 
     .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 20px rgba(13,19,51,.06)}
@@ -58,7 +51,6 @@
     .btn.primary{box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent)}
     .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 
-    /* KPIs: ancho mínimo para no cortar texto */
     .kpis{display:grid;grid-template-columns:repeat(5,minmax(160px,1fr));gap:10px;margin-bottom:8px}
     .kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
     .kpi .label{font-size:.88rem;color:var(--muted);white-space:nowrap}
@@ -96,6 +88,9 @@
     .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}
     .toolbar select{padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field)}
     .muted{color:var(--muted);font-size:.9rem}
+
+    /* ancho de la barra de color: 3 cm */
+    #accentPick{width:3cm;height:36px;padding:0}
   </style>
 </head>
 <body data-theme="mint">
@@ -109,14 +104,13 @@
         <button id="saveKey" class="btn-sm">Guardar</button>
         <button id="clearKey" class="btn-sm" title="Olvidar">✕</button>
 
-        <!-- Selector de tema compacto + color personalizado -->
         <select id="themePick" class="ctl">
           <option value="mint">Verde</option>
           <option value="blue">Azul</option>
           <option value="light">Claro</option>
           <option value="dark">Oscuro</option>
         </select>
-        <input id="accentPick" class="ctl" type="color" value="#009be9" title="Color personalizado" style="width:44px;padding:0" />
+        <input id="accentPick" class="ctl" type="color" value="#009be9" title="Color personalizado" />
         <input id="accentHex" class="ctl" placeholder="#hex" style="width:90px" />
       </div>
     </div>
@@ -203,7 +197,7 @@
               <label for="usuario">Usuario quien reporta *</label>
               <input id="usuario" placeholder="Escribe nombre o apellido" required />
               <ul id="acList" class="ac-list" hidden></ul>
-              <small class="help">Escribe el nombre del usuario o apellido.</small>
+              <small class="help">Escribe y elige entre las sugerencias.</small>
             </div>
 
             <div>
@@ -220,8 +214,8 @@
           </div>
 
           <div style="margin-top:10px">
-            <label for="descripcion">Descripción *</label>
-            <textarea id="descripcion" required placeholder="Describe el problema reportado…"></textarea>
+            <label for="descripcion">Descripción (opcional)</label>
+            <textarea id="descripcion" placeholder="Describe el problema reportado…"></textarea>
           </div>
 
           <div id="notice" class="notice"></div>
@@ -298,7 +292,7 @@
   (function(){
     'use strict';
 
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby-i6LLFClWXw0nCR-0NiDWWC0B48O2VRLYSW6o8mNwLZKq0r115HCVHcM7JtGkSlnToQ/exec';
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwvmToOtUn8kV74N8aniPguTCj2yRNQSKUp9lAOU9zyOa7hAapWYZcer05AZd3Qg98aSg/exec';
     const AUTO_REFRESH_MS = 30000;
 
     /* ====== Catálogos ====== */
@@ -313,7 +307,7 @@
       'Marcela Pareja','Juan Carlos Betancur','Diego Guerrero','Heidy Zambrano',
       'Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez',
       'Lina Areiza','María López','Andrés Gómez','Sofía Ríos','Mario Velez','Aide',
-      'Verónica Zapata','Jhon Madrid','Juan Carlos Betancur','Francisco Orrego','Jhon Calleja'
+      'Verónica Zapata','Jhon Madrid','Juan Carlos Betancur'
     ];
 
     /* ====== DOM/estado ====== */
@@ -331,37 +325,19 @@
     const tbody = $('#tbody'), kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe'), kpiCa=$('#kpiCa');
     const form = $('#formTicket'); const syncBadge = $('#syncBadge'); const who = $('#whoami');
 
-    /* ====== Tema + color personalizado ====== */
-    const themePick = $('#themePick');
-    const accentPick = $('#accentPick');
-    const accentHex = $('#accentHex');
-
-    function setAccent(hex){
-      if(!/^#([0-9a-f]{6}|[0-9a-f]{3})$/i.test(hex||'')) return;
-      document.documentElement.style.setProperty('--accent', hex);
-      accentHex.value = hex.toLowerCase();
-      accentPick.value = hex.toLowerCase();
-      localStorage.setItem('ui_accent', hex.toLowerCase());
-    }
+    /* ====== Tema + color ====== */
+    const themePick = $('#themePick'); const accentPick = $('#accentPick'); const accentHex = $('#accentHex');
+    function setAccent(hex){ if(!/^#([0-9a-f]{6}|[0-9a-f]{3})$/i.test(hex||'')) return;
+      document.documentElement.style.setProperty('--accent', hex); accentHex.value=hex.toLowerCase(); accentPick.value=hex.toLowerCase();
+      localStorage.setItem('ui_accent', hex.toLowerCase()); }
     (function initTheme(){
-      const savedTheme = localStorage.getItem('ui_theme') || 'mint';
-      document.body.setAttribute('data-theme', savedTheme);
-      themePick.value = savedTheme;
-
-      const savedAccent = localStorage.getItem('ui_accent') || (savedTheme==='blue'?'#009be9':'#6475ff');
-      setAccent(savedAccent);
-
-      themePick.addEventListener('change', ()=>{
-        document.body.setAttribute('data-theme', themePick.value);
-        localStorage.setItem('ui_theme', themePick.value);
-        // si cambia a azul y no hay accent, pon #009be9
-        if(themePick.value==='blue') setAccent('#009be9');
-      });
-      accentPick.addEventListener('input', ()=> setAccent(accentPick.value));
-      accentHex.addEventListener('change', ()=> setAccent(accentHex.value.trim()));
+      const savedTheme = localStorage.getItem('ui_theme') || 'mint'; document.body.setAttribute('data-theme', savedTheme); themePick.value=savedTheme;
+      const savedAccent = localStorage.getItem('ui_accent') || (savedTheme==='blue'?'#009be9':'#6475ff'); setAccent(savedAccent);
+      themePick.addEventListener('change', ()=>{ document.body.setAttribute('data-theme', themePick.value); localStorage.setItem('ui_theme', themePick.value); if(themePick.value==='blue') setAccent('#009be9'); });
+      accentPick.addEventListener('input', ()=> setAccent(accentPick.value)); accentHex.addEventListener('change', ()=> setAccent(accentHex.value.trim()));
     })();
 
-    /* ====== Clave (modelo B para externos) ====== */
+    /* ====== Clave (modelo B) ====== */
     const keyInput = $('#keyInput'), saveKeyBtn = $('#saveKey'), clearKeyBtn = $('#clearKey');
     (function initKey(){
       const urlKey = new URLSearchParams(location.search).get('key') || '';
@@ -373,18 +349,14 @@
     saveKeyBtn.addEventListener('click', ()=>{ AUTH_KEY = keyInput.value.trim(); localStorage.setItem('auth_key', AUTH_KEY); fetchWhoAmI().then(fetchRemote); });
     clearKeyBtn.addEventListener('click', ()=>{ AUTH_KEY=''; keyInput.value=''; localStorage.removeItem('auth_key'); fetchWhoAmI().then(fetchRemote); });
 
-    /* ====== Llenar select Analista + correo ====== */
+    /* ====== Analistas ====== */
     (function initAnalistas(){
       const sel = $('#analista');
-      sel.innerHTML = '<option value="">Selecciona…</option>' +
-        ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
-      sel.addEventListener('change', ()=>{
-        const a = ANALISTAS.find(x=>x.nombre===sel.value);
-        $('#correoAnalista').value = a ? a.email : '';
-      });
+      sel.innerHTML = '<option value="">Selecciona…</option>' + ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
+      sel.addEventListener('change', ()=>{ const a = ANALISTAS.find(x=>x.nombre===sel.value); $('#correoAnalista').value = a ? a.email : ''; });
     })();
 
-    /* ====== Autocomplete simple usuarios ====== */
+    /* ====== Autocomplete usuarios ====== */
     const inputUsuario = $('#usuario'); const acList = $('#acList');
     const norm = (s)=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
     function filtraUsuarios(q){ const n=norm(q); if(!n) return []; return USUARIOS.filter(u=>norm(u).includes(n)).slice(0,8); }
@@ -393,54 +365,31 @@
     inputUsuario.addEventListener('focus', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
     document.addEventListener('click', (e)=>{ if (e.target.closest('#acList li')){ inputUsuario.value = e.target.textContent; acList.hidden = true; } else if(!e.target.closest('.ac')) { acList.hidden = true; } });
 
-    /* ====== Barra filtros ====== */
-    const viewSelect = $('#viewSelect');
-    const analystSelect = $('#analystSelect');
-    const statusSelect = $('#statusSelect');
-    const monthSelect  = $('#monthSelect');
-
-    (function fillMonths(){
-      const now = new Date(); const items = ['<option value="">Todos</option>'];
-      for (let i=0;i<12;i++){
-        const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    /* ====== Filtros ====== */
+    const viewSelect = $('#viewSelect'), analystSelect = $('#analystSelect'), statusSelect = $('#statusSelect'), monthSelect  = $('#monthSelect');
+    (function fillMonths(){ const now = new Date(); const items = ['<option value="">Todos</option>'];
+      for (let i=0;i<12;i++){ const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
         const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-        const label = d.toLocaleDateString('es-CO', { month:'long', year:'numeric' });
-        items.push(`<option value="${ym}">${label}</option>`);
-      }
-      monthSelect.innerHTML = items.join('');
-    })();
-
-    (function initView(){
-      const saved = JSON.parse(localStorage.getItem('tickets_view')||'{}');
-      viewSelect.value   = saved.view || 'mis';
-      analystSelect.value= saved.analyst || '';
-      statusSelect.value = saved.status || '';
-      monthSelect.value  = saved.month || '';
-    })();
+        const label = d.toLocaleDateString('es-CO', { month:'long', year:'numeric' }); items.push(`<option value="${ym}">${label}</option>`); }
+      monthSelect.innerHTML = items.join(''); })();
+    (function initView(){ const saved = JSON.parse(localStorage.getItem('tickets_view')||'{}');
+      viewSelect.value = saved.view || 'mis'; analystSelect.value = saved.analyst || ''; statusSelect.value = saved.status || ''; monthSelect.value = saved.month || ''; })();
     function persistView(){ localStorage.setItem('tickets_view', JSON.stringify({ view:viewSelect.value, analyst:analystSelect.value, status:statusSelect.value, month:monthSelect.value })); }
     [viewSelect,analystSelect,statusSelect,monthSelect].forEach(el => el.addEventListener('change', ()=>{ persistView(); fetchRemote(); }));
 
-    /* ====== Helpers UI ====== */
+    /* ====== UI helpers ====== */
     const show = (msg, kind='ok')=>{ notice.style.display='block'; notice.textContent=msg; notice.style.borderColor=(kind==='ok')?'#b2f2bb':'#ffc9c9'; setTimeout(()=> notice.style.display='none', 2200); };
     const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
     const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p||''}</span>`;
-    const tagE  = e => {
-      const s = String(e||''); const cls = (s==='Abierto')?'e-abierto':(s==='En Proceso')?'e-proceso':(s==='Cerrado')?'e-cerrado':'e-cancelado';
-      return `<strong class="${cls}">${s}</strong>`;
-    };
+    const tagE  = e => { const s = String(e||''); const cls = (s==='Abierto')?'e-abierto':(s==='En Proceso')?'e-proceso':(s==='Cerrado')?'e-cerrado':'e-cancelado'; return `<strong class="${cls}">${s}</strong>`; };
     const fmt = iso => { const d = (iso instanceof Date) ? iso : new Date(iso); return isNaN(d) ? '' : d.toLocaleString(); };
 
-    function computeCounters(rows){
-      const c = { total:rows.length, abiertos:0, en_proceso:0, cerrados:0, cancelados:0 };
-      rows.forEach(t=>{ const s=String(t.estado||'').toLowerCase();
-        if(s==='abierto') c.abiertos++; else if(s==='en proceso') c.en_proceso++; else if(s==='cerrado') c.cerrados++; else if(s==='cancelado') c.cancelados++; });
-      return c;
-    }
+    function computeCounters(rows){ const c = { total:rows.length, abiertos:0, en_proceso:0, cerrados:0, cancelados:0 };
+      rows.forEach(t=>{ const s=String(t.estado||'').toLowerCase(); if(s==='abierto') c.abiertos++; else if(s==='en proceso') c.en_proceso++; else if(s==='cerrado') c.cerrados++; else if(s==='cancelado') c.cancelados++; }); return c; }
     function setCounters(c){ kpiTotal.textContent=c.total; kpiAb.textContent=c.abiertos; kpiPr.textContent=c.en_proceso; kpiCe.textContent=c.cerrados; kpiCa.textContent=c.cancelados; }
 
     function currentRows(){
-      const base = Array.isArray(ticketsRemote) ? ticketsRemote : ticketsLocal;
-      lastSource = Array.isArray(ticketsRemote) ? 'Sheets' : 'Local';
+      const base = (ticketsRemote !== null) ? ticketsRemote : ticketsLocal; // usa Sheets si ya cargó
       let rows = base.slice();
       const st = statusSelect.value;
       if (st==='pendientes'){ rows = rows.filter(x => !['Cerrado','Cancelado'].includes(String(x.estado))); }
@@ -489,10 +438,9 @@
         const data = await res.json();
         identity = data && data.ok ? data.me : null;
         who.textContent = identity ? `Identidad: ${identity.name} (${identity.role})` : 'Identidad: (no detectada)';
-        // forzar permisos visuales
-        viewSelect.disabled = !(identity && identity.role==='admin');
-        if (viewSelect.disabled) viewSelect.value = 'mis';
-        // fijar analista del filtro si no se eligió
+        // permisos visuales
+        const isAdmin = identity && identity.role==='admin';
+        viewSelect.disabled = !isAdmin; if (!isAdmin) viewSelect.value = 'mis';
         if (identity && !analystSelect.value) analystSelect.value = identity.name;
       }catch{ identity = null; who.textContent = 'Identidad: (no detectada)'; }
     }
@@ -511,15 +459,18 @@
 
         const res = await fetch(WEB_APP_URL + '?' + params.toString());
         const data = await res.json();
-        if (data && data.ok && Array.isArray(data.items)){
-          ticketsRemote = data.items;
+        if (data && data.ok){
+          ticketsRemote = Array.isArray(data.items) ? data.items : [];
+          lastSource = 'Sheets';
           if (data.me){ identity = data.me; who.textContent = `Identidad: ${identity.name} (${identity.role})`; }
           render(data.counters);
-        } else { ticketsRemote = null; render(); }
-      }catch(err){ console.warn('Remoto falló', err); ticketsRemote = null; render(); }
+        } else {
+          ticketsRemote = null; lastSource='Local'; render();
+        }
+      }catch(err){ console.warn('Remoto falló', err); ticketsRemote = null; lastSource='Local'; render(); }
     }
 
-    /* ====== POST (incluye key si existe) ====== */
+    /* ====== POST ====== */
     async function postJSON(payload){
       if (AUTH_KEY) payload.key = AUTH_KEY;
       const res = await fetch(WEB_APP_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
@@ -535,14 +486,14 @@
       const falla = $('#falla').value;
       const usuario = $('#usuario').value.trim();
       const prioridad = $('#prioridad').value;
-      const descripcion = $('#descripcion').value.trim();
+      const descripcion = $('#descripcion').value.trim(); // opcional
       const adjInput = $('#adj'); const adjuntoNombre = adjInput.files?.[0]?.name || '';
-      if(!analista || !categoria || !falla || !usuario || !prioridad || !descripcion){ show('Completa los campos obligatorios','err'); return; }
+      if(!analista || !categoria || !falla || !usuario || !prioridad){ show('Completa los campos obligatorios','err'); return; }
 
       const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
       const nowISO = new Date().toISOString();
       const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, adjuntoNombre, estado:'Abierto', fecha: nowISO };
-      ticketsLocal.unshift(t); saveLocal(ticketsLocal); render(); show('Guardado local. Enviando a Sheets…');
+      ticketsLocal.unshift(t); saveLocal(ticketsLocal); lastSource='Local'; render(); show('Guardado local. Enviando a Sheets…');
 
       const d = await postJSON({ action:'create', id:t.id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, estado:t.estado, fechaISO: nowISO, adjuntoNombre });
       if (!d || !d.ok){ console.error('CREATE fail:', d); show('No se pudo crear en Sheets', 'err'); }
@@ -557,11 +508,10 @@
 
       if (selE){
         const id = selE.dataset.id; const status = selE.value;
-        let reason = '';
-        if (status === 'Cancelado') reason = prompt('Motivo de cancelación:') || '';
+        let reason = ''; if (status === 'Cancelado') reason = prompt('Motivo de cancelación:') || '';
         const tL = ticketsLocal.find(x=>x.id===id);
         if (tL){ tL.estado=status; tL.fecha=new Date().toISOString(); if(status==='Cancelado') tL.motivo=reason; saveLocal(ticketsLocal); }
-        render();
+        lastSource='Local'; render();
         const d = await postJSON({ action:'update_status', id, status, reason });
         if (!d || !d.ok) show('No se pudo actualizar el estado en Sheets','err'); else fetchRemote();
       }
@@ -570,18 +520,17 @@
         const id = selP.dataset.id; const pr = selP.value;
         const tL = ticketsLocal.find(x=>x.id===id);
         if (tL){ tL.prioridad=pr; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
-        render();
+        lastSource='Local'; render();
         const d2 = await postJSON({ action:'update_priority', id, prioridad: pr });
         if (!d2 || !d2.ok) show('No se pudo actualizar la prioridad en Sheets','err'); else fetchRemote();
       }
     });
 
-    /* ====== Init ====== */
     async function init(){
       await fetchWhoAmI();
       if (identity && !analystSelect.value) analystSelect.value = identity.name;
-      render();
-      fetchRemote();
+      render();               // primer render rápido (local)
+      fetchRemote();          // luego sincroniza Sheets y cambia a “Fuente: Sheets”
       setInterval(()=>{ if(!document.hidden) fetchRemote(); }, AUTO_REFRESH_MS);
     }
     init();
@@ -589,5 +538,3 @@
   </script>
 </body>
 </html>
-
-
