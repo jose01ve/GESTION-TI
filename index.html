@@ -2,377 +2,347 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gestión TI · Reporte de fallas</title>
 
   <style>
-    /* ===========================
-       Variables de tema + acento
-       =========================== */
+    /* =========================================================
+       TEMAS Y TOKENS
+       - "light", "dark", "mint" son temas predefinidos
+       - --accent puede sobreescribirse con un HEX personalizado
+       ========================================================= */
     :root{
-      /* tema "claro" por defecto */
-      --bg:#eef2ff;
-      --card:#ffffff;
-      --text:#0d1333;
-      --muted:#51608b;
-      --border:rgba(13,19,51,.12);
-      --field:#fbfcff;
-
-      /* color de acento configurable (se actualiza desde JS) */
-      --accent:#009be9; /* valor inicial */
+      --bg:#eef2ff; --card:#fff; --text:#0d1333; --muted:#51608b; --border:rgba(13,19,51,.12);
+      --field:#fbfcff; --accent:#6aa3ff; --ok:#2b8a3e; --warn:#f08c00; --bad:#e03131;
+      --stickyTop:72px; /* distancia bajo la barra superior pegajosa */
     }
     body[data-theme="dark"]{
-      --bg:#0f172a;
-      --card:#111827;
-      --text:#e5e7eb;
-      --muted:#9aa4bf;
-      --border:rgba(255,255,255,.15);
-      --field:#0b1220;
+      --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9aa4bf; --border:rgba(255,255,255,.15);
+      --field:#0b1220; --accent:#93c5fd;
     }
     body[data-theme="mint"]{
-      --bg:#e6fff4;
-      --card:#ffffff;
-      --text:#0d1333;
-      --muted:#4d6a61;
-      --border:rgba(13,19,51,.12);
-      --field:#f7fffb;
+      --bg:#e6fff4; --card:#ffffff; --text:#0d1333; --muted:#4d6a61; --border:rgba(13,19,51,.12);
+      --field:#f7fffb; --accent:#16a34a;
     }
 
-    /* =====================
-       Base y top de la app
-       ===================== */
+    /* ====== base ====== */
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-      font-family:system-ui,Segoe UI,Roboto,Arial;
-    }
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
 
-    /* Barra superior compacta (identidad / clave / tema) */
+    /* =========================================================
+       BARRA SUPERIOR
+       - logo a la izquierda
+       - identidad, clave y tema (compacto) a la derecha
+       ========================================================= */
     header{
-      position:sticky; top:0; z-index:50;
-      backdrop-filter:saturate(1.2) blur(6px);
-      background:color-mix(in srgb, var(--bg) 92%, transparent);
-      border-bottom:1px solid var(--border);
+      position:sticky;top:0;z-index:50;
+      background:linear-gradient(180deg, color-mix(in srgb, var(--bg) 82%, transparent), transparent);
+      backdrop-filter:saturate(120%) blur(4px);
+      border-bottom:1px solid color-mix(in srgb, var(--border) 60%, transparent);
     }
     .topbar{
-      max-width:1680px; margin:auto;
-      padding:8px 16px;
-      display:flex; gap:8px; align-items:center; justify-content:flex-end;
-      flex-wrap:wrap;
+      max-width:1680px;margin:0 auto;padding:8px 16px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
     }
-    .chip{font-size:.86rem;color:var(--muted)}
-    .ctl,.btn-sm{
-      height:36px; padding:6px 10px;
-      border:1px solid var(--border); border-radius:10px;
-      background:var(--field); color:var(--text);
+    .brand{
+      display:flex;align-items:center;gap:10px;min-height:56px;
     }
-    .btn-sm{background:var(--card); cursor:pointer}
-    /* Chip que muestra el nombre del color con puntico del acento */
-    #accentName::before{
-      content:""; display:inline-block; width:12px; height:12px; border-radius:50%;
-      background:var(--accent); margin-right:6px; border:1px solid var(--border);
+    /* Logo “camuflado” con el tema (más arriba, en la barra) */
+    .logo{
+      height:44px;object-fit:contain;opacity:.9;
+      mix-blend-mode:multiply; /* se integra con el color del tema */
+      filter:drop-shadow(0 2px 5px rgba(0,0,0,.06));
+    }
+    .actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .chip{font-size:.9rem;color:var(--muted)}
+    .ctl{height:36px;padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field);color:var(--text)}
+    .btn-sm{height:36px;padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--card);cursor:pointer}
+    #themePick{width:118px;height:36px} /* tamaño tipo “botón” */
+
+    /* =========================================================
+       LAYOUT PRINCIPAL
+       ========================================================= */
+    main{max-width:1680px;margin:8px auto 16px;padding:0 16px;display:grid;gap:16px}
+    @media (min-width:1200px){
+      main{grid-template-columns:640px 1fr}
     }
 
-    /* Logo "flotante" más arriba, mimetizado con el fondo */
-    .logo-float{
-      position:absolute; left:40px; top:72px; z-index:1;
-      opacity:.9; mix-blend-mode:multiply; /* se camufla con el fondo */
-      filter:saturate(.85) brightness(1.03);
-    }
-    .logo-float img{ height:62px; display:block }
-
-    /* ===========
-       Disposición
-       =========== */
-    main{
-      max-width:1680px; margin:8px auto 16px; padding:0 16px;
-      display:grid; gap:16px;
-    }
-    /* Dos columnas: izquierda (form) 640px — derecha (lista) flexible */
-    @media(min-width:1200px){ main{ grid-template-columns:640px 1fr; } }
-
-    .card{
-      position:relative;
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      box-shadow:0 10px 24px rgba(13,19,51,.08);
-    }
+    /* =========================================================
+       CARDS Y SECCIONES
+       ========================================================= */
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 24px rgba(13,19,51,.08)}
     .card h2{
-      margin:0; padding:16px 16px 0;
-      position:sticky; top:0; z-index:2; /* encabezado fijo dentro de la tarjeta */
-      background:linear-gradient(to bottom, color-mix(in srgb, var(--card) 85%, transparent), transparent);
+      margin:0;padding:16px 16px 0;
+      position:sticky;top:0;z-index:2;
+      background:linear-gradient(180deg,var(--card),color-mix(in srgb, var(--card) 70%, transparent));
+      border-top-left-radius:16px;border-top-right-radius:16px;
     }
-    .card .body{ padding:16px }
+    .card .body{padding:16px}
 
-    /* ==========
-       Formularios
-       ========== */
-    form .grid{ display:grid; gap:12px }
-    @media(min-width:560px){ form .grid{ grid-template-columns:1fr 1fr } }
+    /* Columna izquierda y derecha pegajosas al mismo nivel */
+    .stickyL{position:sticky;top:var(--stickyTop);align-self:start}
+    .stickyR{position:sticky;top:var(--stickyTop);align-self:start;z-index:1}
 
-    label{ font-size:.9rem; color:var(--muted); display:block; margin-bottom:6px }
-    input, select, textarea{
-      width:100%; padding:10px 12px;
-      border:1px solid var(--border); border-radius:12px;
-      background:var(--field); color:var(--text);
-    }
-    textarea{ min-height:96px }
-    .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px }
-    .btn{
-      border:1px solid var(--accent);
-      background:var(--card); color:var(--text);
-      border-radius:12px; padding:10px 14px; font-weight:600; cursor:pointer;
-      box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
-    }
-    .btn.secondary{ border-color:var(--border); box-shadow:none }
-
-    /* Buscar rápido debajo de los botones del formulario */
-    .quick-tools{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:8px }
-    .chip-btn{
-      border:1px solid var(--border); background:var(--field); color:var(--text);
-      border-radius:999px; padding:6px 10px; font-size:.86rem; cursor:pointer;
+    /* La tabla del lado derecho tiene su propio scroll */
+    .table-wrap{
+      max-height:calc(100vh - 340px);
+      overflow:auto;border:1px solid var(--border);border-radius:12px;padding:8px;
+      background:color-mix(in srgb, var(--card) 96%, transparent)
     }
 
-    /* KPIs de la lista */
-    .kpis{ display:grid; grid-template-columns:repeat(5,minmax(180px,1fr)); gap:12px; margin-bottom:8px }
-    .kpi{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px }
-    .kpi .label{ font-size:.88rem; color:var(--muted); white-space:nowrap }
-    .kpi .val{ font-weight:800; font-size:1.25rem }
+    /* =========================================================
+       FORMULARIO IZQUIERDA
+       ========================================================= */
+    form .grid{display:grid;gap:12px}
+    @media(min-width:560px){form .grid{grid-template-columns:1fr 1fr}}
+    label{font-size:.9rem;color:var(--muted);display:block;margin-bottom:6px}
+    input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--field);color:var(--text)}
+    textarea{min-height:96px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .btn{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
+    .btn.primary{border-color:color-mix(in srgb, var(--accent) 45%, var(--border))}
+    #qSearch{width:260px}
 
-    /* Tabla de tickets */
-    table{ width:100%; border-collapse:separate; border-spacing:0 10px; color:var(--text) }
-    thead th{ font-size:.85rem; color:var(--muted); text-align:left; padding:0 8px; white-space:nowrap }
-    tbody tr{ background:var(--card); border:1px solid var(--border) }
-    tbody td{ padding:10px 8px; vertical-align:top }
-
-    .badge{
-      padding:4px 8px; border:1px solid var(--border); border-radius:999px;
-      font-size:.78rem; white-space:nowrap;
+    /* Bloque: “Ayuda rápida” para no dejar esa zona plana */
+    .helper{
+      margin-top:10px;display:grid;gap:10px;grid-template-columns:1fr 1fr;
     }
-    .prio-alta{  background:#fff5f5 }
-    .prio-media{ background:#fff4e6 }
-    .prio-baja{  background:#ebfbee }
-    body[data-theme="dark"] .prio-alta{  background:#402b2b }
-    body[data-theme="dark"] .prio-media{ background:#3e2f18 }
-    body[data-theme="dark"] .prio-baja{  background:#1b3b2a }
-
-    .e-abierto{ color:#e03131 }
-    .e-proceso{ color:#f08c00 }
-    .e-cerrado{ color:#2b8a3e }
-    .e-cancelado{ color:#6b7280 }
-
-    .toolbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:8px 0 12px }
-    .toolbar select{ padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:var(--field) }
-    .muted{ color:var(--muted); font-size:.9rem }
-
-    .notice{ display:none; margin-top:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px }
-
-    footer{ max-width:1680px; margin:6px auto 28px; padding:0 16px; color:var(--muted); font-size:.9rem }
-    small.help{ display:block; color:var(--muted); margin-top:4px }
-
-    /* Autocomplete usuarios */
-    .ac{ position:relative }
-    .ac-list{
-      position:absolute; left:0; right:0; top:100%;
-      background:var(--card); border:1px solid var(--border);
-      border-radius:12px; box-shadow:0 10px 24px rgba(13,19,51,.08);
-      margin-top:6px; max-height:220px; overflow:auto; padding:6px; z-index:5
+    .helper .box{
+      border:1px solid var(--border);border-radius:12px;padding:10px;background:var(--field)
     }
-    .ac-list[hidden]{ display:none }
-    .ac-list li{ list-style:none; padding:8px 12px; cursor:pointer; border-radius:10px }
-    .ac-list li[aria-selected="true"], .ac-list li:hover{
-      background:color-mix(in srgb, var(--accent) 12%, transparent)
-    }
+    .helper h4{margin:0 0 6px 0;font-size:.95rem;color:var(--muted)}
+    .helper ul{margin:0;padding-left:18px}
+    .helper li{margin:4px 0}
+
+    /* Chips y plantillas */
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .chipbtn{border:1px solid var(--border);background:var(--field);border-radius:999px;padding:6px 10px;font-size:.85rem;cursor:pointer}
+    details{margin-top:6px}
+    details summary{cursor:pointer;color:var(--muted)}
+
+    /* =========================================================
+       KPIs + TABLA
+       ========================================================= */
+    .kpis{display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:12px;margin:8px 0 10px}
+    .kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
+    .kpi .label{font-size:.88rem;color:var(--muted);white-space:nowrap}
+    .kpi .val{font-weight:800;font-size:1.25rem}
+
+    table{width:100%;border-collapse:separate;border-spacing:0 10px;color:var(--text)}
+    thead th{position:sticky;top:0;background:var(--card);z-index:1;font-size:.85rem;color:var(--muted);text-align:left;padding:0 8px;white-space:nowrap}
+    tbody tr{background:var(--card);border:1px solid var(--border)}
+    tbody td{padding:10px 8px;vertical-align:top}
+
+    .badge{padding:4px 8px;border:1px solid var(--border);border-radius:999px;font-size:.78rem;white-space:nowrap}
+    .prio-alta{background:#fff5f5}.prio-media{background:#fff4e6}.prio-baja{background:#ebfbee}
+    body[data-theme="dark"] .prio-alta{background:#402b2b}
+    body[data-theme="dark"] .prio-media{background:#3e2f18}
+    body[data-theme="dark"] .prio-baja{background:#1b3b2a}
+    .e-abierto{color:var(--bad)}.e-proceso{color:var(--warn)}.e-cerrado{color:var(--ok)}.e-cancelado{color:#6b7280}
+
+    .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}
+    .toolbar select{padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field)}
+    .muted{color:var(--muted);font-size:.9rem}
+    .notice{display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
+    footer{max-width:1680px;margin:6px auto 28px;padding:0 16px;color:var(--muted);font-size:.9rem}
+    .hidden{display:none!important}
   </style>
 </head>
-
 <body data-theme="light">
-  <!-- Barra superior: identidad, clave y selector de tema basado en nombres + HEX -->
+  <!-- =========================================================
+       BARRA SUPERIOR
+       - logo arriba (izquierda), controles a la derecha
+       ========================================================= -->
   <header>
     <div class="topbar">
-      <small id="whoami" class="chip">Identidad: (no detectada)</small>
+      <div class="brand">
+        <img class="logo" src="Imagen/logo-empresas.jpg"
+             onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';"
+             alt="Logo INGETEC / SEDIC">
+      </div>
 
-      <!-- Clave del "modelo B" para usuarios externos: se guarda localmente -->
-      <input id="keyInput" class="ctl" placeholder="Clave (Pablo, etc.)" style="width:160px">
-      <button id="saveKey" class="btn-sm">Guardar</button>
-      <button id="clearKey" class="btn-sm" title="Olvidar">✕</button>
+      <div class="actions">
+        <small id="whoami" class="chip">Identidad: (no detectada)</small>
+        <input id="keyInput" class="ctl" placeholder="Clave (opcional)" style="width:160px">
+        <button id="saveKey" class="btn-sm">Guardar</button>
+        <button id="clearKey" class="btn-sm" title="Olvidar">✕</button>
 
-      <!-- Selector de tema con NOMBRES visibles y HEX editable en data-hex -->
-      <select id="themePick" class="ctl" title="Tema base o Color de acento">
-        <optgroup label="Tema base">
-          <option value="Claro"   data-theme="light">Claro</option>
-          <option value="Oscuro"  data-theme="dark">Oscuro</option>
-          <option value="Mint"    data-theme="mint">Mint</option>
-        </optgroup>
-        <optgroup label="Color de acento (HEX)">
-          <!-- Cambia solo data-hex para ajustar el color sin tocar JS -->
-          <option value="Verde"       data-hex="#92e87c">Verde</option>
-          <option value="Amarillo"    data-hex="#ffe764">Amarillo</option>
-          <option value="Rojo"        data-hex="#e74176">Rojo</option>
-          <option value="Azul"        data-hex="#0040a8">Azul</option>
-          <option value="Azul claro"  data-hex="#20a1d8">Azul claro</option>
-          <option value="Azul oscuro" data-hex="#003f84">Azul oscuro</option>
-        </optgroup>
-      </select>
-      <small id="accentName" class="chip" title="Color de acento"></small>
+        <!-- IMPORTANTE:
+             - Si eliges 'light', 'dark' o 'mint' -> cambia el tema completo.
+             - Si escribes un valor que EMPIECE por '#', se toma como color de acento
+               (no cambia el tema, sólo --accent). Ej: #003f84               -->
+        <select id="themePick" class="ctl" title="Tema o color HEX">
+          <option value="light">Tema: Verde</option>
+          <option value="dark">Tema: Oscuro</option>
+          <option value="mint">Tema: Mint</option>
+          <option value="#003f84">#003f84</option>
+          <option value="#009be9">#009be9</option>
+          <option value="#002394">#002394</option>
+        </select>
+      </div>
     </div>
   </header>
 
-  <!-- Logo flotante más arriba y mimetizado -->
-  <div class="logo-float">
-    <img src="Imagen/logo-empresas.jpg"
-         onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';"
-         alt="INGETEC / SEDIC">
-  </div>
-
   <main>
-    <!-- =========================
-         Columna izquierda (form)
-         ========================= -->
-    <section class="card" id="cardForm">
-      <h2>REPORTE USUARIO</h2>
-      <div class="body">
-        <form id="formTicket" action="javascript:void(0)" autocomplete="off">
-          <div class="grid">
-            <div>
-              <label for="analista">Analista Responsable *</label>
-              <select id="analista" required></select>
+    <!-- =======================================================
+         COLUMNA IZQUIERDA (STICKY): REPORTE USUARIO
+         ======================================================= -->
+    <div class="stickyL">
+      <section class="card">
+        <h2>REPORTE USUARIO</h2>
+        <div class="body">
+          <form id="formTicket" action="javascript:void(0)" autocomplete="off">
+            <div class="grid">
+              <div>
+                <label for="analista">Analista Responsable *</label>
+                <select id="analista" required></select>
+              </div>
+
+              <div class="hidden">
+                <label for="correoAnalista">Correo analista</label>
+                <input id="correoAnalista" readonly />
+              </div>
+
+              <div>
+                <label for="categoria">Categoría *</label>
+                <select id="categoria" required>
+                  <option value="">Selecciona…</option>
+                  <option>Red</option><option>Hardware</option><option>Software</option>
+                  <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Otro</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="falla">Servicio prestado *</label>
+                <select id="falla" required>
+                  <option value="">Selecciona…</option>
+                  <option>Soporte a equipos informáticos</option>
+                  <option>Configuración equipo</option>
+                  <option>Desbloquear cuenta de red</option>
+                  <option>Préstamo Video Beam / Préstamo equipo</option>
+                  <option>Crear acta</option>
+                  <option>Instalación de PC-Dis \ Préstamo de equipo \ Dispositivo</option>
+                  <option>Reposición de equipo</option>
+                  <option>Retiro de equipo a usuario</option>
+                  <option>Traslado de puesto</option>
+                  <option>Instalación de software - Desinstalación \ Traslado SW</option>
+                  <option>Desbloqueo punto de red</option>
+                  <option>Adquisición de Software y Hardware</option>
+                  <option>Asignación de puesto nuevo</option>
+                  <option>Creación de cuentas de red</option>
+                  <option>Eliminación de cuentas de red</option>
+                  <option>Crear cuenta de correo \ Eliminar</option>
+                  <option>Actualización de datos \ Información</option>
+                  <option>Inventario de Equipos</option>
+                  <option>Inventario de software</option>
+                  <option>Actualización de cuentas de red</option>
+                  <option>Asignar Permiso en servidores \ Retirar permisos</option>
+                  <option>Permisos en Unidades compartidas</option>
+                  <option>Soporte equipos CONSORCIO</option>
+                  <option>Auditoria desde TIC a Interventoría</option>
+                  <option>Instalación de Guayas</option>
+                  <option>Backups información</option>
+                  <option>Resolución de ECOS</option>
+                  <option>Actualización de carpetas de información general</option>
+                  <option>Actualización de información CADD</option>
+                  <option>Capacitación</option>
+                  <option>Reposición de equipos EPM</option>
+                  <option>Asesoría general</option>
+                  <option>Permisos en Skype Empresarial</option>
+                  <option>Desinstalación de programas</option>
+                  <option>Requerimiento de Impresión</option>
+                  <option>Gestión en Vault</option>
+                  <option>Permisos VPN</option>
+                  <option>Gestión en obra</option>
+                  <option>Crear cuenta de correo</option>
+                  <option>Entrega de equipo por reintegro o reposición</option>
+                  <option>Configurar Dispositivo móvil</option>
+                  <option>Marcación de puestos</option>
+                  <option>Recuperación de información</option>
+                  <option>Gestión aplicaciones</option>
+                </select>
+              </div>
+
+              <div class="ac">
+                <label for="usuario">Usuario quien reporta *</label>
+                <input id="usuario" placeholder="Escribe nombre o apellido" required />
+                <ul id="acList" class="ac-list" hidden></ul>
+                <small class="help">Escribe y elige entre las sugerencias.</small>
+              </div>
+
+              <div>
+                <label for="prioridad">Prioridad *</label>
+                <select id="prioridad" required>
+                  <option value="">Selecciona…</option><option>Alta</option><option>Media</option><option>Baja</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="adj">Adjunto (opcional)</label>
+                <input id="adj" type="file" accept="image/*" />
+              </div>
             </div>
 
-            <!-- Rellenado automático según analista; oculto para envío a Sheets -->
-            <div class="hidden">
-              <label for="correoAnalista">Correo analista</label>
-              <input id="correoAnalista" readonly />
+            <div style="margin-top:10px">
+              <label for="descripcion">Descripción (opcional)</label>
+              <textarea id="descripcion" placeholder="Describe el problema reportado…"></textarea>
             </div>
 
-            <div>
-              <label for="categoria">Categoría *</label>
-              <select id="categoria" required>
-                <option value="">Selecciona…</option>
-                <option>Red</option><option>Hardware</option><option>Software</option>
-                <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Otro</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="falla">Servicio prestado *</label>
-              <select id="falla" required>
-                <option value="">Selecciona…</option>
-                <option>Soporte a equipos informáticos</option>
-                <option>Configuración equipo</option>
-                <option>Desbloquear cuenta de red</option>
-                <option>Préstamo Video Beam / Préstamo equipo</option>
-                <option>Crear acta</option>
-                <option>Instalación de PC-Dis \ Préstamo de equipo \ Dispositivo</option>
-                <option>Reposición de equipo</option>
-                <option>Retiro de equipo a usuario</option>
-                <option>Traslado de puesto</option>
-                <option>Instalación de software - Desinstalación \ Traslado SW</option>
-                <option>Desbloqueo punto de red</option>
-                <option>Adquisición de Software y Hardware</option>
-                <option>Asignación de puesto nuevo</option>
-                <option>Creación de cuentas de red</option>
-                <option>Eliminación de cuentas de red</option>
-                <option>Crear cuenta de correo \ Eliminar</option>
-                <option>Actualización de datos \ Información</option>
-                <option>Inventario de Equipos</option>
-                <option>Inventario de software</option>
-                <option>Actualización de cuentas de red</option>
-                <option>Asignar Permiso en servidores \ Retirar permisos</option>
-                <option>Permisos en Unidades compartidas</option>
-                <option>Soporte equipos CONSORCIO</option>
-                <option>Auditoria desde TIC a Interventoría</option>
-                <option>Instalación de Guayas</option>
-                <option>Backups información</option>
-                <option>Resolución de ECOS</option>
-                <option>Actualización de carpetas de información general</option>
-                <option>Actualización de información CADD</option>
-                <option>Capacitación</option>
-                <option>Reposición de equipos EPM</option>
-                <option>Asesoría general</option>
-                <option>Permisos en Skype Empresarial</option>
-                <option>Desinstalación de programas</option>
-                <option>Requerimiento de Impresión</option>
-                <option>Gestión en Vault</option>
-                <option>Permisos VPN</option>
-                <option>Gestión en obra</option>
-                <option>Entrega de equipo por reintegro o reposición</option>
-                <option>Configurar Dispositivo móvil</option>
-                <option>Marcación de puestos</option>
-                <option>Recuperación de información</option>
-                <option>Gestión aplicaciones</option>
-              </select>
-            </div>
-
-            <!-- Autocomplete de usuarios (nombre o apellido) -->
-            <div class="ac">
-              <label for="usuario">Usuario quien reporta *</label>
-              <input id="usuario" placeholder="Escribe nombre o apellido" required />
-              <ul id="acList" class="ac-list" hidden></ul>
-              <small class="help">Escribe y elige entre las sugerencias.</small>
-            </div>
-
-            <div>
-              <label for="prioridad">Prioridad *</label>
-              <select id="prioridad" required>
-                <option value="">Selecciona…</option><option>Alta</option><option>Media</option><option>Baja</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="adj">Adjunto (opcional)</label>
-              <input id="adj" type="file" accept="image/*" />
-            </div>
-          </div>
-
-          <div style="margin-top:10px">
-            <label for="descripcion">Descripción (opcional)</label>
-            <textarea id="descripcion" placeholder="Describe el problema reportado…"></textarea>
-          </div>
-
-          <div id="notice" class="notice"></div>
-
-          <!-- Acciones del formulario -->
-          <div class="row">
-            <button class="btn" type="submit">➕ Guardar reporte</button>
-            <button class="btn secondary" type="reset">↺ Limpiar</button>
-
-            <!-- Buscador rápido (ID, categoría, falla, usuario) -->
-            <input id="quickSearch" class="ctl" placeholder="Buscar tickets (ID, categoría, falla, us.)" style="min-width:260px">
-          </div>
-
-          <!-- Relleno profesional bajo los botones: atajos útiles -->
-          <div class="quick-tools">
-            <button type="button" class="chip-btn" data-prio="Alta">Prioridad: Alta</button>
-            <button type="button" class="chip-btn" data-prio="Media">Prioridad: Media</button>
-            <button type="button" class="chip-btn" data-prio="Baja">Prioridad: Baja</button>
-            <span class="chip">·</span>
-            <button id="plantBtn" type="button" class="chip-btn">▶ Plantillas de descripción</button>
-          </div>
-
-          <!-- Panel de plantillas (desplegable) -->
-          <div id="plantillas" class="hidden" style="margin-top:8px">
-            <small class="help">Haz clic para insertar:</small>
+            <div id="notice" class="notice"></div>
             <div class="row">
-              <button type="button" class="chip-btn" data-tpl="El equipo no enciende. Se realiza diagnóstico inicial y verificación de cableado.">Equipo no enciende</button>
-              <button type="button" class="chip-btn" data-tpl="Usuario no puede imprimir. Se reinstala driver y se prueba página de test.">Problema de impresión</button>
-              <button type="button" class="chip-btn" data-tpl="Se realiza instalación de software autorizado y validación con el usuario.">Instalación SW</button>
+              <button class="btn primary" type="submit">➕ Guardar reporte</button>
+              <button class="btn" type="reset">↺ Limpiar</button>
+              <!-- Buscador que filtra la tabla de la derecha -->
+              <input id="qSearch" class="ctl" placeholder="Buscar tickets (ID, categoría, falla, usuario)">
             </div>
-          </div>
-        </form>
-      </div>
-    </section>
 
-    <!-- =======================
-         Columna derecha (lista)
-         ======================= -->
-    <section class="card" id="cardList">
+            <!-- Accesos rápidos + plantillas -->
+            <div class="chips">
+              <button type="button" class="chipbtn" data-prio="Alta">Prioridad: Alta</button>
+              <button type="button" class="chipbtn" data-prio="Media">Prioridad: Media</button>
+              <button type="button" class="chipbtn" data-prio="Baja">Prioridad: Baja</button>
+              <details>
+                <summary>Plantillas de descripción</summary>
+                <div class="chips" style="margin-top:6px">
+                  <button type="button" class="chipbtn tpl" data-text="Usuario no puede iniciar sesión. Se valida credencial y restablece acceso.">Login / restablecer</button>
+                  <button type="button" class="chipbtn tpl" data-text="Se instala y configura software requerido por el usuario. Pruebas OK.">Instalación de software</button>
+                  <button type="button" class="chipbtn tpl" data-text="Equipo presenta lentitud. Limpieza, actualización y pruebas de rendimiento.">Mantenimiento / performance</button>
+                </div>
+              </details>
+            </div>
+
+            <!-- Bloque profesional para “rellenar” con valor -->
+            <div class="helper">
+              <div class="box">
+                <h4>Checklist antes de crear</h4>
+                <ul>
+                  <li>Confirmar datos del usuario y equipo.</li>
+                  <li>Clasificar correctamente <em>Categoría</em> y <em>Servicio prestado</em>.</li>
+                  <li>Adjuntar evidencia (si aplica).</li>
+                  <li>Describir el impacto (usuarios/áreas afectadas).</li>
+                  <li>Estimar prioridad (Alta/Media/Baja) según impacto.</li>
+                </ul>
+              </div>
+              <div class="box">
+                <h4>Leyenda rápida</h4>
+                <ul>
+                  <li><span class="badge prio-alta">Alta</span> incidente crítico o bloqueo.</li>
+                  <li><span class="badge prio-media">Media</span> afecta tareas, tiene alternativa.</li>
+                  <li><span class="badge prio-baja">Baja</span> consulta o mantenimiento.</li>
+                </ul>
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <!-- =======================================================
+         COLUMNA DERECHA (STICKY): ESTADO + FILTROS + TABLA SCROLL
+         ======================================================= -->
+    <section class="card stickyR">
       <h2>ESTADO DE REPORTE</h2>
       <div class="body">
-        <!-- Barra de filtros -->
         <div class="toolbar">
           <span class="muted">Vista:</span>
           <select id="viewSelect">
@@ -405,7 +375,6 @@
           <span id="syncBadge" class="muted">Fuente: —</span>
         </div>
 
-        <!-- KPIs -->
         <div class="kpis">
           <div class="kpi"><div class="label">Total</div><div class="val" id="kpiTotal">0</div></div>
           <div class="kpi"><div class="label">Abiertos</div><div class="val" id="kpiAb">0</div></div>
@@ -414,8 +383,7 @@
           <div class="kpi"><div class="label">Cancelados</div><div class="val" id="kpiCa">0</div></div>
         </div>
 
-        <!-- Tabla de tickets -->
-        <div style="overflow:auto">
+        <div class="table-wrap">
           <table>
             <thead>
               <tr>
@@ -436,15 +404,12 @@
   (function(){
     'use strict';
 
-    /* ==========================================================================
-       ENDPOINT de Apps Script (listado/creación/updates)  +  Auto-refresh
-       ========================================================================== */
+    /* =========================================================
+       CONFIG
+       ========================================================= */
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwB0YqcKuTYWABlGTldWNwohSlH0hPHS4U8iwb4y1k-zUE33bG_ZzFDvObH1c6qze6aiA/exec';
     const AUTO_REFRESH_MS = 30000;
 
-    /* ==========================================================
-       Catálogos / analistas / usuarios (sugestión del autocomplete)
-       ========================================================== */
     const ANALISTAS = [
       { nombre:'Jose Salas',        email:'jsalas@sedic.com.co' },
       { nombre:'Sebastián Cataño',  email:'scatano@sedic.com.co' },
@@ -459,77 +424,64 @@
       'Verónica Zapata','Jhon Madrid','Juan Carlos Betancur'
     ];
 
-    /* ==========================
-       Utilidades / estado global
-       ========================== */
+    /* =========================================================
+       DOM + ESTADO LOCAL
+       ========================================================= */
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
-
-    const localKey = 'tickets_fallas_v6';
-    const loadLocal = () => { try{ return JSON.parse(localStorage.getItem(localKey))||[] } catch { return [] } };
-    const saveLocal = v => localStorage.setItem(localKey, JSON.stringify(v));
+    const tbody = $('#tbody');
+    const who = $('#whoami');
+    const syncBadge = $('#syncBadge');
+    const form = $('#formTicket');
+    const qSearch = $('#qSearch');
 
     let ticketsLocal = loadLocal();
     let ticketsRemote = null;
     let lastSource = 'Local';
-    let identity = null;      // {name,email,role}
-    let AUTH_KEY = '';        // clave para externos (modelo B)
-    let quickQuery = '';      // texto de búsqueda rápida
+    let identity = null;
+    let AUTH_KEY = '';
 
-    const tbody = $('#tbody'), kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe'), kpiCa=$('#kpiCa');
-    const who = $('#whoami');
+    const kpi = {
+      total: $('#kpiTotal'), ab: $('#kpiAb'), pr: $('#kpiPr'), ce: $('#kpiCe'), ca: $('#kpiCa')
+    };
 
-    /* ==========================
-       Tema base + Color de acento
-       ========================== */
+    /* ===== helpers ===== */
+    function loadLocal(){ try{ return JSON.parse(localStorage.getItem('tickets_fallas_v6'))||[] }catch{ return [] } }
+    function saveLocal(v){ localStorage.setItem('tickets_fallas_v6', JSON.stringify(v)); }
+    const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    const esc  = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
+    const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p||''}</span>`;
+    const tagE  = e => { const s=String(e||''); const cls=(s==='Abierto')?'e-abierto':(s==='En Proceso')?'e-proceso':(s==='Cerrado')?'e-cerrado':'e-cancelado'; return `<strong class="${cls}">${s}</strong>`; };
+    const fmt  = iso => { const d=(iso instanceof Date)?iso:new Date(iso); return isNaN(d)?'':d.toLocaleString(); };
+    function show(msg, kind='ok'){ notice.style.display='block'; notice.textContent=msg; notice.style.borderColor=(kind==='ok')?'#b2f2bb':'#ffc9c9'; setTimeout(()=> notice.style.display='none', 2000); }
+
+    /* =========================================================
+       TEMA / COLOR DE ACENTO
+       - Si el valor del select empieza por '#', se aplica a --accent
+       - Si es 'light' | 'dark' | 'mint' => cambia el data-theme
+       ========================================================= */
     const themePick = $('#themePick');
-    const accentNameChip = $('#accentName');
-
     (function initTheme(){
-      // Restaurar elección anterior
-      const savedTheme      = localStorage.getItem('ui_theme') || 'light';
-      const savedAccentHex  = localStorage.getItem('ui_accent') || '';
-      const savedAccentName = localStorage.getItem('ui_accent_name') || '';
-
+      const savedTheme = localStorage.getItem('ui_theme') || 'light';
+      const savedAccent = localStorage.getItem('ui_accent') || '';
       document.body.setAttribute('data-theme', savedTheme);
-      if (savedAccentHex){
-        document.documentElement.style.setProperty('--accent', savedAccentHex);
-        accentNameChip.textContent = 'Color: ' + (savedAccentName || 'Personalizado');
-      }
-
-      // Colocar el <select> en la opción correspondiente
-      if (savedAccentHex){
-        const match = [...themePick.options].find(o => o.dataset.hex === savedAccentHex);
-        if (match) themePick.value = match.value;
-      } else {
-        const matchBase = [...themePick.options].find(o => o.dataset.theme === savedTheme);
-        if (matchBase) themePick.value = matchBase.value;
-      }
-
-      // Cambios del usuario
+      if (savedAccent) document.documentElement.style.setProperty('--accent', savedAccent);
+      themePick.value = savedAccent || savedTheme;
       themePick.addEventListener('change', ()=>{
-        const opt = themePick.selectedOptions[0];
-        const hex = opt.dataset.hex;
-        const base = opt.dataset.theme;
-
-        if (hex){
-          // El usuario eligió un color de acento por nombre (HEX en data-hex)
-          document.documentElement.style.setProperty('--accent', hex);
-          localStorage.setItem('ui_accent', hex);
-          localStorage.setItem('ui_accent_name', opt.value);
-          accentNameChip.textContent = 'Color: ' + opt.value;
-        } else if (base){
-          // El usuario cambió el tema base
-          document.body.setAttribute('data-theme', base);
-          localStorage.setItem('ui_theme', base);
-          // (No eliminamos el acento para que se mantenga si el usuario lo desea)
+        const val = themePick.value.trim();
+        if (val.startsWith('#')){
+          document.documentElement.style.setProperty('--accent', val);
+          localStorage.setItem('ui_accent', val);
+        } else {
+          document.body.setAttribute('data-theme', val);
+          localStorage.setItem('ui_theme', val);
         }
       });
     })();
 
-    /* ===================================================
-       Clave (modelo B) para analistas fuera del dominio
-       =================================================== */
+    /* =========================================================
+       CLAVE (opcional) para pruebas externas
+       ========================================================= */
     const keyInput = $('#keyInput'), saveKeyBtn = $('#saveKey'), clearKeyBtn = $('#clearKey');
     (function initKey(){
       const urlKey = new URLSearchParams(location.search).get('key') || '';
@@ -538,30 +490,28 @@
       if (urlKey && urlKey !== stored) localStorage.setItem('auth_key', urlKey);
       keyInput.value = AUTH_KEY;
     })();
-    saveKeyBtn.addEventListener('click', ()=>{ AUTH_KEY = keyInput.value.trim(); localStorage.setItem('auth_key', AUTH_KEY); fetchWhoAmI().then(fetchRemote); });
-    clearKeyBtn.addEventListener('click', ()=>{ AUTH_KEY = ''; keyInput.value=''; localStorage.removeItem('auth_key'); fetchWhoAmI().then(fetchRemote); });
+    saveKeyBtn.addEventListener('click', ()=>{ AUTH_KEY=keyInput.value.trim(); localStorage.setItem('auth_key', AUTH_KEY); fetchWhoAmI().then(fetchRemote); });
+    clearKeyBtn.addEventListener('click', ()=>{ AUTH_KEY=''; keyInput.value=''; localStorage.removeItem('auth_key'); fetchWhoAmI().then(fetchRemote); });
 
-    /* =========================
-       Catálogo analistas/correo
-       ========================= */
+    /* =========================================================
+       CATÁLOGO ANALISTAS (email oculto)
+       ========================================================= */
     (function initAnalistas(){
       const sel = $('#analista');
-      sel.innerHTML = '<option value="">Selecciona…</option>' + ANALISTAS.map(a => `<option value="${a.nombre}">${a.nombre}</option>`).join('');
+      sel.innerHTML = '<option value="">Selecciona…</option>' + ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
       sel.addEventListener('change', ()=>{
         const a = ANALISTAS.find(x=>x.nombre===sel.value);
         $('#correoAnalista').value = a ? a.email : '';
       });
     })();
 
-    /* ===========================
-       Autocomplete "usuario" (AC)
-       =========================== */
-    const inputUsuario = $('#usuario');
-    const acList = $('#acList');
-    const norm = (s)=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    /* =========================================================
+       AUTOCOMPLETE USUARIOS (nombre o apellido)
+       ========================================================= */
+    const inputUsuario = $('#usuario'); const acList = $('#acList');
     function filtraUsuarios(q){ const n=norm(q); if(!n) return []; return USUARIOS.filter(u=>norm(u).includes(n)).slice(0,8); }
     function pintaLista(items){
-      if(!items.length){ acList.hidden=true; acList.innerHTML=''; return; }
+      if (!items.length){ acList.hidden=true; acList.innerHTML=''; return; }
       acList.innerHTML = items.map((t,i)=>`<li ${i===0?'aria-selected="true"':''}>${t}</li>`).join('');
       acList.hidden = false;
     }
@@ -569,21 +519,16 @@
     inputUsuario.addEventListener('focus', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
     document.addEventListener('click', (e)=>{
       if (e.target.closest('#acList li')){ inputUsuario.value = e.target.textContent; acList.hidden = true; }
-      else if(!e.target.closest('.ac')) acList.hidden = true;
+      else if(!e.target.closest('.ac')) { acList.hidden = true; }
     });
 
-    /* ==========================
-       Barra de filtros (derecha)
-       ========================== */
-    const viewSelect   = $('#viewSelect');
-    const analystSelect= $('#analystSelect');
-    const statusSelect = $('#statusSelect');
-    const monthSelect  = $('#monthSelect');
-    const syncBadge    = $('#syncBadge');
+    /* =========================================================
+       FILTROS DE LA DERECHA
+       ========================================================= */
+    const viewSelect = $('#viewSelect'), analystSelect = $('#analystSelect'), statusSelect = $('#statusSelect'), monthSelect = $('#monthSelect');
 
-    // Meses dinámicos (Últimos 12)
     (function fillMonths(){
-      const now = new Date(), items = ['<option value="">Todos</option>'];
+      const now = new Date(); const items = ['<option value="">Todos</option>'];
       for (let i=0;i<12;i++){
         const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
         const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
@@ -593,89 +538,61 @@
       monthSelect.innerHTML = items.join('');
     })();
 
-    // Restaurar estado anterior de filtros
     (function initView(){
       const saved = JSON.parse(localStorage.getItem('tickets_view')||'{}');
-      viewSelect.value    = saved.view    || 'mis';
-      analystSelect.value = saved.analyst || '';
-      statusSelect.value  = saved.status  || '';
-      monthSelect.value   = saved.month   || '';
+      viewSelect.value   = saved.view || 'mis';
+      analystSelect.value= saved.analyst || '';
+      statusSelect.value = saved.status || '';
+      monthSelect.value  = saved.month || '';
     })();
-    function persistView(){
-      localStorage.setItem('tickets_view', JSON.stringify({
-        view:viewSelect.value, analyst:analystSelect.value, status:statusSelect.value, month:monthSelect.value
-      }));
-    }
-    [viewSelect,analystSelect,statusSelect,monthSelect].forEach(el =>
-      el.addEventListener('change', ()=>{ persistView(); fetchRemote(); })
-    );
+    function persistView(){ localStorage.setItem('tickets_view', JSON.stringify({ view:viewSelect.value, analyst:analystSelect.value, status:statusSelect.value, month:monthSelect.value })); }
+    [viewSelect,analystSelect,statusSelect,monthSelect].forEach(el => el.addEventListener('change', ()=>{ persistView(); fetchRemote(); }));
 
-    /* ==========================
-       Buscar rápido (input del form)
-       ========================== */
-    const quickSearch = $('#quickSearch');
-    quickSearch.addEventListener('input', ()=>{ quickQuery = quickSearch.value.trim(); render(); });
-
-    /* ==================
-       Helpers de UI/DOM
-       ================== */
-    const show = (msg, kind='ok')=>{
-      notice.style.display='block';
-      notice.textContent = msg;
-      notice.style.borderColor = (kind==='ok') ? '#b2f2bb' : '#ffc9c9';
-      setTimeout(()=> notice.style.display='none', 2200);
-    }
-    const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
-    const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p||''}</span>`;
-    const tagE  = e => {
-      const s = String(e||''); const cls = (s==='Abierto')?'e-abierto':(s==='En Proceso')?'e-proceso':(s==='Cerrado')?'e-cerrado':'e-cancelado';
-      return `<strong class="${cls}">${s}</strong>`;
-    };
-    const fmt = iso => { const d = (iso instanceof Date) ? iso : new Date(iso); return isNaN(d) ? '' : d.toLocaleString(); };
-
+    /* =========================================================
+       RENDER
+       ========================================================= */
     function computeCounters(rows){
       const c = { total:rows.length, abiertos:0, en_proceso:0, cerrados:0, cancelados:0 };
-      rows.forEach(t=>{
-        const s=String(t.estado||'').toLowerCase();
-        if(s==='abierto') c.abiertos++; else if(s==='en proceso') c.en_proceso++; else if(s==='cerrado') c.cerrados++; else if(s==='cancelado') c.cancelados++;
-      });
+      rows.forEach(t=>{ const s=String(t.estado||'').toLowerCase();
+        if(s==='abierto') c.abiertos++; else if(s==='en proceso') c.en_proceso++; else if(s==='cerrado') c.cerrados++; else if(s==='cancelado') c.cancelados++; });
       return c;
     }
-    function setCounters(c){ kpiTotal.textContent=c.total; kpiAb.textContent=c.abiertos; kpiPr.textContent=c.en_proceso; kpiCe.textContent=c.cerrados; kpiCa.textContent=c.cancelados; }
-
-    function passesQuick(row){
-      if (!quickQuery) return true;
-      const q = quickQuery.toLowerCase();
-      return [row.id,row.categoria,row.falla,row.usuario].some(v => String(v||'').toLowerCase().includes(q));
-    }
+    function setCounters(c){ kpi.total.textContent=c.total; kpi.ab.textContent=c.abiertos; kpi.pr.textContent=c.en_proceso; kpi.ce.textContent=c.cerrados; kpi.ca.textContent=c.cancelados; }
 
     function currentRows(){
-      const base = (ticketsRemote !== null) ? ticketsRemote : ticketsLocal;
-      lastSource = (ticketsRemote !== null) ? 'Sheets' : 'Local';
-
+      const base = Array.isArray(ticketsRemote) ? ticketsRemote : ticketsLocal;
+      lastSource = Array.isArray(ticketsRemote) ? 'Sheets' : 'Local';
       let rows = base.slice();
 
-      // Filtros de estado
       const st = statusSelect.value;
-      if (st==='pendientes'){ rows = rows.filter(x => !['Cerrado','Cancelado'].includes(String(x.estado))); }
-      else if (st){ rows = rows.filter(x => String(x.estado)===st); }
+      if (st==='pendientes') rows = rows.filter(x => !['Cerrado','Cancelado'].includes(String(x.estado)));
+      else if (st) rows = rows.filter(x => String(x.estado)===st);
 
-      // Filtro por analista
-      if (analystSelect.value) rows = rows.filter(x => String(x.analista)===analystSelect.value);
+      const ana = analystSelect.value;
+      if (viewSelect.value==='mis' && identity?.name){
+        rows = rows.filter(x => String(x.analista)===identity.name);
+      } else if (ana){ rows = rows.filter(x => String(x.analista)===ana); }
 
-      // Filtro por mes (YYYY-MM)
-      if (monthSelect.value){
-        rows = rows.filter(x => {
+      const ym = monthSelect.value;
+      if (ym){
+        rows = rows.filter(x=>{
           const d = new Date(x.fecha);
-          const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-          return ym === monthSelect.value;
+          const y2 = d.getFullYear(), m2 = String(d.getMonth()+1).padStart(2,'0');
+          return `${y2}-${m2}`===ym;
         });
       }
 
-      // Búsqueda rápida
-      rows = rows.filter(passesQuick);
+      // Buscador de la izquierda
+      const q = norm(qSearch.value);
+      if (q){
+        rows = rows.filter(t =>
+          norm(t.id).includes(q) ||
+          norm(t.categoria).includes(q) ||
+          norm(t.falla).includes(q) ||
+          norm(t.usuario).includes(q)
+        );
+      }
 
-      // Orden desc por fecha
       rows.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
       return rows;
     }
@@ -711,37 +628,26 @@
               <option ${t.prioridad==='Baja'?'selected':''}>Baja</option>
             </select>
           </td>
-        </tr>
-      `).join('') || `<tr><td colspan="10" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
+        </tr>`).join('') || `<tr><td colspan="10" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
-    /* ===================================
-       WHOAMI: identidad + permisos (admin)
-       =================================== */
+    /* =========================================================
+       WHOAMI + LIST (autenticación)
+       ========================================================= */
     async function fetchWhoAmI(){
       try{
         const params = new URLSearchParams({ action:'whoami' });
-        if (AUTH_KEY) params.set('key', AUTH_KEY);
+        if (AUTH_KEY) params.set('key', AUTH_KEY); // clave opcional para pruebas fuera del dominio
         const res = await fetch(WEB_APP_URL + '?' + params.toString());
         const data = await res.json();
-
         identity = data && data.ok ? data.me : null;
         who.textContent = identity ? `Identidad: ${identity.name} (${identity.role})` : 'Identidad: (no detectada)';
-
-        // Si hay identidad, setear automáticamente el analista del filtro
-        if (identity && !analystSelect.value) analystSelect.value = identity.name;
-
-        // Si no es admin, bloquear "todos"
-        viewSelect.disabled = !(identity && identity.role==='admin');
-        if (viewSelect.disabled) viewSelect.value = 'mis';
-      }catch{
-        identity = null; who.textContent = 'Identidad: (no detectada)';
-      }
+        const isAdmin = identity && identity.role==='admin';
+        viewSelect.disabled = !isAdmin; if (!isAdmin) viewSelect.value='mis';
+        if (identity && !$('#analystSelect').value) $('#analystSelect').value = identity.name;
+      }catch{ identity = null; who.textContent = 'Identidad: (no detectada)'; }
     }
 
-    /* =====================
-       LISTADO remoto Sheets
-       ===================== */
     async function fetchRemote(){
       try{
         const params = new URLSearchParams();
@@ -749,7 +655,7 @@
         params.set('view', viewSelect.value);
         if (analystSelect.value) params.set('analyst', analystSelect.value);
         if (statusSelect.value==='pendientes') params.set('state','pendientes');
-        else if (statusSelect.value)           params.set('status', statusSelect.value);
+        else if (statusSelect.value) params.set('status', statusSelect.value);
         if (monthSelect.value) params.set('ym', monthSelect.value);
         params.set('limit','1500');
         if (AUTH_KEY) params.set('key', AUTH_KEY);
@@ -759,33 +665,23 @@
         if (data && data.ok){
           ticketsRemote = Array.isArray(data.items) ? data.items : [];
           if (data.me){ identity = data.me; who.textContent = `Identidad: ${identity.name} (${identity.role})`; }
-          lastSource = 'Sheets';
           render(data.counters);
-        } else {
-          ticketsRemote = null; lastSource='Local'; render();
-        }
-      }catch(err){
-        ticketsRemote = null; lastSource='Local'; render();
-      }
+        } else { ticketsRemote = null; render(); }
+      }catch{ ticketsRemote = null; render(); }
     }
 
-    /* =========================
-       POST genérico (JSON plano)
-       ========================= */
+    /* =========================================================
+       POST
+       ========================================================= */
     async function postJSON(payload){
       if (AUTH_KEY) payload.key = AUTH_KEY;
-      const res = await fetch(WEB_APP_URL, {
-        method:'POST',
-        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      });
+      const res = await fetch(WEB_APP_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
       try { return await res.json(); } catch { return { ok:false, error:'Respuesta no-JSON' }; }
     }
 
-    /* =================
-       Crear nuevo ticket
-       ================= */
-    const form = $('#formTicket');
+    /* =========================================================
+       CREAR TICKET
+       ========================================================= */
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const analista = $('#analista').value;
@@ -794,7 +690,7 @@
       const falla = $('#falla').value;
       const usuario = $('#usuario').value.trim();
       const prioridad = $('#prioridad').value;
-      const descripcion = $('#descripcion').value.trim();
+      const descripcion = $('#descripcion').value.trim(); // opcional
       const adjInput = $('#adj'); const adjuntoNombre = adjInput.files?.[0]?.name || '';
 
       if(!analista || !categoria || !falla || !usuario || !prioridad){
@@ -806,17 +702,14 @@
       const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, adjuntoNombre, estado:'Abierto', fecha: nowISO };
 
       ticketsLocal.unshift(t); saveLocal(ticketsLocal); render(); show('Guardado local. Enviando a Sheets…');
-
-      const d = await postJSON({ action:'create', ...t, fechaISO: nowISO });
-      if (!d || !d.ok){ show('No se pudo crear en Sheets', 'err'); }
-      else { fetchRemote(); }
-
+      const d = await postJSON({ action:'create', id:t.id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, estado:t.estado, fechaISO: nowISO, adjuntoNombre });
+      if (!d || !d.ok){ show('No se pudo crear en Sheets', 'err'); } else { fetchRemote(); }
       form.reset(); $('#correoAnalista').value='';
     });
 
-    /* ============================
-       Cambios de estado / prioridad
-       ============================ */
+    /* =========================================================
+       CAMBIOS EN ESTADO / PRIORIDAD
+       ========================================================= */
     document.addEventListener('change', async (e)=>{
       const selE = e.target.closest('.estado-select');
       const selP = e.target.closest('.prio-select');
@@ -828,7 +721,7 @@
         if (tL){ tL.estado=status; tL.fecha=new Date().toISOString(); if(status==='Cancelado') tL.motivo=reason; saveLocal(ticketsLocal); }
         render();
         const d = await postJSON({ action:'update_status', id, status, reason });
-        if (d && d.ok) fetchRemote(); else show('No se pudo actualizar en Sheets','err');
+        if (d && d.ok) fetchRemote();
       }
 
       if (selP){
@@ -837,34 +730,30 @@
         if (tL){ tL.prioridad=pr; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
         render();
         const d2 = await postJSON({ action:'update_priority', id, prioridad: pr });
-        if (d2 && d2.ok) fetchRemote(); else show('No se pudo actualizar la prioridad en Sheets','err');
+        if (d2 && d2.ok) fetchRemote();
       }
     });
 
-    /* ==========================
-       Atajos de prioridad / plantillas
-       ========================== */
-    document.querySelectorAll('.chip-btn[data-prio]').forEach(btn=>{
+    /* =========================================================
+       BUSCADOR (izquierda) + ACCESOS RÁPIDOS
+       ========================================================= */
+    qSearch.addEventListener('input', ()=> render());
+    document.querySelectorAll('.chipbtn[data-prio]').forEach(btn=>{
       btn.addEventListener('click', ()=>{ $('#prioridad').value = btn.dataset.prio; });
     });
-    $('#plantBtn').addEventListener('click', ()=>{
-      $('#plantillas').classList.toggle('hidden');
-    });
-    document.querySelectorAll('.chip-btn[data-tpl]').forEach(btn=>{
+    document.querySelectorAll('.chipbtn.tpl').forEach(btn=>{
       btn.addEventListener('click', ()=>{
-        const t = $('#descripcion');
-        t.value = (t.value.trim() ? (t.value.trim() + '\\n') : '') + btn.dataset.tpl;
-        t.focus();
+        const t = $('#descripcion'); t.value = btn.dataset.text; t.focus();
       });
     });
 
-    /* =========
-       Arranque
-       ========= */
+    /* =========================================================
+       INIT
+       ========================================================= */
     async function init(){
-      await fetchWhoAmI();   // Identidad (rol admin / analista)
-      render();              // Render rápido con cache local
-      fetchRemote();         // Cambia a “Sheets” cuando llegue
+      await fetchWhoAmI();
+      render();               // render rápido local
+      fetchRemote();          // cuando llegue Sheets, reemplaza
       setInterval(()=>{ if(!document.hidden) fetchRemote(); }, AUTO_REFRESH_MS);
     }
     init();
