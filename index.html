@@ -4,12 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gestión TI · Reporte de fallas</title>
+
   <style>
-    /* ====== Temas ====== */
+    /* =========================================================
+       TEMAS Y TOKENS
+       - "light", "dark", "mint" son temas predefinidos
+       - --accent puede sobreescribirse con un HEX personalizado
+       ========================================================= */
     :root{
       --bg:#eef2ff; --card:#fff; --text:#0d1333; --muted:#51608b; --border:rgba(13,19,51,.12);
       --field:#fbfcff; --accent:#6aa3ff; --ok:#2b8a3e; --warn:#f08c00; --bad:#e03131;
-      --stickyTop:86px; /* distancia bajo la barra superior */
+      --stickyTop:72px; /* distancia bajo la barra superior pegajosa */
     }
     body[data-theme="dark"]{
       --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9aa4bf; --border:rgba(255,255,255,.15);
@@ -19,40 +24,75 @@
       --bg:#e6fff4; --card:#ffffff; --text:#0d1333; --muted:#4d6a61; --border:rgba(13,19,51,.12);
       --field:#f7fffb; --accent:#16a34a;
     }
-    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
-    *{box-sizing:border-box}
 
-    /* ====== Barra superior (identidad + tema compacto) ====== */
-    header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg, color-mix(in srgb, var(--bg) 82%, transparent), transparent);backdrop-filter:saturate(120%) blur(4px)}
-    .topbar{max-width:1680px;margin:0 auto;padding:8px 16px;display:flex;justify-content:flex-end;gap:8px;align-items:center}
+    /* ====== base ====== */
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
+
+    /* =========================================================
+       BARRA SUPERIOR
+       - logo a la izquierda
+       - identidad, clave y tema (compacto) a la derecha
+       ========================================================= */
+    header{
+      position:sticky;top:0;z-index:50;
+      background:linear-gradient(180deg, color-mix(in srgb, var(--bg) 82%, transparent), transparent);
+      backdrop-filter:saturate(120%) blur(4px);
+      border-bottom:1px solid color-mix(in srgb, var(--border) 60%, transparent);
+    }
+    .topbar{
+      max-width:1680px;margin:0 auto;padding:8px 16px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .brand{
+      display:flex;align-items:center;gap:10px;min-height:56px;
+    }
+    /* Logo “camuflado” con el tema (más arriba, en la barra) */
+    .logo{
+      height:44px;object-fit:contain;opacity:.9;
+      mix-blend-mode:multiply; /* se integra con el color del tema */
+      filter:drop-shadow(0 2px 5px rgba(0,0,0,.06));
+    }
+    .actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
     .chip{font-size:.9rem;color:var(--muted)}
     .ctl{height:36px;padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field);color:var(--text)}
     .btn-sm{height:36px;padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--card);cursor:pointer}
-    #themePick{width:98px;height:36px} /* tamaño “botón” */
+    #themePick{width:118px;height:36px} /* tamaño tipo “botón” */
 
-    /* ====== Layout ====== */
+    /* =========================================================
+       LAYOUT PRINCIPAL
+       ========================================================= */
     main{max-width:1680px;margin:8px auto 16px;padding:0 16px;display:grid;gap:16px}
     @media (min-width:1200px){
       main{grid-template-columns:640px 1fr}
     }
 
-    /* ====== Cards ====== */
+    /* =========================================================
+       CARDS Y SECCIONES
+       ========================================================= */
     .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 24px rgba(13,19,51,.08)}
-    .card h2{margin:0;padding:16px 16px 0;position:sticky;top:0;background:linear-gradient(180deg,var(--card),color-mix(in srgb, var(--card) 70%, transparent));z-index:2}
+    .card h2{
+      margin:0;padding:16px 16px 0;
+      position:sticky;top:0;z-index:2;
+      background:linear-gradient(180deg,var(--card),color-mix(in srgb, var(--card) 70%, transparent));
+      border-top-left-radius:16px;border-top-right-radius:16px;
+    }
     .card .body{padding:16px}
 
-    /* REPO USUARIO sticky completo */
+    /* Columna izquierda y derecha pegajosas al mismo nivel */
     .stickyL{position:sticky;top:var(--stickyTop);align-self:start}
-
-    /* En la derecha: encabezado y filtros sticky, tabla con scroll propio */
     .stickyR{position:sticky;top:var(--stickyTop);align-self:start;z-index:1}
-    .table-wrap{max-height:calc(100vh - 340px);overflow:auto;border:1px solid var(--border);border-radius:12px;padding:8px;background:color-mix(in srgb, var(--card) 96%, transparent)}
 
-    /* ====== Logo “camuflado” sobre la izquierda ====== */
-    .logoWrap{position:sticky;top:calc(var(--stickyTop) - 56px);margin-bottom:-32px;z-index:3;padding-left:8px}
-    .logo{height:64px;object-fit:contain;opacity:.85;mix-blend-mode:multiply;filter:saturate(110%) drop-shadow(0 2px 6px rgba(0,0,0,.08))}
+    /* La tabla del lado derecho tiene su propio scroll */
+    .table-wrap{
+      max-height:calc(100vh - 340px);
+      overflow:auto;border:1px solid var(--border);border-radius:12px;padding:8px;
+      background:color-mix(in srgb, var(--card) 96%, transparent)
+    }
 
-    /* ====== Form ====== */
+    /* =========================================================
+       FORMULARIO IZQUIERDA
+       ========================================================= */
     form .grid{display:grid;gap:12px}
     @media(min-width:560px){form .grid{grid-template-columns:1fr 1fr}}
     label{font-size:.9rem;color:var(--muted);display:block;margin-bottom:6px}
@@ -61,15 +101,28 @@
     .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
     .btn{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
     .btn.primary{border-color:color-mix(in srgb, var(--accent) 45%, var(--border))}
-    #qSearch{width:240px}
+    #qSearch{width:260px}
 
-    /* ====== Quick actions ====== */
+    /* Bloque: “Ayuda rápida” para no dejar esa zona plana */
+    .helper{
+      margin-top:10px;display:grid;gap:10px;grid-template-columns:1fr 1fr;
+    }
+    .helper .box{
+      border:1px solid var(--border);border-radius:12px;padding:10px;background:var(--field)
+    }
+    .helper h4{margin:0 0 6px 0;font-size:.95rem;color:var(--muted)}
+    .helper ul{margin:0;padding-left:18px}
+    .helper li{margin:4px 0}
+
+    /* Chips y plantillas */
     .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
     .chipbtn{border:1px solid var(--border);background:var(--field);border-radius:999px;padding:6px 10px;font-size:.85rem;cursor:pointer}
     details{margin-top:6px}
     details summary{cursor:pointer;color:var(--muted)}
 
-    /* ====== KPIs + tabla ====== */
+    /* =========================================================
+       KPIs + TABLA
+       ========================================================= */
     .kpis{display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:12px;margin:8px 0 10px}
     .kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
     .kpi .label{font-size:.88rem;color:var(--muted);white-space:nowrap}
@@ -87,18 +140,6 @@
     body[data-theme="dark"] .prio-baja{background:#1b3b2a}
     .e-abierto{color:var(--bad)}.e-proceso{color:var(--warn)}.e-cerrado{color:var(--ok)}.e-cancelado{color:#6b7280}
 
-    /* Autocomplete */
-    .ac{position:relative}
-    .ac-list{
-      position:absolute;left:0;right:0;top:100%;
-      background:var(--card);border:1px solid var(--border);
-      border-radius:12px;box-shadow:0 10px 24px rgba(13,19,51,.08);
-      margin-top:6px;max-height:220px;overflow:auto;padding:6px;z-index:5
-    }
-    .ac-list[hidden]{display:none}
-    .ac-list li{list-style:none;padding:8px 12px;cursor:pointer;border-radius:10px}
-    .ac-list li[aria-selected="true"], .ac-list li:hover{background:color-mix(in srgb, var(--accent) 12%, transparent)}
-
     .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}
     .toolbar select{padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field)}
     .muted{color:var(--muted);font-size:.9rem}
@@ -108,32 +149,45 @@
   </style>
 </head>
 <body data-theme="light">
-  <!-- barra superior compacta -->
+  <!-- =========================================================
+       BARRA SUPERIOR
+       - logo arriba (izquierda), controles a la derecha
+       ========================================================= -->
   <header>
     <div class="topbar">
-      <small id="whoami" class="chip">Identidad: (no detectada)</small>
-      <input id="keyInput" class="ctl" placeholder="Clave (Pablo, etc.)" style="width:160px">
-      <button id="saveKey" class="btn-sm">Guardar</button>
-      <button id="clearKey" class="btn-sm" title="Olvidar">✕</button>
-      <select id="themePick" class="ctl" title="Tema">
-        <option value="light">Verde</option>
-        <option value="dark">Oscuro</option>
-        <option value="mint">Mint</option>
-        <option value="blue">azul</option>
-        <option value="#002394">azul Oscuro</option>
-      </select>
+      <div class="brand">
+        <img class="logo" src="Imagen/logo-empresas.jpg"
+             onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';"
+             alt="Logo INGETEC / SEDIC">
+      </div>
+
+      <div class="actions">
+        <small id="whoami" class="chip">Identidad: (no detectada)</small>
+        <input id="keyInput" class="ctl" placeholder="Clave (opcional)" style="width:160px">
+        <button id="saveKey" class="btn-sm">Guardar</button>
+        <button id="clearKey" class="btn-sm" title="Olvidar">✕</button>
+
+        <!-- IMPORTANTE:
+             - Si eliges 'light', 'dark' o 'mint' -> cambia el tema completo.
+             - Si escribes un valor que EMPIECE por '#', se toma como color de acento
+               (no cambia el tema, sólo --accent). Ej: #003f84               -->
+        <select id="themePick" class="ctl" title="Tema o color HEX">
+          <option value="light">Tema: Verde</option>
+          <option value="dark">Tema: Oscuro</option>
+          <option value="mint">Tema: Mint</option>
+          <option value="#003f84">#003f84</option>
+          <option value="#009be9">#009be9</option>
+          <option value="#002394">#002394</option>
+        </select>
+      </div>
     </div>
   </header>
 
   <main>
-    <!-- Columna izquierda: logo + formulario en sticky -->
+    <!-- =======================================================
+         COLUMNA IZQUIERDA (STICKY): REPORTE USUARIO
+         ======================================================= -->
     <div class="stickyL">
-      <div class="logoWrap">
-        <img class="logo" src="Imagen/logo-empresas.jpg"
-             onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';"
-             alt="Logo" />
-      </div>
-
       <section class="card">
         <h2>REPORTE USUARIO</h2>
         <div class="body">
@@ -238,11 +292,11 @@
             <div class="row">
               <button class="btn primary" type="submit">➕ Guardar reporte</button>
               <button class="btn" type="reset">↺ Limpiar</button>
-              <!-- buscador (filtra la tabla de la derecha) -->
+              <!-- Buscador que filtra la tabla de la derecha -->
               <input id="qSearch" class="ctl" placeholder="Buscar tickets (ID, categoría, falla, usuario)">
             </div>
 
-            <!-- zona útil para no dejar “plano”: accesos rápidos + plantillas -->
+            <!-- Accesos rápidos + plantillas -->
             <div class="chips">
               <button type="button" class="chipbtn" data-prio="Alta">Prioridad: Alta</button>
               <button type="button" class="chipbtn" data-prio="Media">Prioridad: Media</button>
@@ -256,12 +310,36 @@
                 </div>
               </details>
             </div>
+
+            <!-- Bloque profesional para “rellenar” con valor -->
+            <div class="helper">
+              <div class="box">
+                <h4>Checklist antes de crear</h4>
+                <ul>
+                  <li>Confirmar datos del usuario y equipo.</li>
+                  <li>Clasificar correctamente <em>Categoría</em> y <em>Servicio prestado</em>.</li>
+                  <li>Adjuntar evidencia (si aplica).</li>
+                  <li>Describir el impacto (usuarios/áreas afectadas).</li>
+                  <li>Estimar prioridad (Alta/Media/Baja) según impacto.</li>
+                </ul>
+              </div>
+              <div class="box">
+                <h4>Leyenda rápida</h4>
+                <ul>
+                  <li><span class="badge prio-alta">Alta</span> incidente crítico o bloqueo.</li>
+                  <li><span class="badge prio-media">Media</span> afecta tareas, tiene alternativa.</li>
+                  <li><span class="badge prio-baja">Baja</span> consulta o mantenimiento.</li>
+                </ul>
+              </div>
+            </div>
           </form>
         </div>
       </section>
     </div>
 
-    <!-- Columna derecha: filtros (sticky) + tabla con scroll -->
+    <!-- =======================================================
+         COLUMNA DERECHA (STICKY): ESTADO + FILTROS + TABLA SCROLL
+         ======================================================= -->
     <section class="card stickyR">
       <h2>ESTADO DE REPORTE</h2>
       <div class="body">
@@ -326,8 +404,10 @@
   (function(){
     'use strict';
 
-    /* ========= CONFIG ========= */
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzonCTMWp7eKzlF2iswuCcOa7kSQJhyBYefl2R8f8BCQVMQ3vH1Y5_s2nyZPD7l2FJYlQ/exec';
+    /* =========================================================
+       CONFIG
+       ========================================================= */
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwB0YqcKuTYWABlGTldWNwohSlH0hPHS4U8iwb4y1k-zUE33bG_ZzFDvObH1c6qze6aiA/exec';
     const AUTO_REFRESH_MS = 30000;
 
     const ANALISTAS = [
@@ -344,7 +424,9 @@
       'Verónica Zapata','Jhon Madrid','Juan Carlos Betancur'
     ];
 
-    /* ========= DOM/STATE ========= */
+    /* =========================================================
+       DOM + ESTADO LOCAL
+       ========================================================= */
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
     const tbody = $('#tbody');
@@ -360,46 +442,46 @@
     let AUTH_KEY = '';
 
     const kpi = {
-      total: $('#kpiTotal'),
-      ab:    $('#kpiAb'),
-      pr:    $('#kpiPr'),
-      ce:    $('#kpiCe'),
-      ca:    $('#kpiCa')
+      total: $('#kpiTotal'), ab: $('#kpiAb'), pr: $('#kpiPr'), ce: $('#kpiCe'), ca: $('#kpiCa')
     };
 
-    /* ========= helpers ========= */
+    /* ===== helpers ===== */
     function loadLocal(){ try{ return JSON.parse(localStorage.getItem('tickets_fallas_v6'))||[] }catch{ return [] } }
     function saveLocal(v){ localStorage.setItem('tickets_fallas_v6', JSON.stringify(v)); }
     const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
     const esc  = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
     const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p||''}</span>`;
-    const tagE  = e => {
-      const s = String(e||'');
-      const cls = (s==='Abierto')?'e-abierto':(s==='En Proceso')?'e-proceso':(s==='Cerrado')?'e-cerrado':'e-cancelado';
-      return `<strong class="${cls}">${s}</strong>`;
-    };
-    const fmt  = iso => { const d = (iso instanceof Date) ? iso : new Date(iso); return isNaN(d) ? '' : d.toLocaleString(); };
+    const tagE  = e => { const s=String(e||''); const cls=(s==='Abierto')?'e-abierto':(s==='En Proceso')?'e-proceso':(s==='Cerrado')?'e-cerrado':'e-cancelado'; return `<strong class="${cls}">${s}</strong>`; };
+    const fmt  = iso => { const d=(iso instanceof Date)?iso:new Date(iso); return isNaN(d)?'':d.toLocaleString(); };
+    function show(msg, kind='ok'){ notice.style.display='block'; notice.textContent=msg; notice.style.borderColor=(kind==='ok')?'#b2f2bb':'#ffc9c9'; setTimeout(()=> notice.style.display='none', 2000); }
 
-    function show(msg, kind='ok'){
-      notice.style.display='block';
-      notice.textContent=msg;
-      notice.style.borderColor=(kind==='ok')?'#b2f2bb':'#ffc9c9';
-      setTimeout(()=> notice.style.display='none', 2200);
-    }
-
-    /* ========= Tema ========= */
+    /* =========================================================
+       TEMA / COLOR DE ACENTO
+       - Si el valor del select empieza por '#', se aplica a --accent
+       - Si es 'light' | 'dark' | 'mint' => cambia el data-theme
+       ========================================================= */
     const themePick = $('#themePick');
     (function initTheme(){
-      const saved = localStorage.getItem('ui_theme') || 'light';
-      document.body.setAttribute('data-theme', saved);
-      themePick.value = saved;
+      const savedTheme = localStorage.getItem('ui_theme') || 'light';
+      const savedAccent = localStorage.getItem('ui_accent') || '';
+      document.body.setAttribute('data-theme', savedTheme);
+      if (savedAccent) document.documentElement.style.setProperty('--accent', savedAccent);
+      themePick.value = savedAccent || savedTheme;
       themePick.addEventListener('change', ()=>{
-        document.body.setAttribute('data-theme', themePick.value);
-        localStorage.setItem('ui_theme', themePick.value);
+        const val = themePick.value.trim();
+        if (val.startsWith('#')){
+          document.documentElement.style.setProperty('--accent', val);
+          localStorage.setItem('ui_accent', val);
+        } else {
+          document.body.setAttribute('data-theme', val);
+          localStorage.setItem('ui_theme', val);
+        }
       });
     })();
 
-    /* ========= Clave (modelo B) ========= */
+    /* =========================================================
+       CLAVE (opcional) para pruebas externas
+       ========================================================= */
     const keyInput = $('#keyInput'), saveKeyBtn = $('#saveKey'), clearKeyBtn = $('#clearKey');
     (function initKey(){
       const urlKey = new URLSearchParams(location.search).get('key') || '';
@@ -411,7 +493,9 @@
     saveKeyBtn.addEventListener('click', ()=>{ AUTH_KEY=keyInput.value.trim(); localStorage.setItem('auth_key', AUTH_KEY); fetchWhoAmI().then(fetchRemote); });
     clearKeyBtn.addEventListener('click', ()=>{ AUTH_KEY=''; keyInput.value=''; localStorage.removeItem('auth_key'); fetchWhoAmI().then(fetchRemote); });
 
-    /* ========= Catálogo Analistas ========= */
+    /* =========================================================
+       CATÁLOGO ANALISTAS (email oculto)
+       ========================================================= */
     (function initAnalistas(){
       const sel = $('#analista');
       sel.innerHTML = '<option value="">Selecciona…</option>' + ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
@@ -421,9 +505,11 @@
       });
     })();
 
-    /* ========= Autocomplete Usuarios ========= */
+    /* =========================================================
+       AUTOCOMPLETE USUARIOS (nombre o apellido)
+       ========================================================= */
     const inputUsuario = $('#usuario'); const acList = $('#acList');
-    function filtraUsuarios(q){ const n = norm(q); if(!n) return []; return USUARIOS.filter(u=>norm(u).includes(n)).slice(0,8); }
+    function filtraUsuarios(q){ const n=norm(q); if(!n) return []; return USUARIOS.filter(u=>norm(u).includes(n)).slice(0,8); }
     function pintaLista(items){
       if (!items.length){ acList.hidden=true; acList.innerHTML=''; return; }
       acList.innerHTML = items.map((t,i)=>`<li ${i===0?'aria-selected="true"':''}>${t}</li>`).join('');
@@ -433,12 +519,13 @@
     inputUsuario.addEventListener('focus', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
     document.addEventListener('click', (e)=>{
       if (e.target.closest('#acList li')){ inputUsuario.value = e.target.textContent; acList.hidden = true; }
-      else if (!e.target.closest('.ac')) { acList.hidden = true; }
+      else if(!e.target.closest('.ac')) { acList.hidden = true; }
     });
 
-    /* ========= Barra de Filtros ========= */
-    const viewSelect = $('#viewSelect'), analystSelect = $('#analystSelect'),
-          statusSelect = $('#statusSelect'), monthSelect = $('#monthSelect');
+    /* =========================================================
+       FILTROS DE LA DERECHA
+       ========================================================= */
+    const viewSelect = $('#viewSelect'), analystSelect = $('#analystSelect'), statusSelect = $('#statusSelect'), monthSelect = $('#monthSelect');
 
     (function fillMonths(){
       const now = new Date(); const items = ['<option value="">Todos</option>'];
@@ -461,16 +548,13 @@
     function persistView(){ localStorage.setItem('tickets_view', JSON.stringify({ view:viewSelect.value, analyst:analystSelect.value, status:statusSelect.value, month:monthSelect.value })); }
     [viewSelect,analystSelect,statusSelect,monthSelect].forEach(el => el.addEventListener('change', ()=>{ persistView(); fetchRemote(); }));
 
-    /* ========= Render ========= */
+    /* =========================================================
+       RENDER
+       ========================================================= */
     function computeCounters(rows){
       const c = { total:rows.length, abiertos:0, en_proceso:0, cerrados:0, cancelados:0 };
-      rows.forEach(t=>{
-        const s = String(t.estado||'').toLowerCase();
-        if (s==='abierto') c.abiertos++;
-        else if (s==='en proceso') c.en_proceso++;
-        else if (s==='cerrado') c.cerrados++;
-        else if (s==='cancelado') c.cancelados++;
-      });
+      rows.forEach(t=>{ const s=String(t.estado||'').toLowerCase();
+        if(s==='abierto') c.abiertos++; else if(s==='en proceso') c.en_proceso++; else if(s==='cerrado') c.cerrados++; else if(s==='cancelado') c.cancelados++; });
       return c;
     }
     function setCounters(c){ kpi.total.textContent=c.total; kpi.ab.textContent=c.abiertos; kpi.pr.textContent=c.en_proceso; kpi.ce.textContent=c.cerrados; kpi.ca.textContent=c.cancelados; }
@@ -480,7 +564,6 @@
       lastSource = Array.isArray(ticketsRemote) ? 'Sheets' : 'Local';
       let rows = base.slice();
 
-      // filtros de barra
       const st = statusSelect.value;
       if (st==='pendientes') rows = rows.filter(x => !['Cerrado','Cancelado'].includes(String(x.estado)));
       else if (st) rows = rows.filter(x => String(x.estado)===st);
@@ -488,9 +571,7 @@
       const ana = analystSelect.value;
       if (viewSelect.value==='mis' && identity?.name){
         rows = rows.filter(x => String(x.analista)===identity.name);
-      } else if (ana) {
-        rows = rows.filter(x => String(x.analista)===ana);
-      }
+      } else if (ana){ rows = rows.filter(x => String(x.analista)===ana); }
 
       const ym = monthSelect.value;
       if (ym){
@@ -501,7 +582,7 @@
         });
       }
 
-      // buscador rápido (ID, categoría, falla, usuario)
+      // Buscador de la izquierda
       const q = norm(qSearch.value);
       if (q){
         rows = rows.filter(t =>
@@ -550,23 +631,21 @@
         </tr>`).join('') || `<tr><td colspan="10" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
-    /* ========= WHOAMI + LIST ========= */
+    /* =========================================================
+       WHOAMI + LIST (autenticación)
+       ========================================================= */
     async function fetchWhoAmI(){
       try{
         const params = new URLSearchParams({ action:'whoami' });
-        if (AUTH_KEY) params.set('key', AUTH_KEY);
+        if (AUTH_KEY) params.set('key', AUTH_KEY); // clave opcional para pruebas fuera del dominio
         const res = await fetch(WEB_APP_URL + '?' + params.toString());
         const data = await res.json();
         identity = data && data.ok ? data.me : null;
         who.textContent = identity ? `Identidad: ${identity.name} (${identity.role})` : 'Identidad: (no detectada)';
-        // si no es admin, bloquear “todos”
         const isAdmin = identity && identity.role==='admin';
         viewSelect.disabled = !isAdmin; if (!isAdmin) viewSelect.value='mis';
-        // si no hay analista elegido, sugerir el propio
         if (identity && !$('#analystSelect').value) $('#analystSelect').value = identity.name;
-      }catch{
-        identity = null; who.textContent = 'Identidad: (no detectada)';
-      }
+      }catch{ identity = null; who.textContent = 'Identidad: (no detectada)'; }
     }
 
     async function fetchRemote(){
@@ -588,19 +667,21 @@
           if (data.me){ identity = data.me; who.textContent = `Identidad: ${identity.name} (${identity.role})`; }
           render(data.counters);
         } else { ticketsRemote = null; render(); }
-      }catch{
-        ticketsRemote = null; render();
-      }
+      }catch{ ticketsRemote = null; render(); }
     }
 
-    /* ========= POST ========= */
+    /* =========================================================
+       POST
+       ========================================================= */
     async function postJSON(payload){
       if (AUTH_KEY) payload.key = AUTH_KEY;
       const res = await fetch(WEB_APP_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
       try { return await res.json(); } catch { return { ok:false, error:'Respuesta no-JSON' }; }
     }
 
-    /* ========= Crear Ticket ========= */
+    /* =========================================================
+       CREAR TICKET
+       ========================================================= */
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const analista = $('#analista').value;
@@ -621,13 +702,14 @@
       const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, adjuntoNombre, estado:'Abierto', fecha: nowISO };
 
       ticketsLocal.unshift(t); saveLocal(ticketsLocal); render(); show('Guardado local. Enviando a Sheets…');
-
       const d = await postJSON({ action:'create', id:t.id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, estado:t.estado, fechaISO: nowISO, adjuntoNombre });
       if (!d || !d.ok){ show('No se pudo crear en Sheets', 'err'); } else { fetchRemote(); }
       form.reset(); $('#correoAnalista').value='';
     });
 
-    /* ========= Cambios en estado / prioridad ========= */
+    /* =========================================================
+       CAMBIOS EN ESTADO / PRIORIDAD
+       ========================================================= */
     document.addEventListener('change', async (e)=>{
       const selE = e.target.closest('.estado-select');
       const selP = e.target.closest('.prio-select');
@@ -652,26 +734,26 @@
       }
     });
 
-    /* ========= Buscador (izquierda) ========= */
+    /* =========================================================
+       BUSCADOR (izquierda) + ACCESOS RÁPIDOS
+       ========================================================= */
     qSearch.addEventListener('input', ()=> render());
-
-    /* ========= Accesos rápidos ========= */
     document.querySelectorAll('.chipbtn[data-prio]').forEach(btn=>{
       btn.addEventListener('click', ()=>{ $('#prioridad').value = btn.dataset.prio; });
     });
     document.querySelectorAll('.chipbtn.tpl').forEach(btn=>{
       btn.addEventListener('click', ()=>{
-        const t = $('#descripcion');
-        t.value = btn.dataset.text;
-        t.focus();
+        const t = $('#descripcion'); t.value = btn.dataset.text; t.focus();
       });
     });
 
-    /* ========= Init ========= */
+    /* =========================================================
+       INIT
+       ========================================================= */
     async function init(){
       await fetchWhoAmI();
-      render();               // rápido con local
-      fetchRemote();          // cambia a “Sheets” cuando llegue
+      render();               // render rápido local
+      fetchRemote();          // cuando llegue Sheets, reemplaza
       setInterval(()=>{ if(!document.hidden) fetchRemote(); }, AUTO_REFRESH_MS);
     }
     init();
@@ -679,7 +761,3 @@
   </script>
 </body>
 </html>
-
-
-
-
