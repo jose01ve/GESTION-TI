@@ -6,339 +6,376 @@
   <title>Gestión TI · Reporte de fallas</title>
 
   <style>
-    /* =========================================================
-       TEMAS Y TOKENS
-       - "light", "dark", "mint" son temas predefinidos
-       - --accent puede sobreescribirse con un HEX personalizado
-       ========================================================= */
+    /* ============================================================
+       01) VARIABLES DE TEMA
+       ------------------------------------------------------------
+       - data-theme en <body> define la paleta base (light/dark/mint).
+       - --accent se puede cambiar dinámicamente con un HEX (selector).
+       ============================================================ */
     :root{
-      --bg:#eef2ff; --card:#fff; --text:#0d1333; --muted:#51608b; --border:rgba(13,19,51,.12);
-      --field:#fbfcff; --accent:#6aa3ff; --ok:#2b8a3e; --warn:#f08c00; --bad:#e03131;
-      --stickyTop:72px; /* distancia bajo la barra superior pegajosa */
+      /* color de acento por defecto (si no hay uno guardado) */
+      --accent: #6475ff;
+
+      /* paleta base LIGHT */
+      --bg:#eef2ff; --card:#ffffff; --text:#0d1333; --muted:#51608b;
+      --border:rgba(13,19,51,.12); --field:#fbfcff;
     }
     body[data-theme="dark"]{
-      --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9aa4bf; --border:rgba(255,255,255,.15);
-      --field:#0b1220; --accent:#93c5fd;
+      --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9aa4bf;
+      --border:rgba(255,255,255,.15); --field:#0b1220;
     }
     body[data-theme="mint"]{
-      --bg:#e6fff4; --card:#ffffff; --text:#0d1333; --muted:#4d6a61; --border:rgba(13,19,51,.12);
-      --field:#f7fffb; --accent:#16a34a;
+      --bg:#e6fff4; --card:#ffffff; --text:#0d1333; --muted:#4d6a61;
+      --border:rgba(13,19,51,.12); --field:#f7fffb;
     }
 
-    /* ====== base ====== */
+    /* ============================================================
+       02) BASE
+       ============================================================ */
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--bg); color:var(--text);
+      font-family: system-ui, Segoe UI, Roboto, Arial;
+    }
 
-    /* =========================================================
-       BARRA SUPERIOR
-       - logo a la izquierda
-       - identidad, clave y tema (compacto) a la derecha
-       ========================================================= */
-    header{
-      position:sticky;top:0;z-index:50;
-      background:linear-gradient(180deg, color-mix(in srgb, var(--bg) 82%, transparent), transparent);
-      backdrop-filter:saturate(120%) blur(4px);
-      border-bottom:1px solid color-mix(in srgb, var(--border) 60%, transparent);
+    /* ============================================================
+       03) TOPBAR (Identidad + Clave + Tema)
+       ============================================================ */
+    header{position:sticky; top:0; z-index:20; padding:8px 0}
+    .toprow{
+      max-width:1680px; margin:0 auto; padding:0 16px;
+      display:flex; align-items:center; gap:12px; justify-content:flex-end;
     }
-    .topbar{
-      max-width:1680px;margin:0 auto;padding:8px 16px;
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    .chip{font-size:.9rem; color:var(--muted)}
+    .ctl, .btn-sm{
+      height:36px; padding:6px 10px;
+      border:1px solid var(--border); border-radius:10px;
+      background:var(--field); color:var(--text);
     }
-    .brand{
-      display:flex;align-items:center;gap:10px;min-height:56px;
+    .btn-sm{ background:var(--card); cursor:pointer }
+
+    /* botones con color de acento */
+    .btn-sm.accent{ background:var(--accent); border-color:var(--accent); color:#fff }
+
+    /* Select de tema del tamaño de un botón */
+    #themePick{ width:140px }
+
+    /* ============================================================
+       04) LOGO SUPERIOR (sobresale encima del formulario)
+       - Mezcla suave con el fondo para que no “salte” visualmente.
+       ============================================================ */
+    .logoWrap{
+      max-width:1680px; margin:4px auto 0; padding:0 16px;
+      display:flex; justify-content:flex-start;
     }
-    /* Logo “camuflado” con el tema (más arriba, en la barra) */
     .logo{
-      height:44px;object-fit:contain;opacity:.9;
-      mix-blend-mode:multiply; /* se integra con el color del tema */
-      filter:drop-shadow(0 2px 5px rgba(0,0,0,.06));
+      height:48px;
+      opacity:.9;
+      mix-blend-mode:multiply;       /* se integra con el color de fondo */
+      filter:saturate(0.85) contrast(1.05);
     }
-    .actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    .chip{font-size:.9rem;color:var(--muted)}
-    .ctl{height:36px;padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field);color:var(--text)}
-    .btn-sm{height:36px;padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--card);cursor:pointer}
-    #themePick{width:118px;height:36px} /* tamaño tipo “botón” */
 
-    /* =========================================================
-       LAYOUT PRINCIPAL
-       ========================================================= */
-    main{max-width:1680px;margin:8px auto 16px;padding:0 16px;display:grid;gap:16px}
+    /* ============================================================
+       05) LAYOUT PRINCIPAL
+       - Izquierda: formulario (sticky).
+       - Derecha: estado de reporte (lista).
+       ============================================================ */
+    :root{ --stickyTop: 88px } /* altura aproximada del header + margen */
+    main{
+      max-width:1680px; margin:8px auto 16px; padding:0 16px;
+      display:grid; gap:16px;
+    }
     @media (min-width:1200px){
-      main{grid-template-columns:640px 1fr}
+      main{ grid-template-columns:640px 1fr }
     }
 
-    /* =========================================================
-       CARDS Y SECCIONES
-       ========================================================= */
-    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 24px rgba(13,19,51,.08)}
+    .card{
+      background:var(--card); border:1px solid var(--border);
+      border-radius:16px; box-shadow:0 10px 24px rgba(13,19,51,.08);
+    }
+    /* títulos pegajosos dentro de cada tarjeta */
     .card h2{
-      margin:0;padding:16px 16px 0;
-      position:sticky;top:0;z-index:2;
-      background:linear-gradient(180deg,var(--card),color-mix(in srgb, var(--card) 70%, transparent));
-      border-top-left-radius:16px;border-top-right-radius:16px;
+      position:sticky; top:0; z-index:2;
+      margin:0; padding:14px 16px;
+      background: linear-gradient(180deg,
+            color-mix(in srgb, var(--card) 98%, transparent) 0%,
+            color-mix(in srgb, var(--card) 92%, transparent) 100%);
+      border-bottom:1px solid var(--border);
     }
-    .card .body{padding:16px}
+    .card .body{ padding:16px }
 
-    /* Columna izquierda y derecha pegajosas al mismo nivel */
-    .stickyL{position:sticky;top:var(--stickyTop);align-self:start}
-    .stickyR{position:sticky;top:var(--stickyTop);align-self:start;z-index:1}
-
-    /* La tabla del lado derecho tiene su propio scroll */
-    .table-wrap{
-      max-height:calc(100vh - 340px);
-      overflow:auto;border:1px solid var(--border);border-radius:12px;padding:8px;
-      background:color-mix(in srgb, var(--card) 96%, transparent)
+    /* --- el formulario completo se mantiene fijo (sticky) --- */
+    #cardForm{
+      position:sticky; top:var(--stickyTop); align-self:start;
+      max-height:calc(100vh - var(--stickyTop) - 16px);
+      overflow:auto;    /* si el form crece, scrollea por dentro */
     }
 
-    /* =========================================================
-       FORMULARIO IZQUIERDA
-       ========================================================= */
-    form .grid{display:grid;gap:12px}
-    @media(min-width:560px){form .grid{grid-template-columns:1fr 1fr}}
-    label{font-size:.9rem;color:var(--muted);display:block;margin-bottom:6px}
-    input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--field);color:var(--text)}
-    textarea{min-height:96px}
-    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .btn{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
-    .btn.primary{border-color:color-mix(in srgb, var(--accent) 45%, var(--border))}
-    #qSearch{width:260px}
+    /* ============================================================
+       06) FORMULARIO
+       ============================================================ */
+    form .grid{ display:grid; gap:12px }
+    @media(min-width:560px){ form .grid{ grid-template-columns:1fr 1fr } }
 
-    /* Bloque: “Ayuda rápida” para no dejar esa zona plana */
-    .helper{
-      margin-top:10px;display:grid;gap:10px;grid-template-columns:1fr 1fr;
+    label{ font-size:.9rem; color:var(--muted); display:block; margin-bottom:6px }
+    input,select,textarea{
+      width:100%; padding:10px 12px; border:1px solid var(--border);
+      border-radius:12px; background:var(--field); color:var(--text);
     }
-    .helper .box{
-      border:1px solid var(--border);border-radius:12px;padding:10px;background:var(--field)
+    textarea{ min-height:96px }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px }
+    .btn{
+      border:1px solid var(--border); background:var(--card); color:var(--text);
+      border-radius:12px; padding:10px 14px; font-weight:600; cursor:pointer;
     }
-    .helper h4{margin:0 0 6px 0;font-size:.95rem;color:var(--muted)}
-    .helper ul{margin:0;padding-left:18px}
-    .helper li{margin:4px 0}
+    /* botones llenos con acento */
+    .btn.accent{
+      background:var(--accent); color:#fff; border-color:var(--accent);
+      box-shadow:0 8px 16px color-mix(in srgb, var(--accent) 25%, transparent);
+    }
+    /* botones secundarios */
+    .btn.secondary{
+      background: color-mix(in srgb, var(--accent) 10%, var(--card));
+      border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+    }
+    .btn.secondary:hover{
+      background: color-mix(in srgb, var(--accent) 14%, var(--card));
+    }
 
-    /* Chips y plantillas */
-    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-    .chipbtn{border:1px solid var(--border);background:var(--field);border-radius:999px;padding:6px 10px;font-size:.85rem;cursor:pointer}
-    details{margin-top:6px}
-    details summary{cursor:pointer;color:var(--muted)}
+    /* tarjetas pequeñas bajo el formulario (relleno profesional) */
+    .mini{ background:var(--card); border:1px solid var(--border);
+           border-radius:14px; padding:12px; }
+    .mini h3{ margin:0 0 8px 0; font-size:1rem }
+    .mini ul{ margin:0 0 0 18px; padding:0 }
+    .mini .dot{ font-weight:700; margin-right:6px }
 
-    /* =========================================================
-       KPIs + TABLA
-       ========================================================= */
-    .kpis{display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:12px;margin:8px 0 10px}
-    .kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
-    .kpi .label{font-size:.88rem;color:var(--muted);white-space:nowrap}
-    .kpi .val{font-weight:800;font-size:1.25rem}
+    /* ============================================================
+       07) KPIs y TABLA
+       ============================================================ */
+    .toolbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:8px 0 12px }
+    .toolbar select{ padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:var(--field) }
+    .muted{ color:var(--muted); font-size:.9rem }
 
-    table{width:100%;border-collapse:separate;border-spacing:0 10px;color:var(--text)}
-    thead th{position:sticky;top:0;background:var(--card);z-index:1;font-size:.85rem;color:var(--muted);text-align:left;padding:0 8px;white-space:nowrap}
-    tbody tr{background:var(--card);border:1px solid var(--border)}
-    tbody td{padding:10px 8px;vertical-align:top}
+    .kpis{ display:grid; grid-template-columns:repeat(5,minmax(180px,1fr)); gap:12px; margin-bottom:8px }
+    .kpi{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px }
+    .kpi .label{ font-size:.88rem; color:var(--muted); white-space:nowrap }
+    .kpi .val{ font-weight:800; font-size:1.25rem }
 
-    .badge{padding:4px 8px;border:1px solid var(--border);border-radius:999px;font-size:.78rem;white-space:nowrap}
-    .prio-alta{background:#fff5f5}.prio-media{background:#fff4e6}.prio-baja{background:#ebfbee}
-    body[data-theme="dark"] .prio-alta{background:#402b2b}
-    body[data-theme="dark"] .prio-media{background:#3e2f18}
-    body[data-theme="dark"] .prio-baja{background:#1b3b2a}
-    .e-abierto{color:var(--bad)}.e-proceso{color:var(--warn)}.e-cerrado{color:var(--ok)}.e-cancelado{color:#6b7280}
+    .tablebox{ overflow:auto; max-height: calc(100vh - 320px) } /* alto visible aprox */
+    table{ width:100%; border-collapse:separate; border-spacing:0 10px; color:var(--text) }
+    thead th{
+      position:sticky; top:0; z-index:1;
+      font-size:.86rem; color:var(--muted); text-align:left; padding:0 8px; white-space:nowrap;
+      background: color-mix(in srgb, var(--card) 92%, transparent);
+    }
+    tbody tr{ background:var(--card); border:1px solid var(--border) }
+    tbody td{ padding:10px 8px; vertical-align:top }
+    tbody tr:hover{
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent) inset;
+    }
 
-    .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}
-    .toolbar select{padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--field)}
-    .muted{color:var(--muted);font-size:.9rem}
-    .notice{display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
-    footer{max-width:1680px;margin:6px auto 28px;padding:0 16px;color:var(--muted);font-size:.9rem}
-    .hidden{display:none!important}
+    .badge{ padding:4px 8px; border:1px solid var(--border); border-radius:999px; font-size:.78rem; white-space:nowrap }
+    .prio-alta{ background:#fff5f5 } .prio-media{ background:#fff4e6 } .prio-baja{ background:#ebfbee }
+    body[data-theme="dark"] .prio-alta{ background:#402b2b } body[data-theme="dark"] .prio-media{ background:#3e2f18 } body[data-theme="dark"] .prio-baja{ background:#1b3b2a }
+    .e-abierto{ color:#e03131 } .e-proceso{ color:#f08c00 } .e-cerrado{ color:#2b8a3e } .e-cancelado{ color:#6b7280 }
+
+    /* ============================================================
+       08) AUTOCOMPLETE (Usuarios)
+       ============================================================ */
+    .ac{ position:relative }
+    .ac-list{
+      position:absolute; left:0; right:0; top:100%;
+      background:var(--card); border:1px solid var(--border);
+      border-radius:12px; box-shadow:0 10px 24px rgba(13,19,51,.08);
+      margin-top:6px; max-height:220px; overflow:auto; padding:6px; z-index:5;
+    }
+    .ac-list[hidden]{ display:none }
+    .ac-list li{ list-style:none; padding:8px 12px; cursor:pointer; border-radius:10px }
+    .ac-list li[aria-selected="true"], .ac-list li:hover{ background:color-mix(in srgb, var(--accent) 10%, transparent) }
+
+    .notice{ display:none; margin-top:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px }
+    footer{ max-width:1680px; margin:6px auto 28px; padding:0 16px; color:var(--muted); font-size:.9rem }
   </style>
 </head>
 <body data-theme="light">
-  <!-- =========================================================
-       BARRA SUPERIOR
-       - logo arriba (izquierda), controles a la derecha
-       ========================================================= -->
+  <!-- ========== BARRA SUPERIOR: identidad + clave + tema ========== -->
   <header>
-    <div class="topbar">
-      <div class="brand">
-        <img class="logo" src="Imagen/logo-empresas.jpg"
-             onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';"
-             alt="Logo INGETEC / SEDIC">
-      </div>
+    <div class="toprow">
+      <small id="whoami" class="chip">Identidad: (no detectada)</small>
 
-      <div class="actions">
-        <small id="whoami" class="chip">Identidad: (no detectada)</small>
-        <input id="keyInput" class="ctl" placeholder="Clave (opcional)" style="width:160px">
-        <button id="saveKey" class="btn-sm">Guardar</button>
-        <button id="clearKey" class="btn-sm" title="Olvidar">✕</button>
+      <!-- Clave opcional (modelo B) -->
+      <input id="keyInput" class="ctl" placeholder="Clave (opcional)" style="width:160px">
+      <button id="saveKey" class="btn-sm accent">Guardar</button>
+      <button id="clearKey" class="btn-sm" title="Olvidar">✕</button>
 
-        <!-- IMPORTANTE:
-             - Si eliges 'light', 'dark' o 'mint' -> cambia el tema completo.
-             - Si escribes un valor que EMPIECE por '#', se toma como color de acento
-               (no cambia el tema, sólo --accent). Ej: #003f84               -->
-        <select id="themePick" class="ctl" title="Tema o color HEX">
-          <option value="light">Tema: Verde</option>
-          <option value="dark">Tema: Oscuro</option>
-          <option value="mint">Tema: Mint</option>
-           <option value="blue">Tema: Azul</option>
-           </select>
-      </div>
+      <!-- Selector de tema:
+           - data-theme => cambia paleta base (light/dark/mint)
+           - data-hex   => cambia el color de acento --accent -->
+      <select id="themePick" class="ctl" title="Tema">
+        <optgroup label="Tema base">
+          <option value="Claro"   data-theme="light">Tema: Verde (Claro)</option>
+          <option value="Oscuro"  data-theme="dark">Tema: Oscuro</option>
+          <option value="Mint"    data-theme="mint">Tema: Mint</option>
+        </optgroup>
+        <optgroup label="Color de acento (HEX)">
+          <option value="Verde"       data-hex="#92e87c">Tema: Verde</option>
+          <option value="Amarillo"    data-hex="#ffe764">Tema: Amarillo</option>
+          <option value="Rojo"        data-hex="#e74176">Tema: Rojo</option>
+          <option value="Azul"        data-hex="#0040a8">Tema: Azul</option>
+          <option value="Azul claro"  data-hex="#20a1d8">Tema: Azul claro</option>
+          <option value="Azul oscuro" data-hex="#003f84">Tema: Azul oscuro</option>
+        </optgroup>
+      </select>
     </div>
   </header>
 
+  <!-- ========== LOGO (encima del formulario, integrado) ========== -->
+  <div class="logoWrap">
+    <img class="logo"
+         src="Imagen/logo-empresas.jpg"
+         alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango"
+         loading="lazy"
+         onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';">
+  </div>
+
   <main>
-    <!-- =======================================================
-         COLUMNA IZQUIERDA (STICKY): REPORTE USUARIO
-         ======================================================= -->
-    <div class="stickyL">
-      <section class="card">
-        <h2>REPORTE USUARIO</h2>
-        <div class="body">
-          <form id="formTicket" action="javascript:void(0)" autocomplete="off">
-            <div class="grid">
-              <div>
-                <label for="analista">Analista Responsable *</label>
-                <select id="analista" required></select>
-              </div>
-
-              <div class="hidden">
-                <label for="correoAnalista">Correo analista</label>
-                <input id="correoAnalista" readonly />
-              </div>
-
-              <div>
-                <label for="categoria">Categoría *</label>
-                <select id="categoria" required>
-                  <option value="">Selecciona…</option>
-                  <option>Red</option><option>Hardware</option><option>Software</option>
-                  <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Otro</option>
-                </select>
-              </div>
-
-              <div>
-                <label for="falla">Servicio prestado *</label>
-                <select id="falla" required>
-                  <option value="">Selecciona…</option>
-                  <option>Soporte a equipos informáticos</option>
-                  <option>Configuración equipo</option>
-                  <option>Desbloquear cuenta de red</option>
-                  <option>Préstamo Video Beam / Préstamo equipo</option>
-                  <option>Crear acta</option>
-                  <option>Instalación de PC-Dis \ Préstamo de equipo \ Dispositivo</option>
-                  <option>Reposición de equipo</option>
-                  <option>Retiro de equipo a usuario</option>
-                  <option>Traslado de puesto</option>
-                  <option>Instalación de software - Desinstalación \ Traslado SW</option>
-                  <option>Desbloqueo punto de red</option>
-                  <option>Adquisición de Software y Hardware</option>
-                  <option>Asignación de puesto nuevo</option>
-                  <option>Creación de cuentas de red</option>
-                  <option>Eliminación de cuentas de red</option>
-                  <option>Crear cuenta de correo \ Eliminar</option>
-                  <option>Actualización de datos \ Información</option>
-                  <option>Inventario de Equipos</option>
-                  <option>Inventario de software</option>
-                  <option>Actualización de cuentas de red</option>
-                  <option>Asignar Permiso en servidores \ Retirar permisos</option>
-                  <option>Permisos en Unidades compartidas</option>
-                  <option>Soporte equipos CONSORCIO</option>
-                  <option>Auditoria desde TIC a Interventoría</option>
-                  <option>Instalación de Guayas</option>
-                  <option>Backups información</option>
-                  <option>Resolución de ECOS</option>
-                  <option>Actualización de carpetas de información general</option>
-                  <option>Actualización de información CADD</option>
-                  <option>Capacitación</option>
-                  <option>Reposición de equipos EPM</option>
-                  <option>Asesoría general</option>
-                  <option>Permisos en Skype Empresarial</option>
-                  <option>Desinstalación de programas</option>
-                  <option>Requerimiento de Impresión</option>
-                  <option>Gestión en Vault</option>
-                  <option>Permisos VPN</option>
-                  <option>Gestión en obra</option>
-                  <option>Crear cuenta de correo</option>
-                  <option>Entrega de equipo por reintegro o reposición</option>
-                  <option>Configurar Dispositivo móvil</option>
-                  <option>Marcación de puestos</option>
-                  <option>Recuperación de información</option>
-                  <option>Gestión aplicaciones</option>
-                </select>
-              </div>
-
-              <div class="ac">
-                <label for="usuario">Usuario quien reporta *</label>
-                <input id="usuario" placeholder="Escribe nombre o apellido" required />
-                <ul id="acList" class="ac-list" hidden></ul>
-                <small class="help">Escribe y elige entre las sugerencias.</small>
-              </div>
-
-              <div>
-                <label for="prioridad">Prioridad *</label>
-                <select id="prioridad" required>
-                  <option value="">Selecciona…</option><option>Alta</option><option>Media</option><option>Baja</option>
-                </select>
-              </div>
-
-              <div>
-                <label for="adj">Adjunto (opcional)</label>
-                <input id="adj" type="file" accept="image/*" />
-              </div>
+    <!-- ===================== REPORTE USUARIO (fijo) ===================== -->
+    <section id="cardForm" class="card">
+      <h2>REPORTE USUARIO</h2>
+      <div class="body">
+        <form id="formTicket" action="javascript:void(0)" autocomplete="off">
+          <div class="grid">
+            <div>
+              <label for="analista">Analista Responsable *</label>
+              <select id="analista" required></select>
+            </div>
+            <div class="hidden">
+              <label for="correoAnalista">Correo analista</label>
+              <input id="correoAnalista" readonly />
             </div>
 
-            <div style="margin-top:10px">
-              <label for="descripcion">Descripción (opcional)</label>
-              <textarea id="descripcion" placeholder="Describe el problema reportado…"></textarea>
+            <div>
+              <label for="categoria">Categoría *</label>
+              <select id="categoria" required>
+                <option value="">Selecciona…</option>
+                <option>Red</option><option>Hardware</option><option>Software</option>
+                <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Otro</option>
+              </select>
             </div>
 
-            <div id="notice" class="notice"></div>
-            <div class="row">
-              <button class="btn primary" type="submit">➕ Guardar reporte</button>
-              <button class="btn" type="reset">↺ Limpiar</button>
-              <!-- Buscador que filtra la tabla de la derecha -->
-              <input id="qSearch" class="ctl" placeholder="Buscar tickets (ID, categoría, falla, usuario)">
+            <div>
+              <label for="falla">Servicio prestado *</label>
+              <select id="falla" required>
+                <option value="">Selecciona…</option>
+                <option>Soporte a equipos informáticos</option>
+                <option>Configuración equipo</option>
+                <option>Desbloquear cuenta de red</option>
+                <option>Préstamo Video Beam / Préstamo equipo</option>
+                <option>Crear acta</option>
+                <option>Instalación de PC-Dis \ Préstamo de equipo \ Dispositivo</option>
+                <option>Reposición de equipo</option>
+                <option>Retiro de equipo a usuario</option>
+                <option>Traslado de puesto</option>
+                <option>Instalación de software - Desinstalación \ Traslado SW</option>
+                <option>Desbloqueo punto de red</option>
+                <option>Adquisición de Software y Hardware</option>
+                <option>Asignación de puesto nuevo</option>
+                <option>Creación de cuentas de red</option>
+                <option>Eliminación de cuentas de red</option>
+                <option>Crear cuenta de correo \ Eliminar</option>
+                <option>Actualización de datos \ Información</option>
+                <option>Inventario de Equipos</option>
+                <option>Inventario de software</option>
+                <option>Actualización de cuentas de red</option>
+                <option>Asignar Permiso en servidores \ Retirar permisos</option>
+                <option>Permisos en Unidades compartidas</option>
+                <option>Soporte equipos CONSORCIO</option>
+                <option>Auditoria desde TIC a Interventoría</option>
+                <option>Instalación de Guayas</option>
+                <option>Backups información</option>
+                <option>Resolución de ECOS</option>
+                <option>Actualización de carpetas de información general</option>
+                <option>Actualización de información CADD</option>
+                <option>Capacitación</option>
+                <option>Reposición de equipos EPM</option>
+                <option>Asesoría general</option>
+                <option>Permisos en Skype Empresarial</option>
+                <option>Desinstalación de programas</option>
+                <option>Requerimiento de Impresión</option>
+                <option>Gestión en Vault</option>
+                <option>Permisos VPN</option>
+                <option>Gestión en obra</option>
+                <option>Crear cuenta de correo</option>
+                <option>Entrega de equipo por reintegro o reposición</option>
+                <option>Configurar Dispositivo móvil</option>
+                <option>Marcación de puestos</option>
+                <option>Recuperación de información</option>
+                <option>Gestión aplicaciones</option>
+              </select>
             </div>
 
-            <!-- Accesos rápidos + plantillas -->
-            <div class="chips">
-              <button type="button" class="chipbtn" data-prio="Alta">Prioridad: Alta</button>
-              <button type="button" class="chipbtn" data-prio="Media">Prioridad: Media</button>
-              <button type="button" class="chipbtn" data-prio="Baja">Prioridad: Baja</button>
-              <details>
-                <summary>Plantillas de descripción</summary>
-                <div class="chips" style="margin-top:6px">
-                  <button type="button" class="chipbtn tpl" data-text="Usuario no puede iniciar sesión. Se valida credencial y restablece acceso.">Login / restablecer</button>
-                  <button type="button" class="chipbtn tpl" data-text="Se instala y configura software requerido por el usuario. Pruebas OK.">Instalación de software</button>
-                  <button type="button" class="chipbtn tpl" data-text="Equipo presenta lentitud. Limpieza, actualización y pruebas de rendimiento.">Mantenimiento / performance</button>
-                </div>
-              </details>
+            <div class="ac">
+              <label for="usuario">Usuario quien reporta *</label>
+              <input id="usuario" placeholder="Escribe nombre o apellido" required />
+              <ul id="acList" class="ac-list" hidden></ul>
+              <small class="help">Escribe y elige entre las sugerencias.</small>
             </div>
 
-            <!-- Bloque profesional para “rellenar” con valor -->
-            <div class="helper">
-              <div class="box">
-                <h4>Checklist antes de crear</h4>
-                <ul>
-                  <li>Confirmar datos del usuario y equipo.</li>
-                  <li>Clasificar correctamente <em>Categoría</em> y <em>Servicio prestado</em>.</li>
-                  <li>Adjuntar evidencia (si aplica).</li>
-                  <li>Describir el impacto (usuarios/áreas afectadas).</li>
-                  <li>Estimar prioridad (Alta/Media/Baja) según impacto.</li>
-                </ul>
-              </div>
-              <div class="box">
-                <h4>Leyenda rápida</h4>
-                <ul>
-                  <li><span class="badge prio-alta">Alta</span> incidente crítico o bloqueo.</li>
-                  <li><span class="badge prio-media">Media</span> afecta tareas, tiene alternativa.</li>
-                  <li><span class="badge prio-baja">Baja</span> consulta o mantenimiento.</li>
-                </ul>
-              </div>
+            <div>
+              <label for="prioridad">Prioridad *</label>
+              <select id="prioridad" required>
+                <option value="">Selecciona…</option><option>Alta</option><option>Media</option><option>Baja</option>
+              </select>
             </div>
-          </form>
-        </div>
-      </section>
-    </div>
 
-    <!-- =======================================================
-         COLUMNA DERECHA (STICKY): ESTADO + FILTROS + TABLA SCROLL
-         ======================================================= -->
-    <section class="card stickyR">
+            <div>
+              <label for="adj">Adjunto (opcional)</label>
+              <input id="adj" type="file" accept="image/*" />
+            </div>
+          </div>
+
+          <div style="margin-top:10px">
+            <label for="descripcion">Descripción (opcional)</label>
+            <textarea id="descripcion" placeholder="Describe el problema reportado…"></textarea>
+          </div>
+
+          <div id="notice" class="notice"></div>
+          <div class="row">
+            <button class="btn accent" type="submit">➕ Guardar reporte</button>
+            <button class="btn secondary" type="reset">↺ Limpiar</button>
+
+            <!-- Buscador: filtra la lista de la derecha por ID/categoría/falla/usuario -->
+            <input id="quickSearch" class="ctl" style="flex:1; min-width:220px"
+                   placeholder="Buscar tickets (ID, categoría, falla, usuario)">
+          </div>
+
+          <!-- RELLENO PROFESIONAL BAJO EL FORM (no funcional, guía para agentes) -->
+          <div class="row">
+            <div class="mini" style="flex:1 1 280px">
+              <h3>Checklist antes de crear</h3>
+              <ul>
+                <li><span class="dot">•</span>Confirmar datos del usuario y equipo.</li>
+                <li><span class="dot">•</span>Clasificar correctamente <em>Categoría</em> y <em>Servicio prestado</em>.</li>
+                <li><span class="dot">•</span>Adjuntar evidencia (si aplica).</li>
+                <li><span class="dot">•</span>Describir impacto (usuarios/áreas afectadas).</li>
+                <li><span class="dot">•</span>Estimar prioridad (Alta/Media/Baja) según impacto.</li>
+              </ul>
+            </div>
+            <div class="mini" style="flex:1 1 260px">
+              <h3>Leyenda rápida</h3>
+              <p><span class="badge prio-alta">Alta</span> incidente crítico o bloqueo.</p>
+              <p><span class="badge prio-media">Media</span> afecta tareas, tiene alternativa.</p>
+              <p><span class="badge prio-baja">Baja</span> consulta o mantenimiento.</p>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================== ESTADO DE REPORTE (lista) ===================== -->
+    <section id="cardReport" class="card">
       <h2>ESTADO DE REPORTE</h2>
       <div class="body">
         <div class="toolbar">
@@ -381,7 +418,7 @@
           <div class="kpi"><div class="label">Cancelados</div><div class="val" id="kpiCa">0</div></div>
         </div>
 
-        <div class="table-wrap">
+        <div class="tablebox">
           <table>
             <thead>
               <tr>
@@ -402,19 +439,21 @@
   (function(){
     'use strict';
 
-    /* =========================================================
-       CONFIG
-       ========================================================= */
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyS998s7srjCkRE1R3CThvsKhIvA-gBTSB7072CLDUdgwI80Az6Kz_o0wRXB9ITHSwGdw/exec';
+    /* ============================================================
+       ENDPOINT de Google Apps Script (REMPLAZA si cambias tu URL)
+       ============================================================ */
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzhBmFackH_thxH1XBWBkhpObCdgxspUjsJXsHRcfI35T8DMST5y7uW3_Rb2WJ1G__jhA/exec';
     const AUTO_REFRESH_MS = 30000;
 
+    /* ============================================================
+       CATÁLOGOS (Analistas y Usuarios de ejemplo)
+       ============================================================ */
     const ANALISTAS = [
       { nombre:'Jose Salas',        email:'jsalas@sedic.com.co' },
       { nombre:'Sebastián Cataño',  email:'scatano@sedic.com.co' },
       { nombre:'Sebastián Posada',  email:'sposada@sedic.com.co' },
       { nombre:'Pablo Calle',       email:'soportesistemasve@gmail.com' }
     ];
-
     const USUARIOS = [
       'Marcela Pareja','Juan Carlos Betancur','Diego Guerrero','Heidy Zambrano',
       'Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez',
@@ -422,64 +461,63 @@
       'Verónica Zapata','Jhon Madrid','Juan Carlos Betancur'
     ];
 
-    /* =========================================================
-       DOM + ESTADO LOCAL
-       ========================================================= */
+    /* ============================================================
+       ESTADO EN MEMORIA
+       ============================================================ */
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
-    const tbody = $('#tbody');
-    const who = $('#whoami');
-    const syncBadge = $('#syncBadge');
-    const form = $('#formTicket');
-    const qSearch = $('#qSearch');
+    const tbody = $('#tbody'),
+          kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe'), kpiCa=$('#kpiCa');
+
+    const viewSelect = $('#viewSelect'), analystSelect = $('#analystSelect'),
+          statusSelect = $('#statusSelect'), monthSelect  = $('#monthSelect'),
+          quickSearch = $('#quickSearch');
+
+    const form = $('#formTicket'), syncBadge = $('#syncBadge'), who = $('#whoami');
+
+    const localKey = 'tickets_fallas_v7';
+    const loadLocal = () => { try{ return JSON.parse(localStorage.getItem(localKey))||[] } catch { return [] } };
+    const saveLocal = v => localStorage.setItem(localKey, JSON.stringify(v));
 
     let ticketsLocal = loadLocal();
     let ticketsRemote = null;
     let lastSource = 'Local';
-    let identity = null;
-    let AUTH_KEY = '';
+    let identity = null;   // {name,email,role}
+    let AUTH_KEY = '';     // clave modelo B (opcional)
+    let searchText = '';   // texto del buscador rápido
 
-    const kpi = {
-      total: $('#kpiTotal'), ab: $('#kpiAb'), pr: $('#kpiPr'), ce: $('#kpiCe'), ca: $('#kpiCa')
-    };
-
-    /* ===== helpers ===== */
-    function loadLocal(){ try{ return JSON.parse(localStorage.getItem('tickets_fallas_v6'))||[] }catch{ return [] } }
-    function saveLocal(v){ localStorage.setItem('tickets_fallas_v6', JSON.stringify(v)); }
-    const norm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-    const esc  = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
-    const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p||''}</span>`;
-    const tagE  = e => { const s=String(e||''); const cls=(s==='Abierto')?'e-abierto':(s==='En Proceso')?'e-proceso':(s==='Cerrado')?'e-cerrado':'e-cancelado'; return `<strong class="${cls}">${s}</strong>`; };
-    const fmt  = iso => { const d=(iso instanceof Date)?iso:new Date(iso); return isNaN(d)?'':d.toLocaleString(); };
-    function show(msg, kind='ok'){ notice.style.display='block'; notice.textContent=msg; notice.style.borderColor=(kind==='ok')?'#b2f2bb':'#ffc9c9'; setTimeout(()=> notice.style.display='none', 2000); }
-
-    /* =========================================================
-       TEMA / COLOR DE ACENTO
-       - Si el valor del select empieza por '#', se aplica a --accent
-       - Si es 'light' | 'dark' | 'mint' => cambia el data-theme
-       ========================================================= */
+    /* ============================================================
+       TEMA: base (data-theme) + color de acento (data-hex)
+       - Persistimos en localStorage: ui_theme, ui_accent_hex
+       ============================================================ */
     const themePick = $('#themePick');
+    function applyBaseTheme(theme){ document.body.setAttribute('data-theme', theme); localStorage.setItem('ui_theme', theme); }
+    function applyAccent(hex){ document.documentElement.style.setProperty('--accent', hex); localStorage.setItem('ui_accent_hex', hex); }
+
     (function initTheme(){
       const savedTheme = localStorage.getItem('ui_theme') || 'light';
-      const savedAccent = localStorage.getItem('ui_accent') || '';
-      document.body.setAttribute('data-theme', savedTheme);
-      if (savedAccent) document.documentElement.style.setProperty('--accent', savedAccent);
-      themePick.value = savedAccent || savedTheme;
+      const savedAccent = localStorage.getItem('ui_accent_hex') || getDefaultAccentFor(savedTheme);
+      applyBaseTheme(savedTheme); applyAccent(savedAccent);
+
       themePick.addEventListener('change', ()=>{
-        const val = themePick.value.trim();
-        if (val.startsWith('#')){
-          document.documentElement.style.setProperty('--accent', val);
-          localStorage.setItem('ui_accent', val);
-        } else {
-          document.body.setAttribute('data-theme', val);
-          localStorage.setItem('ui_theme', val);
-        }
+        const opt = themePick.selectedOptions[0];
+        const theme = opt.dataset.theme;
+        const hex   = opt.dataset.hex;
+        if (theme) applyBaseTheme(theme);
+        if (hex)   applyAccent(hex);
       });
     })();
+    function getDefaultAccentFor(theme){
+      switch(theme){
+        case 'dark': return '#93c5fd';
+        case 'mint': return '#16a34a';
+        default:     return '#6475ff';
+      }
+    }
 
-    /* =========================================================
-       CLAVE (opcional) para pruebas externas
-       ========================================================= */
+    /* ============================================================
+       CLAVE (Modelo B: solo si permites acceso sin SSO)
+       ============================================================ */
     const keyInput = $('#keyInput'), saveKeyBtn = $('#saveKey'), clearKeyBtn = $('#clearKey');
     (function initKey(){
       const urlKey = new URLSearchParams(location.search).get('key') || '';
@@ -488,43 +526,32 @@
       if (urlKey && urlKey !== stored) localStorage.setItem('auth_key', urlKey);
       keyInput.value = AUTH_KEY;
     })();
-    saveKeyBtn.addEventListener('click', ()=>{ AUTH_KEY=keyInput.value.trim(); localStorage.setItem('auth_key', AUTH_KEY); fetchWhoAmI().then(fetchRemote); });
+    saveKeyBtn.addEventListener('click', ()=>{ AUTH_KEY = keyInput.value.trim(); localStorage.setItem('auth_key', AUTH_KEY); fetchWhoAmI().then(fetchRemote); });
     clearKeyBtn.addEventListener('click', ()=>{ AUTH_KEY=''; keyInput.value=''; localStorage.removeItem('auth_key'); fetchWhoAmI().then(fetchRemote); });
 
-    /* =========================================================
-       CATÁLOGO ANALISTAS (email oculto)
-       ========================================================= */
+    /* ============================================================
+       ANALISTAS (select + correo autollenado)
+       ============================================================ */
     (function initAnalistas(){
       const sel = $('#analista');
       sel.innerHTML = '<option value="">Selecciona…</option>' + ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
-      sel.addEventListener('change', ()=>{
-        const a = ANALISTAS.find(x=>x.nombre===sel.value);
-        $('#correoAnalista').value = a ? a.email : '';
-      });
+      sel.addEventListener('change', ()=>{ const a = ANALISTAS.find(x=>x.nombre===sel.value); $('#correoAnalista').value = a ? a.email : ''; });
     })();
 
-    /* =========================================================
-       AUTOCOMPLETE USUARIOS (nombre o apellido)
-       ========================================================= */
+    /* ============================================================
+       AUTOCOMPLETE USUARIOS
+       ============================================================ */
     const inputUsuario = $('#usuario'); const acList = $('#acList');
+    const norm = (s)=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
     function filtraUsuarios(q){ const n=norm(q); if(!n) return []; return USUARIOS.filter(u=>norm(u).includes(n)).slice(0,8); }
-    function pintaLista(items){
-      if (!items.length){ acList.hidden=true; acList.innerHTML=''; return; }
-      acList.innerHTML = items.map((t,i)=>`<li ${i===0?'aria-selected="true"':''}>${t}</li>`).join('');
-      acList.hidden = false;
-    }
+    function pintaLista(items){ if(!items.length){ acList.hidden=true; acList.innerHTML=''; return; } acList.innerHTML=items.map((t,i)=>`<li ${i===0?'aria-selected="true"':''}>${t}</li>`).join(''); acList.hidden=false; }
     inputUsuario.addEventListener('input', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
     inputUsuario.addEventListener('focus', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
-    document.addEventListener('click', (e)=>{
-      if (e.target.closest('#acList li')){ inputUsuario.value = e.target.textContent; acList.hidden = true; }
-      else if(!e.target.closest('.ac')) { acList.hidden = true; }
-    });
+    document.addEventListener('click', (e)=>{ if (e.target.closest('#acList li')){ inputUsuario.value = e.target.textContent; acList.hidden = true; } else if(!e.target.closest('.ac')) { acList.hidden = true; } });
 
-    /* =========================================================
-       FILTROS DE LA DERECHA
-       ========================================================= */
-    const viewSelect = $('#viewSelect'), analystSelect = $('#analystSelect'), statusSelect = $('#statusSelect'), monthSelect = $('#monthSelect');
-
+    /* ============================================================
+       BARRA DE FILTROS (meses, vista, etc.)
+       ============================================================ */
     (function fillMonths(){
       const now = new Date(); const items = ['<option value="">Todos</option>'];
       for (let i=0;i<12;i++){
@@ -535,7 +562,6 @@
       }
       monthSelect.innerHTML = items.join('');
     })();
-
     (function initView(){
       const saved = JSON.parse(localStorage.getItem('tickets_view')||'{}');
       viewSelect.value   = saved.view || 'mis';
@@ -546,49 +572,71 @@
     function persistView(){ localStorage.setItem('tickets_view', JSON.stringify({ view:viewSelect.value, analyst:analystSelect.value, status:statusSelect.value, month:monthSelect.value })); }
     [viewSelect,analystSelect,statusSelect,monthSelect].forEach(el => el.addEventListener('change', ()=>{ persistView(); fetchRemote(); }));
 
-    /* =========================================================
-       RENDER
-       ========================================================= */
-    function computeCounters(rows){
-      const c = { total:rows.length, abiertos:0, en_proceso:0, cerrados:0, cancelados:0 };
-      rows.forEach(t=>{ const s=String(t.estado||'').toLowerCase();
-        if(s==='abierto') c.abiertos++; else if(s==='en proceso') c.en_proceso++; else if(s==='cerrado') c.cerrados++; else if(s==='cancelado') c.cancelados++; });
-      return c;
-    }
-    function setCounters(c){ kpi.total.textContent=c.total; kpi.ab.textContent=c.abiertos; kpi.pr.textContent=c.en_proceso; kpi.ce.textContent=c.cerrados; kpi.ca.textContent=c.cancelados; }
+    /* ============================================================
+       BUSCADOR RÁPIDO (ID, categoría, falla, usuario)
+       ============================================================ */
+    quickSearch.addEventListener('input', ()=>{
+      searchText = quickSearch.value;
+      render();
+    });
 
-    function currentRows(){
+    /* ============================================================
+       HELPERS UI
+       ============================================================ */
+    const show = (msg, kind='ok')=>{
+      notice.style.display='block'; notice.textContent=msg;
+      notice.style.borderColor=(kind==='ok')?'#b2f2bb':'#ffc9c9';
+      setTimeout(()=> notice.style.display='none', 2200);
+    };
+    const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
+    const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p||''}</span>`;
+    const tagE  = e => { const s = String(e||''); const cls = (s==='Abierto')?'e-abierto':(s==='En Proceso')?'e-proceso':(s==='Cerrado')?'e-cerrado':'e-cancelado'; return `<strong class="${cls}">${s}</strong>`; };
+    const fmt = iso => { const d = (iso instanceof Date) ? iso : new Date(iso); return isNaN(d) ? '' : d.toLocaleString(); };
+
+    function computeCounters(rows){ const c = { total:rows.length, abiertos:0, en_proceso:0, cerrados:0, cancelados:0 };
+      rows.forEach(t=>{ const s=String(t.estado||'').toLowerCase();
+        if(s==='abierto') c.abiertos++;
+        else if(s==='en proceso') c.en_proceso++;
+        else if(s==='cerrado') c.cerrados++;
+        else if(s==='cancelado') c.cancelados++;
+      }); return c;
+    }
+    function setCounters(c){ kpiTotal.textContent=c.total; kpiAb.textContent=c.abiertos; kpiPr.textContent=c.en_proceso; kpiCe.textContent=c.cerrados; kpiCa.textContent=c.cancelados; }
+
+    function currentBaseRows(){
       const base = Array.isArray(ticketsRemote) ? ticketsRemote : ticketsLocal;
       lastSource = Array.isArray(ticketsRemote) ? 'Sheets' : 'Local';
       let rows = base.slice();
 
+      // Filtro de estado
       const st = statusSelect.value;
-      if (st==='pendientes') rows = rows.filter(x => !['Cerrado','Cancelado'].includes(String(x.estado)));
+      if (st==='pendientes'){ rows = rows.filter(x => !['Cerrado','Cancelado'].includes(String(x.estado))); }
       else if (st) rows = rows.filter(x => String(x.estado)===st);
 
-      const ana = analystSelect.value;
-      if (viewSelect.value==='mis' && identity?.name){
-        rows = rows.filter(x => String(x.analista)===identity.name);
-      } else if (ana){ rows = rows.filter(x => String(x.analista)===ana); }
+      // Filtro por analista
+      if (analystSelect.value) rows = rows.filter(x => String(x.analista)===analystSelect.value);
 
-      const ym = monthSelect.value;
-      if (ym){
-        rows = rows.filter(x=>{
+      // Filtro por mes (YYYY-MM)
+      if (monthSelect.value){
+        rows = rows.filter(x => {
           const d = new Date(x.fecha);
-          const y2 = d.getFullYear(), m2 = String(d.getMonth()+1).padStart(2,'0');
-          return `${y2}-${m2}`===ym;
+          const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+          return ym === monthSelect.value;
         });
       }
+      return rows;
+    }
 
-      // Buscador de la izquierda
-      const q = norm(qSearch.value);
-      if (q){
-        rows = rows.filter(t =>
-          norm(t.id).includes(q) ||
-          norm(t.categoria).includes(q) ||
-          norm(t.falla).includes(q) ||
-          norm(t.usuario).includes(q)
-        );
+    function currentRows(){
+      let rows = currentBaseRows();
+
+      // Buscador rápido (ID, categoria, falla, usuario)
+      if (searchText && searchText.trim()){
+        const n = norm(searchText);
+        rows = rows.filter(r => {
+          const bank = `${r.id} ${r.categoria} ${r.falla} ${r.usuario}`;
+          return norm(bank).includes(n);
+        });
       }
 
       rows.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
@@ -597,9 +645,7 @@
 
     function render(countersFromAPI){
       const rows = currentRows();
-      if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI);
-      else setCounters(computeCounters(rows));
-
+      if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI); else setCounters(computeCounters(rows));
       syncBadge.innerHTML = `Fuente: <strong>${lastSource}</strong>`;
 
       tbody.innerHTML = rows.map(t=>`
@@ -629,20 +675,27 @@
         </tr>`).join('') || `<tr><td colspan="10" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
-    /* =========================================================
-       WHOAMI + LIST (autenticación)
-       ========================================================= */
+    /* ============================================================
+       WHOAMI + LIST con key
+       - Si quieres obligar Gmail corporativo, valida en Apps Script y
+         devuelve {ok:false} si el correo no está en la whitelist.
+       ============================================================ */
     async function fetchWhoAmI(){
       try{
         const params = new URLSearchParams({ action:'whoami' });
-        if (AUTH_KEY) params.set('key', AUTH_KEY); // clave opcional para pruebas fuera del dominio
+        if (AUTH_KEY) params.set('key', AUTH_KEY);
         const res = await fetch(WEB_APP_URL + '?' + params.toString());
         const data = await res.json();
         identity = data && data.ok ? data.me : null;
         who.textContent = identity ? `Identidad: ${identity.name} (${identity.role})` : 'Identidad: (no detectada)';
+
+        // Si no es admin, bloquear "Todos"
         const isAdmin = identity && identity.role==='admin';
-        viewSelect.disabled = !isAdmin; if (!isAdmin) viewSelect.value='mis';
-        if (identity && !$('#analystSelect').value) $('#analystSelect').value = identity.name;
+        viewSelect.disabled = !isAdmin;
+        if (!isAdmin) viewSelect.value = 'mis';
+
+        // Autoseleccionar analista para filtro si está vacío
+        if (identity && !analystSelect.value) analystSelect.value = identity.name;
       }catch{ identity = null; who.textContent = 'Identidad: (no detectada)'; }
     }
 
@@ -660,26 +713,31 @@
 
         const res = await fetch(WEB_APP_URL + '?' + params.toString());
         const data = await res.json();
-        if (data && data.ok){
-          ticketsRemote = Array.isArray(data.items) ? data.items : [];
+        if (data && data.ok && Array.isArray(data.items)){
+          ticketsRemote = data.items;
           if (data.me){ identity = data.me; who.textContent = `Identidad: ${identity.name} (${identity.role})`; }
           render(data.counters);
-        } else { ticketsRemote = null; render(); }
-      }catch{ ticketsRemote = null; render(); }
+        } else {
+          ticketsRemote = null; render();
+        }
+      }catch(err){ ticketsRemote = null; render(); }
     }
 
-    /* =========================================================
-       POST
-       ========================================================= */
+    /* ============================================================
+       POST (create/update) — incluye AUTH_KEY si está presente
+       ============================================================ */
     async function postJSON(payload){
       if (AUTH_KEY) payload.key = AUTH_KEY;
-      const res = await fetch(WEB_APP_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+      const res = await fetch(WEB_APP_URL, { method:'POST',
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
       try { return await res.json(); } catch { return { ok:false, error:'Respuesta no-JSON' }; }
     }
 
-    /* =========================================================
+    /* ============================================================
        CREAR TICKET
-       ========================================================= */
+       ============================================================ */
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const analista = $('#analista').value;
@@ -688,9 +746,8 @@
       const falla = $('#falla').value;
       const usuario = $('#usuario').value.trim();
       const prioridad = $('#prioridad').value;
-      const descripcion = $('#descripcion').value.trim(); // opcional
+      const descripcion = $('#descripcion').value.trim();
       const adjInput = $('#adj'); const adjuntoNombre = adjInput.files?.[0]?.name || '';
-
       if(!analista || !categoria || !falla || !usuario || !prioridad){
         show('Completa los campos obligatorios','err'); return;
       }
@@ -698,16 +755,17 @@
       const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
       const nowISO = new Date().toISOString();
       const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, adjuntoNombre, estado:'Abierto', fecha: nowISO };
-
       ticketsLocal.unshift(t); saveLocal(ticketsLocal); render(); show('Guardado local. Enviando a Sheets…');
+
       const d = await postJSON({ action:'create', id:t.id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, estado:t.estado, fechaISO: nowISO, adjuntoNombre });
-      if (!d || !d.ok){ show('No se pudo crear en Sheets', 'err'); } else { fetchRemote(); }
+      if (!d || !d.ok){ show('No se pudo crear en Sheets', 'err'); }
+      else { fetchRemote(); }
       form.reset(); $('#correoAnalista').value='';
     });
 
-    /* =========================================================
-       CAMBIOS EN ESTADO / PRIORIDAD
-       ========================================================= */
+    /* ============================================================
+       CAMBIOS DE ESTADO / PRIORIDAD (inline en la tabla)
+       ============================================================ */
     document.addEventListener('change', async (e)=>{
       const selE = e.target.closest('.estado-select');
       const selP = e.target.closest('.prio-select');
@@ -732,26 +790,14 @@
       }
     });
 
-    /* =========================================================
-       BUSCADOR (izquierda) + ACCESOS RÁPIDOS
-       ========================================================= */
-    qSearch.addEventListener('input', ()=> render());
-    document.querySelectorAll('.chipbtn[data-prio]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{ $('#prioridad').value = btn.dataset.prio; });
-    });
-    document.querySelectorAll('.chipbtn.tpl').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const t = $('#descripcion'); t.value = btn.dataset.text; t.focus();
-      });
-    });
-
-    /* =========================================================
+    /* ============================================================
        INIT
-       ========================================================= */
+       ============================================================ */
     async function init(){
       await fetchWhoAmI();
-      render();               // render rápido local
-      fetchRemote();          // cuando llegue Sheets, reemplaza
+      if (identity && !analystSelect.value) analystSelect.value = identity.name;
+      render();               // primer render rápido con local
+      fetchRemote();          // cambia a “Sheets” cuando llega
       setInterval(()=>{ if(!document.hidden) fetchRemote(); }, AUTO_REFRESH_MS);
     }
     init();
@@ -759,4 +805,3 @@
   </script>
 </body>
 </html>
-
