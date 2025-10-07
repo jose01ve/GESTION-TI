@@ -8,12 +8,15 @@
   <style>
     /* ============================================================
        01) VARIABLES DE TEMA
-       - data-theme (paleta base) + --accent (color de acento)
-       - Para añadir más temas base, define un bloque body[data-theme="..."]
+       ------------------------------------------------------------
+       - data-theme en <body> define la paleta base (light/dark/mint).
+       - --accent se puede cambiar dinámicamente con un HEX (selector).
        ============================================================ */
     :root{
-      --accent: #6475ff;                 /* color de acento por defecto */
-      /* paleta base LIGHT (Claro) */
+      /* color de acento por defecto (si no hay uno guardado) */
+      --accent: #6475ff;
+
+      /* paleta base LIGHT */
       --bg:#eef2ff; --card:#ffffff; --text:#0d1333; --muted:#51608b;
       --border:rgba(13,19,51,.12); --field:#fbfcff;
     }
@@ -25,19 +28,9 @@
       --bg:#e6fff4; --card:#ffffff; --text:#0d1333; --muted:#4d6a61;
       --border:rgba(13,19,51,.12); --field:#f7fffb;
     }
-    /* NUEVO: tema base Azul (claro, estilo “sky/blue”) */
-    body[data-theme="blue"]{
-      --bg:#e7f3ff; --card:#ffffff; --text:#0f1a2b; --muted:#3c587a;
-      --border:rgba(15,26,43,.12); --field:#f7fbff;
-    }
-    /* NUEVO: tema base Azul oscuro (navy) */
-    body[data-theme="navy"]{
-      --bg:#0b1629; --card:#0f2038; --text:#ebf1ff; --muted:#9fb3d1;
-      --border:rgba(255,255,255,.14); --field:#0c1b30;
-    }
 
     /* ============================================================
-       02) BASE y UTILIDADES
+       02) BASE
        ============================================================ */
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -45,12 +38,11 @@
       margin:0; background:var(--bg); color:var(--text);
       font-family: system-ui, Segoe UI, Roboto, Arial;
     }
-    .hidden{ display:none !important }   /* para ocultar “Correo analista” */
 
     /* ============================================================
        03) TOPBAR (Identidad + Clave + Tema)
        ============================================================ */
-    header{position:sticky; top:0; z-index:20; padding:4px 0}
+    header{position:sticky; top:0; z-index:20; padding:8px 0}
     .toprow{
       max-width:1680px; margin:0 auto; padding:0 16px;
       display:flex; align-items:center; gap:12px; justify-content:flex-end;
@@ -62,32 +54,36 @@
       background:var(--field); color:var(--text);
     }
     .btn-sm{ background:var(--card); cursor:pointer }
+
+    /* botones con color de acento */
     .btn-sm.accent{ background:var(--accent); border-color:var(--accent); color:#fff }
-    #themePick{ width:160px }
+
+    /* Select de tema del tamaño de un botón */
+    #themePick{ width:140px }
 
     /* ============================================================
-       04) LOGO SUPERIOR
-       - Más grande y “camuflado” (mezcla y filtros)
+       04) LOGO SUPERIOR (sobresale encima del formulario)
+       - Mezcla suave con el fondo para que no “salte” visualmente.
        ============================================================ */
     .logoWrap{
-      max-width:1680px; margin:0 auto; padding:0 16px;
+      max-width:1680px; margin:4px auto 0; padding:0 16px;
       display:flex; justify-content:flex-start;
     }
     .logo{
-      height:72px;                  /* ↑ más grande */
+      height:48px;
       opacity:.9;
-      mix-blend-mode:multiply;      /* se integra con el fondo/tema */
-      filter:saturate(.85) contrast(1.06) brightness(1.02);
+      mix-blend-mode:multiply;       /* se integra con el color de fondo */
+      filter:saturate(0.85) contrast(1.05);
     }
 
     /* ============================================================
        05) LAYOUT PRINCIPAL
-       - Formulario izquierdo “sticky” (no se mueve)
-       - Lista derecha scrollea por dentro
+       - Izquierda: formulario (sticky).
+       - Derecha: estado de reporte (lista).
        ============================================================ */
-    :root{ --stickyTop: 64px }      /* ↑ más cerca del borde superior */
+    :root{ --stickyTop: 88px } /* altura aproximada del header + margen */
     main{
-      max-width:1680px; margin:4px auto 12px; padding:0 16px;
+      max-width:1680px; margin:8px auto 16px; padding:0 16px;
       display:grid; gap:16px;
     }
     @media (min-width:1200px){
@@ -98,9 +94,10 @@
       background:var(--card); border:1px solid var(--border);
       border-radius:16px; box-shadow:0 10px 24px rgba(13,19,51,.08);
     }
+    /* títulos pegajosos dentro de cada tarjeta */
     .card h2{
       position:sticky; top:0; z-index:2;
-      margin:0; padding:12px 16px;
+      margin:0; padding:14px 16px;
       background: linear-gradient(180deg,
             color-mix(in srgb, var(--card) 98%, transparent) 0%,
             color-mix(in srgb, var(--card) 92%, transparent) 100%);
@@ -108,10 +105,11 @@
     }
     .card .body{ padding:16px }
 
+    /* --- el formulario completo se mantiene fijo (sticky) --- */
     #cardForm{
       position:sticky; top:var(--stickyTop); align-self:start;
-      max-height:calc(100vh - var(--stickyTop) - 12px);
-      overflow:auto;
+      max-height:calc(100vh - var(--stickyTop) - 16px);
+      overflow:auto;    /* si el form crece, scrollea por dentro */
     }
 
     /* ============================================================
@@ -132,33 +130,26 @@
       border:1px solid var(--border); background:var(--card); color:var(--text);
       border-radius:12px; padding:10px 14px; font-weight:600; cursor:pointer;
     }
+    /* botones llenos con acento */
     .btn.accent{
       background:var(--accent); color:#fff; border-color:var(--accent);
       box-shadow:0 8px 16px color-mix(in srgb, var(--accent) 25%, transparent);
     }
+    /* botones secundarios */
     .btn.secondary{
       background: color-mix(in srgb, var(--accent) 10%, var(--card));
       border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
     }
-    .btn.secondary:hover{ background: color-mix(in srgb, var(--accent) 14%, var(--card)) }
+    .btn.secondary:hover{
+      background: color-mix(in srgb, var(--accent) 14%, var(--card));
+    }
 
-    /* tarjetas pequeñas bajo el formulario */
+    /* tarjetas pequeñas bajo el formulario (relleno profesional) */
     .mini{ background:var(--card); border:1px solid var(--border);
            border-radius:14px; padding:12px; }
     .mini h3{ margin:0 0 8px 0; font-size:1rem }
     .mini ul{ margin:0 0 0 18px; padding:0 }
     .mini .dot{ font-weight:700; margin-right:6px }
-
-    /* Plantillas (desplegable) */
-    details.snippets summary{
-      cursor:pointer; user-select:none; color:var(--muted); padding:6px 0;
-    }
-    .snippet-btn{
-      border:1px dashed var(--border);
-      background:color-mix(in srgb, var(--accent) 8%, var(--card));
-      color:inherit; border-radius:10px; padding:8px 10px; cursor:pointer;
-    }
-    .snippet-btn:hover{ background:color-mix(in srgb, var(--accent) 12%, var(--card)) }
 
     /* ============================================================
        07) KPIs y TABLA
@@ -172,7 +163,7 @@
     .kpi .label{ font-size:.88rem; color:var(--muted); white-space:nowrap }
     .kpi .val{ font-weight:800; font-size:1.25rem }
 
-    .tablebox{ overflow:auto; max-height: calc(100vh - 320px) }
+    .tablebox{ overflow:auto; max-height: calc(100vh - 320px) } /* alto visible aprox */
     table{ width:100%; border-collapse:separate; border-spacing:0 10px; color:var(--text) }
     thead th{
       position:sticky; top:0; z-index:1;
@@ -209,37 +200,38 @@
   </style>
 </head>
 <body data-theme="light">
-  <!-- ====== Barra superior: identidad + clave + selector de tema ====== -->
+  <!-- ========== BARRA SUPERIOR: identidad + clave + tema ========== -->
   <header>
     <div class="toprow">
       <small id="whoami" class="chip">Identidad: (no detectada)</small>
 
+      <!-- Clave opcional (modelo B) -->
       <input id="keyInput" class="ctl" placeholder="Clave (opcional)" style="width:160px">
       <button id="saveKey" class="btn-sm accent">Guardar</button>
       <button id="clearKey" class="btn-sm" title="Olvidar">✕</button>
 
-      <!-- Tema base (data-theme) + color de acento (data-hex) -->
+      <!-- Selector de tema:
+           - data-theme => cambia paleta base (light/dark/mint)
+           - data-hex   => cambia el color de acento --accent -->
       <select id="themePick" class="ctl" title="Tema">
         <optgroup label="Tema base">
-          <option value="Claro"        data-theme="light">Tema: Claro (verde)</option>
-          <option value="Oscuro"       data-theme="dark">Tema: Oscuro</option>
-          <option value="Mint"         data-theme="mint">Tema: Mint</option>
-          <option value="Azul"         data-theme="blue">Tema: Azul</option>
-          <option value="Azul oscuro"  data-theme="navy">Tema: Azul oscuro</option>
+          <option value="Claro"   data-theme="light">Tema: Verde (Claro)</option>
+          <option value="Oscuro"  data-theme="dark">Tema: Oscuro</option>
+          <option value="Mint"    data-theme="mint">Tema: Mint</option>
         </optgroup>
         <optgroup label="Color de acento (HEX)">
-          <option value="Verde"        data-hex="#92e87c">Acento: Verde</option>
-          <option value="Amarillo"     data-hex="#ffe764">Acento: Amarillo</option>
-          <option value="Rojo"         data-hex="#e74176">Acento: Rojo</option>
-          <option value="Azul"         data-hex="#0040a8">Acento: Azul</option>
-          <option value="Azul claro"   data-hex="#20a1d8">Acento: Azul claro</option>
-          <option value="Azul oscuro"  data-hex="#003f84">Acento: Azul oscuro</option>
+          <option value="Verde"       data-hex="#92e87c">Tema: Verde</option>
+          <option value="Amarillo"    data-hex="#ffe764">Tema: Amarillo</option>
+          <option value="Rojo"        data-hex="#e74176">Tema: Rojo</option>
+          <option value="Azul"        data-hex="#0040a8">Tema: Azul</option>
+          <option value="Azul claro"  data-hex="#20a1d8">Tema: Azul claro</option>
+          <option value="Azul oscuro" data-hex="#003f84">Tema: Azul oscuro</option>
         </optgroup>
       </select>
     </div>
   </header>
 
-  <!-- ====== Logo (más grande y “camuflado”) ====== -->
+  <!-- ========== LOGO (encima del formulario, integrado) ========== -->
   <div class="logoWrap">
     <img class="logo"
          src="Imagen/logo-empresas.jpg"
@@ -259,8 +251,6 @@
               <label for="analista">Analista Responsable *</label>
               <select id="analista" required></select>
             </div>
-
-            <!-- Oculto, pero se completa automáticamente -->
             <div class="hidden">
               <label for="correoAnalista">Correo analista</label>
               <input id="correoAnalista" readonly />
@@ -349,29 +339,19 @@
           <div style="margin-top:10px">
             <label for="descripcion">Descripción (opcional)</label>
             <textarea id="descripcion" placeholder="Describe el problema reportado…"></textarea>
-
-            <!-- PLANTILLAS DE DESCRIPCIÓN (restauradas y mejoradas) -->
-            <details class="snippets" style="margin-top:8px">
-              <summary>► Plantillas de descripción</summary>
-              <div class="row" style="margin-top:8px">
-                <button type="button" class="snippet-btn" data-snippet="Incidente de acceso: usuario no puede ingresar al sistema {NombreSistema}. Error mostrado: {Mensaje}. Se verifica credencial y estado de cuenta.">Incidente de acceso</button>
-                <button type="button" class="snippet-btn" data-snippet="Instalación de software: {NombreSW} versión {v}. Se valida licencia, compatibilidad y requisitos.">Instalación de software</button>
-                <button type="button" class="snippet-btn" data-snippet="Solicitud de equipo: {TipoEquipo}. Se requiere configuración estándar, usuario asignado {Nombre}, ubicación {Sede}.">Solicitud de equipo</button>
-                <button type="button" class="snippet-btn" data-snippet="Soporte remoto: conexión vía {Herramienta}. Se revisan registros, se aplican pruebas y se documenta resultado.">Soporte remoto</button>
-                <button type="button" class="snippet-btn" data-snippet="Mantenimiento preventivo: verificación de antivirus, limpieza de temporales, actualizaciones pendientes y estado de disco.">Mantenimiento preventivo</button>
-              </div>
-            </details>
           </div>
 
           <div id="notice" class="notice"></div>
           <div class="row">
             <button class="btn accent" type="submit">➕ Guardar reporte</button>
             <button class="btn secondary" type="reset">↺ Limpiar</button>
+
+            <!-- Buscador: filtra la lista de la derecha por ID/categoría/falla/usuario -->
             <input id="quickSearch" class="ctl" style="flex:1; min-width:220px"
                    placeholder="Buscar tickets (ID, categoría, falla, usuario)">
           </div>
 
-          <!-- Relleno profesional (guía) -->
+          <!-- RELLENO PROFESIONAL BAJO EL FORM (no funcional, guía para agentes) -->
           <div class="row">
             <div class="mini" style="flex:1 1 280px">
               <h3>Checklist antes de crear</h3>
@@ -460,12 +440,368 @@
     'use strict';
 
     /* ============================================================
-       ENDPOINT de Google Apps Script
+       ENDPOINT de Google Apps Script (REMPLAZA si cambias tu URL)
        ============================================================ */
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx4MXWy_e0kuTdb__53-PYS9PGbIQgj5zUGSYIOoM8ACMB2VgvJpPtwAQ-nFl7iHgviAQ/exec';
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwB0YqcKuTYWABlGTldWNwohSlH0hPHS4U8iwb4y1k-zUE33bG_ZzFDvObH1c6qze6aiA/exec';
     const AUTO_REFRESH_MS = 30000;
 
-    /* Catálogos */
+    /* ============================================================
+       CATÁLOGOS (Analistas y Usuarios de ejemplo)
+       ============================================================ */
     const ANALISTAS = [
       { nombre:'Jose Salas',        email:'jsalas@sedic.com.co' },
-      { nombre:'Sebastián Cataño',  email:'scatano@sed
+      { nombre:'Sebastián Cataño',  email:'scatano@sedic.com.co' },
+      { nombre:'Sebastián Posada',  email:'sposada@sedic.com.co' },
+      { nombre:'Pablo Calle',       email:'soportesistemasve@gmail.com' }
+    ];
+    const USUARIOS = [
+      'Marcela Pareja','Juan Carlos Betancur','Diego Guerrero','Heidy Zambrano',
+      'Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez',
+      'Lina Areiza','María López','Andrés Gómez','Sofía Ríos','Mario Velez','Aide',
+      'Verónica Zapata','Jhon Madrid','Juan Carlos Betancur'
+    ];
+
+    /* ============================================================
+       ESTADO EN MEMORIA
+       ============================================================ */
+    const $ = s => document.querySelector(s);
+    const notice = $('#notice');
+    const tbody = $('#tbody'),
+          kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe'), kpiCa=$('#kpiCa');
+
+    const viewSelect = $('#viewSelect'), analystSelect = $('#analystSelect'),
+          statusSelect = $('#statusSelect'), monthSelect  = $('#monthSelect'),
+          quickSearch = $('#quickSearch');
+
+    const form = $('#formTicket'), syncBadge = $('#syncBadge'), who = $('#whoami');
+
+    const localKey = 'tickets_fallas_v7';
+    const loadLocal = () => { try{ return JSON.parse(localStorage.getItem(localKey))||[] } catch { return [] } };
+    const saveLocal = v => localStorage.setItem(localKey, JSON.stringify(v));
+
+    let ticketsLocal = loadLocal();
+    let ticketsRemote = null;
+    let lastSource = 'Local';
+    let identity = null;   // {name,email,role}
+    let AUTH_KEY = '';     // clave modelo B (opcional)
+    let searchText = '';   // texto del buscador rápido
+
+    /* ============================================================
+       TEMA: base (data-theme) + color de acento (data-hex)
+       - Persistimos en localStorage: ui_theme, ui_accent_hex
+       ============================================================ */
+    const themePick = $('#themePick');
+    function applyBaseTheme(theme){ document.body.setAttribute('data-theme', theme); localStorage.setItem('ui_theme', theme); }
+    function applyAccent(hex){ document.documentElement.style.setProperty('--accent', hex); localStorage.setItem('ui_accent_hex', hex); }
+
+    (function initTheme(){
+      const savedTheme = localStorage.getItem('ui_theme') || 'light';
+      const savedAccent = localStorage.getItem('ui_accent_hex') || getDefaultAccentFor(savedTheme);
+      applyBaseTheme(savedTheme); applyAccent(savedAccent);
+
+      themePick.addEventListener('change', ()=>{
+        const opt = themePick.selectedOptions[0];
+        const theme = opt.dataset.theme;
+        const hex   = opt.dataset.hex;
+        if (theme) applyBaseTheme(theme);
+        if (hex)   applyAccent(hex);
+      });
+    })();
+    function getDefaultAccentFor(theme){
+      switch(theme){
+        case 'dark': return '#93c5fd';
+        case 'mint': return '#16a34a';
+        default:     return '#6475ff';
+      }
+    }
+
+    /* ============================================================
+       CLAVE (Modelo B: solo si permites acceso sin SSO)
+       ============================================================ */
+    const keyInput = $('#keyInput'), saveKeyBtn = $('#saveKey'), clearKeyBtn = $('#clearKey');
+    (function initKey(){
+      const urlKey = new URLSearchParams(location.search).get('key') || '';
+      const stored = localStorage.getItem('auth_key') || '';
+      AUTH_KEY = urlKey || stored || '';
+      if (urlKey && urlKey !== stored) localStorage.setItem('auth_key', urlKey);
+      keyInput.value = AUTH_KEY;
+    })();
+    saveKeyBtn.addEventListener('click', ()=>{ AUTH_KEY = keyInput.value.trim(); localStorage.setItem('auth_key', AUTH_KEY); fetchWhoAmI().then(fetchRemote); });
+    clearKeyBtn.addEventListener('click', ()=>{ AUTH_KEY=''; keyInput.value=''; localStorage.removeItem('auth_key'); fetchWhoAmI().then(fetchRemote); });
+
+    /* ============================================================
+       ANALISTAS (select + correo autollenado)
+       ============================================================ */
+    (function initAnalistas(){
+      const sel = $('#analista');
+      sel.innerHTML = '<option value="">Selecciona…</option>' + ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
+      sel.addEventListener('change', ()=>{ const a = ANALISTAS.find(x=>x.nombre===sel.value); $('#correoAnalista').value = a ? a.email : ''; });
+    })();
+
+    /* ============================================================
+       AUTOCOMPLETE USUARIOS
+       ============================================================ */
+    const inputUsuario = $('#usuario'); const acList = $('#acList');
+    const norm = (s)=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    function filtraUsuarios(q){ const n=norm(q); if(!n) return []; return USUARIOS.filter(u=>norm(u).includes(n)).slice(0,8); }
+    function pintaLista(items){ if(!items.length){ acList.hidden=true; acList.innerHTML=''; return; } acList.innerHTML=items.map((t,i)=>`<li ${i===0?'aria-selected="true"':''}>${t}</li>`).join(''); acList.hidden=false; }
+    inputUsuario.addEventListener('input', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
+    inputUsuario.addEventListener('focus', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
+    document.addEventListener('click', (e)=>{ if (e.target.closest('#acList li')){ inputUsuario.value = e.target.textContent; acList.hidden = true; } else if(!e.target.closest('.ac')) { acList.hidden = true; } });
+
+    /* ============================================================
+       BARRA DE FILTROS (meses, vista, etc.)
+       ============================================================ */
+    (function fillMonths(){
+      const now = new Date(); const items = ['<option value="">Todos</option>'];
+      for (let i=0;i<12;i++){
+        const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+        const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        const label = d.toLocaleDateString('es-CO', { month:'long', year:'numeric' });
+        items.push(`<option value="${ym}">${label}</option>`);
+      }
+      monthSelect.innerHTML = items.join('');
+    })();
+    (function initView(){
+      const saved = JSON.parse(localStorage.getItem('tickets_view')||'{}');
+      viewSelect.value   = saved.view || 'mis';
+      analystSelect.value= saved.analyst || '';
+      statusSelect.value = saved.status || '';
+      monthSelect.value  = saved.month || '';
+    })();
+    function persistView(){ localStorage.setItem('tickets_view', JSON.stringify({ view:viewSelect.value, analyst:analystSelect.value, status:statusSelect.value, month:monthSelect.value })); }
+    [viewSelect,analystSelect,statusSelect,monthSelect].forEach(el => el.addEventListener('change', ()=>{ persistView(); fetchRemote(); }));
+
+    /* ============================================================
+       BUSCADOR RÁPIDO (ID, categoría, falla, usuario)
+       ============================================================ */
+    quickSearch.addEventListener('input', ()=>{
+      searchText = quickSearch.value;
+      render();
+    });
+
+    /* ============================================================
+       HELPERS UI
+       ============================================================ */
+    const show = (msg, kind='ok')=>{
+      notice.style.display='block'; notice.textContent=msg;
+      notice.style.borderColor=(kind==='ok')?'#b2f2bb':'#ffc9c9';
+      setTimeout(()=> notice.style.display='none', 2200);
+    };
+    const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
+    const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p||''}</span>`;
+    const tagE  = e => { const s = String(e||''); const cls = (s==='Abierto')?'e-abierto':(s==='En Proceso')?'e-proceso':(s==='Cerrado')?'e-cerrado':'e-cancelado'; return `<strong class="${cls}">${s}</strong>`; };
+    const fmt = iso => { const d = (iso instanceof Date) ? iso : new Date(iso); return isNaN(d) ? '' : d.toLocaleString(); };
+
+    function computeCounters(rows){ const c = { total:rows.length, abiertos:0, en_proceso:0, cerrados:0, cancelados:0 };
+      rows.forEach(t=>{ const s=String(t.estado||'').toLowerCase();
+        if(s==='abierto') c.abiertos++;
+        else if(s==='en proceso') c.en_proceso++;
+        else if(s==='cerrado') c.cerrados++;
+        else if(s==='cancelado') c.cancelados++;
+      }); return c;
+    }
+    function setCounters(c){ kpiTotal.textContent=c.total; kpiAb.textContent=c.abiertos; kpiPr.textContent=c.en_proceso; kpiCe.textContent=c.cerrados; kpiCa.textContent=c.cancelados; }
+
+    function currentBaseRows(){
+      const base = Array.isArray(ticketsRemote) ? ticketsRemote : ticketsLocal;
+      lastSource = Array.isArray(ticketsRemote) ? 'Sheets' : 'Local';
+      let rows = base.slice();
+
+      // Filtro de estado
+      const st = statusSelect.value;
+      if (st==='pendientes'){ rows = rows.filter(x => !['Cerrado','Cancelado'].includes(String(x.estado))); }
+      else if (st) rows = rows.filter(x => String(x.estado)===st);
+
+      // Filtro por analista
+      if (analystSelect.value) rows = rows.filter(x => String(x.analista)===analystSelect.value);
+
+      // Filtro por mes (YYYY-MM)
+      if (monthSelect.value){
+        rows = rows.filter(x => {
+          const d = new Date(x.fecha);
+          const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+          return ym === monthSelect.value;
+        });
+      }
+      return rows;
+    }
+
+    function currentRows(){
+      let rows = currentBaseRows();
+
+      // Buscador rápido (ID, categoria, falla, usuario)
+      if (searchText && searchText.trim()){
+        const n = norm(searchText);
+        rows = rows.filter(r => {
+          const bank = `${r.id} ${r.categoria} ${r.falla} ${r.usuario}`;
+          return norm(bank).includes(n);
+        });
+      }
+
+      rows.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
+      return rows;
+    }
+
+    function render(countersFromAPI){
+      const rows = currentRows();
+      if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI); else setCounters(computeCounters(rows));
+      syncBadge.innerHTML = `Fuente: <strong>${lastSource}</strong>`;
+
+      tbody.innerHTML = rows.map(t=>`
+        <tr>
+          <td>${t.id||''}</td>
+          <td>${esc(t.analista||'')}</td>
+          <td>${esc(t.categoria||'')}</td>
+          <td>${esc(t.falla||'')}</td>
+          <td>${esc(t.usuario||'')}</td>
+          <td>${badge(t.prioridad||'')}</td>
+          <td>${tagE(t.estado||'')}</td>
+          <td>${fmt(t.fecha)}</td>
+          <td>${esc(t.motivo||'')}</td>
+          <td style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <select class="estado-select" data-id="${t.id}">
+              <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
+              <option ${t.estado==='En Proceso'?'selected':''}>En Proceso</option>
+              <option ${t.estado==='Cerrado'?'selected':''}>Cerrado</option>
+              <option ${t.estado==='Cancelado'?'selected':''}>Cancelado</option>
+            </select>
+            <select class="prio-select" data-id="${t.id}">
+              <option ${t.prioridad==='Alta'?'selected':''}>Alta</option>
+              <option ${t.prioridad==='Media'?'selected':''}>Media</option>
+              <option ${t.prioridad==='Baja'?'selected':''}>Baja</option>
+            </select>
+          </td>
+        </tr>`).join('') || `<tr><td colspan="10" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
+    }
+
+    /* ============================================================
+       WHOAMI + LIST con key
+       - Si quieres obligar Gmail corporativo, valida en Apps Script y
+         devuelve {ok:false} si el correo no está en la whitelist.
+       ============================================================ */
+    async function fetchWhoAmI(){
+      try{
+        const params = new URLSearchParams({ action:'whoami' });
+        if (AUTH_KEY) params.set('key', AUTH_KEY);
+        const res = await fetch(WEB_APP_URL + '?' + params.toString());
+        const data = await res.json();
+        identity = data && data.ok ? data.me : null;
+        who.textContent = identity ? `Identidad: ${identity.name} (${identity.role})` : 'Identidad: (no detectada)';
+
+        // Si no es admin, bloquear "Todos"
+        const isAdmin = identity && identity.role==='admin';
+        viewSelect.disabled = !isAdmin;
+        if (!isAdmin) viewSelect.value = 'mis';
+
+        // Autoseleccionar analista para filtro si está vacío
+        if (identity && !analystSelect.value) analystSelect.value = identity.name;
+      }catch{ identity = null; who.textContent = 'Identidad: (no detectada)'; }
+    }
+
+    async function fetchRemote(){
+      try{
+        const params = new URLSearchParams();
+        params.set('action','list');
+        params.set('view', viewSelect.value);
+        if (analystSelect.value) params.set('analyst', analystSelect.value);
+        if (statusSelect.value==='pendientes') params.set('state','pendientes');
+        else if (statusSelect.value) params.set('status', statusSelect.value);
+        if (monthSelect.value) params.set('ym', monthSelect.value);
+        params.set('limit','1500');
+        if (AUTH_KEY) params.set('key', AUTH_KEY);
+
+        const res = await fetch(WEB_APP_URL + '?' + params.toString());
+        const data = await res.json();
+        if (data && data.ok && Array.isArray(data.items)){
+          ticketsRemote = data.items;
+          if (data.me){ identity = data.me; who.textContent = `Identidad: ${identity.name} (${identity.role})`; }
+          render(data.counters);
+        } else {
+          ticketsRemote = null; render();
+        }
+      }catch(err){ ticketsRemote = null; render(); }
+    }
+
+    /* ============================================================
+       POST (create/update) — incluye AUTH_KEY si está presente
+       ============================================================ */
+    async function postJSON(payload){
+      if (AUTH_KEY) payload.key = AUTH_KEY;
+      const res = await fetch(WEB_APP_URL, { method:'POST',
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      try { return await res.json(); } catch { return { ok:false, error:'Respuesta no-JSON' }; }
+    }
+
+    /* ============================================================
+       CREAR TICKET
+       ============================================================ */
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const analista = $('#analista').value;
+      const correoAnalista = $('#correoAnalista').value.trim();
+      const categoria = $('#categoria').value;
+      const falla = $('#falla').value;
+      const usuario = $('#usuario').value.trim();
+      const prioridad = $('#prioridad').value;
+      const descripcion = $('#descripcion').value.trim();
+      const adjInput = $('#adj'); const adjuntoNombre = adjInput.files?.[0]?.name || '';
+      if(!analista || !categoria || !falla || !usuario || !prioridad){
+        show('Completa los campos obligatorios','err'); return;
+      }
+
+      const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
+      const nowISO = new Date().toISOString();
+      const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, adjuntoNombre, estado:'Abierto', fecha: nowISO };
+      ticketsLocal.unshift(t); saveLocal(ticketsLocal); render(); show('Guardado local. Enviando a Sheets…');
+
+      const d = await postJSON({ action:'create', id:t.id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, estado:t.estado, fechaISO: nowISO, adjuntoNombre });
+      if (!d || !d.ok){ show('No se pudo crear en Sheets', 'err'); }
+      else { fetchRemote(); }
+      form.reset(); $('#correoAnalista').value='';
+    });
+
+    /* ============================================================
+       CAMBIOS DE ESTADO / PRIORIDAD (inline en la tabla)
+       ============================================================ */
+    document.addEventListener('change', async (e)=>{
+      const selE = e.target.closest('.estado-select');
+      const selP = e.target.closest('.prio-select');
+
+      if (selE){
+        const id = selE.dataset.id; const status = selE.value;
+        let reason = ''; if (status === 'Cancelado') reason = prompt('Motivo de cancelación:') || '';
+        const tL = ticketsLocal.find(x=>x.id===id);
+        if (tL){ tL.estado=status; tL.fecha=new Date().toISOString(); if(status==='Cancelado') tL.motivo=reason; saveLocal(ticketsLocal); }
+        render();
+        const d = await postJSON({ action:'update_status', id, status, reason });
+        if (d && d.ok) fetchRemote();
+      }
+
+      if (selP){
+        const id = selP.dataset.id; const pr = selP.value;
+        const tL = ticketsLocal.find(x=>x.id===id);
+        if (tL){ tL.prioridad=pr; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
+        render();
+        const d2 = await postJSON({ action:'update_priority', id, prioridad: pr });
+        if (d2 && d2.ok) fetchRemote();
+      }
+    });
+
+    /* ============================================================
+       INIT
+       ============================================================ */
+    async function init(){
+      await fetchWhoAmI();
+      if (identity && !analystSelect.value) analystSelect.value = identity.name;
+      render();               // primer render rápido con local
+      fetchRemote();          // cambia a “Sheets” cuando llega
+      setInterval(()=>{ if(!document.hidden) fetchRemote(); }, AUTO_REFRESH_MS);
+    }
+    init();
+  })();
+  </script>
+</body>
+</html>
