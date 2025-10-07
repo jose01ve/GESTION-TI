@@ -29,7 +29,7 @@
 
     /* ====== Header ====== */
     header{position:sticky;top:0;z-index:10;background:transparent;padding:8px 0}
-    .brand{max-width:1280px;margin:0 auto;position:relative;display:flex;justify-content:center;align-items:center}
+    .brand{max-width:1320px;margin:0 auto;position:relative;display:flex;justify-content:center;align-items:center}
     .logo{height:72px;max-width:95%;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.08))}
     .controls{position:absolute;right:12px;top:0;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
     .chip{font-size:.85rem;color:var(--muted)}
@@ -38,57 +38,26 @@
     /* Tema del tamaño de un botón "Guardar" */
     #themePick{width:92px;height:36px}
 
-    /* ====== Layout (centrado tirando a la izquierda) ====== */
-
-
-    /* Contenedor de las dos vistas: centrado y sin sesgo */
-/* más a la izquierda */
-    
-@media (min-width: 1100px){
-
-  /* Contenedor de las dos vistas: centrado y sin sesgo */
-/* Contenedor de las dos vistas */
-main{ margin: 2px 72px 16px 20px; }
-
-}
-
-
-/* En pantallas pequeñas, apilar */
-@media (max-width: 1100px){
-  main{
-    grid-template-columns: 1fr;
-    padding: 0 12px;
-  }
-}
-
-
-/* En pantallas pequeñas, apila una debajo de la otra */
-@media (max-width: 1100px){
-  main{
-    grid-template-columns: 1fr;
-  }
-}
-
-
-
-
-/* En pantallas pequeñas, apila una debajo de la otra */
-@media (max-width: 1100px){
-  main{
-    grid-template-columns: 1fr;
-  }
-}
-
-
-
+    /* ====== Layout ====== */
+    main{
+      max-width:1320px;
+      width:calc(100% - 32px);
+      margin:8px auto 16px;             /* centrado */
+      padding:0 16px;
+      display:grid;
+      gap:24px;
+      grid-template-columns:1fr 560px;  /* izquierda lista, derecha dos tarjetas apiladas */
     }
-    @media(min-width:1100px){
-      main{ grid-template-columns:600px 1fr; }   /* columna izq más compacta */
+    /* Columna derecha apilada */
+    .rightCol{ display:grid; gap:16px; align-content:start; }
+
+    @media (max-width:1100px){
+      main{ grid-template-columns:1fr; }
     }
-    @media(max-width:1099.98px){main{grid-template-columns:1fr}}
 
     .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 20px rgba(13,19,51,.06)}
     .card h2{margin:0;padding:16px 16px 0}
+    .card h2.center{text-align:center}
     .card .body{padding:16px}
 
     form .grid{display:grid;gap:12px}
@@ -150,8 +119,6 @@ main{ margin: 2px 72px 16px 20px; }
         <input id="keyInput" class="ctl" placeholder="Clave (Pablo, etc.)" style="width:160px" />
         <button id="saveKey" class="btn-sm">Guardar</button>
         <button id="clearKey" class="btn-sm" title="Olvidar">✕</button>
-
-        <!-- Solo selector de tema (compacto, tamaño botón) -->
         <select id="themePick" class="ctl">
           <option value="mint">Verde</option>
           <option value="blue">Azul</option>
@@ -163,151 +130,11 @@ main{ margin: 2px 72px 16px 20px; }
   </header>
 
   <main>
-    <!-- Formulario -->
+    <!-- IZQUIERDA: ESTADO DE REPORTE -->
     <section class="card">
-      <h2>REPORTE USUARIO</h2>
+      <h2 class="center">ESTADO DE REPORTE</h2>
       <div class="body">
-        <form id="formTicket" action="javascript:void(0)" autocomplete="off">
-          <div class="grid">
-            <div>
-              <label for="analista">Analista Responsable *</label>
-              <select id="analista" required></select>
-            </div>
-
-            <div class="hidden">
-              <label for="correoAnalista">Correo analista</label>
-              <input id="correoAnalista" readonly />
-            </div>
-
-            <div>
-              <label for="categoria">Categoría *</label>
-              <select id="categoria" required>
-                <option value="">Selecciona…</option>
-                <option>Red</option><option>Hardware</option><option>Software</option>
-                <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Otro</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="falla">Servicio prestado *</label>
-              <select id="falla" required>
-                <option value="">Selecciona…</option>
-                <option>Soporte a equipos informáticos</option>
-                <option>Configuración equipo</option>
-                <option>Desbloquear cuenta de red</option>
-                <option>Préstamo Video Beam / Préstamo equipo</option>
-                <option>Crear acta</option>
-                <option>Instalación de PC-Dis \ Préstamo de equipo \ Dispositivo</option>
-                <option>Reposición de equipo</option>
-                <option>Retiro de equipo a usuario</option>
-                <option>Traslado de puesto</option>
-                <option>Instalación de software - Desinstalación \ Traslado SW</option>
-                <option>Desbloqueo punto de red</option>
-                <option>Adquisición de Software y Hardware</option>
-                <option>Asignación de puesto nuevo</option>
-                <option>Creación de cuentas de red</option>
-                <option>Eliminación de cuentas de red</option>
-                <option>Crear cuenta de correo \ Eliminar</option>
-                <option>Actualización de datos \ Información</option>
-                <option>Inventario de Equipos</option>
-                <option>Inventario de software</option>
-                <option>Actualización de cuentas de red</option>
-                <option>Asignar Permiso en servidores \ Retirar permisos</option>
-                <option>Permisos en Unidades compartidas</option>
-                <option>Soporte equipos CONSORCIO</option>
-                <option>Auditoria desde TIC a Interventoría</option>
-                <option>Instalación de Guayas</option>
-                <option>Backups información</option>
-                <option>Resolución de ECOS</option>
-                <option>Actualización de carpetas de información general</option>
-                <option>Actualización de información CADD</option>
-                <option>Capacitación</option>
-                <option>Reposición de equipos EPM</option>
-                <option>Asesoría general</option>
-                <option>Permisos en Skype Empresarial</option>
-                <option>Desinstalación de programas</option>
-                <option>Requerimiento de Impresión</option>
-                <option>Gestión en Vault</option>
-                <option>Permisos VPN</option>
-                <option>Gestión en obra</option>
-                <option>Crear cuenta de correo</option>
-                <option>Entrega de equipo por reintegro o reposición</option>
-                <option>Configurar Dispositivo móvil</option>
-                <option>Marcación de puestos</option>
-                <option>Recuperación de información</option>
-                <option>Gestión aplicaciones</option>
-              </select>
-            </div>
-
-            <div class="ac">
-              <label for="usuario">Usuario quien reporta *</label>
-              <input id="usuario" placeholder="Escribe nombre o apellido" required />
-              <ul id="acList" class="ac-list" hidden></ul>
-              <small class="help">Escribe y elige entre las sugerencias.</small>
-            </div>
-
-            <div>
-              <label for="prioridad">Prioridad *</label>
-              <select id="prioridad" required>
-                <option value="">Selecciona…</option><option>Alta</option><option>Media</option><option>Baja</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="adj">Adjunto (opcional)</label>
-              <input id="adj" type="file" accept="image/*" />
-            </div>
-          </div>
-
-          <div style="margin-top:10px">
-            <label for="descripcion">Descripción (opcional)</label>
-            <textarea id="descripcion" placeholder="Describe el problema reportado…"></textarea>
-          </div>
-
-          <div id="notice" class="notice"></div>
-          <div class="row">
-            <button class="btn primary" type="submit">➕ Guardar reporte</button>
-            <button class="btn" type="reset">↺ Limpiar</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <!-- Lista -->
-    <section class="card">
-      <h2>ESTADO DE REPORTE</h2>
-      <div class="body">
-        <div class="toolbar">
-          <span class="muted">Vista:</span>
-          <select id="viewSelect">
-            <option value="mis">Asignados a mí</option>
-            <option value="todos">Todos (admin)</option>
-          </select>
-
-          <span class="muted">Analista:</span>
-          <select id="analystSelect">
-            <option value="">Todos</option>
-            <option>Jose Salas</option>
-            <option>Sebastián Cataño</option>
-            <option>Sebastián Posada</option>
-            <option>Pablo Calle</option>
-          </select>
-
-          <span class="muted">Estado:</span>
-          <select id="statusSelect">
-            <option value="">Todos</option>
-            <option value="pendientes">Pendientes</option>
-            <option value="Abierto">Abierto</option>
-            <option value="En Proceso">En Proceso</option>
-            <option value="Cerrado">Cerrado</option>
-            <option value="Cancelado">Cancelado</option>
-          </select>
-
-          <span class="muted">Mes:</span>
-          <select id="monthSelect"><option value="">Todos</option></select>
-
-          <span id="syncBadge" class="muted">Fuente: —</span>
-        </div>
+        <div id="syncBadge" class="muted" style="margin:6px 0 12px">Fuente: —</div>
 
         <div class="kpis">
           <div class="kpi"><div class="label">Total</div><div class="val" id="kpiTotal">0</div></div>
@@ -330,6 +157,155 @@ main{ margin: 2px 72px 16px 20px; }
         </div>
       </div>
     </section>
+
+    <!-- DERECHA: dos tarjetas apiladas -->
+    <div class="rightCol">
+      <!-- 1) REPORTE USUARIO -->
+      <section class="card">
+        <h2>REPORTE USUARIO</h2>
+        <div class="body">
+          <form id="formTicket" action="javascript:void(0)" autocomplete="off">
+            <div class="grid">
+              <div>
+                <label for="analista">Analista Responsable *</label>
+                <select id="analista" required></select>
+              </div>
+
+              <div class="hidden">
+                <label for="correoAnalista">Correo analista</label>
+                <input id="correoAnalista" readonly />
+              </div>
+
+              <div>
+                <label for="categoria">Categoría *</label>
+                <select id="categoria" required>
+                  <option value="">Selecciona…</option>
+                  <option>Red</option><option>Hardware</option><option>Software</option>
+                  <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Otro</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="falla">Servicio prestado *</label>
+                <select id="falla" required>
+                  <option value="">Selecciona…</option>
+                  <option>Soporte a equipos informáticos</option>
+                  <option>Configuración equipo</option>
+                  <option>Desbloquear cuenta de red</option>
+                  <option>Préstamo Video Beam / Préstamo equipo</option>
+                  <option>Crear acta</option>
+                  <option>Instalación de PC-Dis \ Préstamo de equipo \ Dispositivo</option>
+                  <option>Reposición de equipo</option>
+                  <option>Retiro de equipo a usuario</option>
+                  <option>Traslado de puesto</option>
+                  <option>Instalación de software - Desinstalación \ Traslado SW</option>
+                  <option>Desbloqueo punto de red</option>
+                  <option>Adquisición de Software y Hardware</option>
+                  <option>Asignación de puesto nuevo</option>
+                  <option>Creación de cuentas de red</option>
+                  <option>Eliminación de cuentas de red</option>
+                  <option>Crear cuenta de correo \ Eliminar</option>
+                  <option>Actualización de datos \ Información</option>
+                  <option>Inventario de Equipos</option>
+                  <option>Inventario de software</option>
+                  <option>Actualización de cuentas de red</option>
+                  <option>Asignar Permiso en servidores \ Retirar permisos</option>
+                  <option>Permisos en Unidades compartidas</option>
+                  <option>Soporte equipos CONSORCIO</option>
+                  <option>Auditoria desde TIC a Interventoría</option>
+                  <option>Instalación de Guayas</option>
+                  <option>Backups información</option>
+                  <option>Resolución de ECOS</option>
+                  <option>Actualización de carpetas de información general</option>
+                  <option>Actualización de información CADD</option>
+                  <option>Capacitación</option>
+                  <option>Reposición de equipos EPM</option>
+                  <option>Asesoría general</option>
+                  <option>Permisos en Skype Empresarial</option>
+                  <option>Desinstalación de programas</option>
+                  <option>Requerimiento de Impresión</option>
+                  <option>Gestión en Vault</option>
+                  <option>Permisos VPN</option>
+                  <option>Gestión en obra</option>
+                  <option>Crear cuenta de correo</option>
+                  <option>Entrega de equipo por reintegro o reposición</option>
+                  <option>Configurar Dispositivo móvil</option>
+                  <option>Marcación de puestos</option>
+                  <option>Recuperación de información</option>
+                  <option>Gestión aplicaciones</option>
+                </select>
+              </div>
+
+              <div class="ac">
+                <label for="usuario">Usuario quien reporta *</label>
+                <input id="usuario" placeholder="Escribe nombre o apellido" required />
+                <ul id="acList" class="ac-list" hidden></ul>
+                <small class="help">Escribe y elige entre las sugerencias.</small>
+              </div>
+
+              <div>
+                <label for="prioridad">Prioridad *</label>
+                <select id="prioridad" required>
+                  <option value="">Selecciona…</option><option>Alta</option><option>Media</option><option>Baja</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="adj">Adjunto (opcional)</label>
+                <input id="adj" type="file" accept="image/*" />
+              </div>
+            </div>
+
+            <div style="margin-top:10px">
+              <label for="descripcion">Descripción (opcional)</label>
+              <textarea id="descripcion" placeholder="Describe el problema reportado…"></textarea>
+            </div>
+
+            <div id="notice" class="notice"></div>
+            <div class="row">
+              <button class="btn primary" type="submit">➕ Guardar reporte</button>
+              <button class="btn" type="reset">↺ Limpiar</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- 2) FILTROS -->
+      <section class="card">
+        <h2>FILTROS</h2>
+        <div class="body">
+          <div class="toolbar">
+            <span class="muted">Vista:</span>
+            <select id="viewSelect">
+              <option value="mis">Asignados a mí</option>
+              <option value="todos">Todos (admin)</option>
+            </select>
+
+            <span class="muted">Analista:</span>
+            <select id="analystSelect">
+              <option value="">Todos</option>
+              <option>Jose Salas</option>
+              <option>Sebastián Cataño</option>
+              <option>Sebastián Posada</option>
+              <option>Pablo Calle</option>
+            </select>
+
+            <span class="muted">Estado:</span>
+            <select id="statusSelect">
+              <option value="">Todos</option>
+              <option value="pendientes">Pendientes</option>
+              <option value="Abierto">Abierto</option>
+              <option value="En Proceso">En Proceso</option>
+              <option value="Cerrado">Cerrado</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+
+            <span class="muted">Mes:</span>
+            <select id="monthSelect"><option value="">Todos</option></select>
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
 
   <footer>⚡ App HTML sincroniza con Google Sheets. Eliminación deshabilitada; usar estado “Cancelado”.</footer>
@@ -371,7 +347,7 @@ main{ margin: 2px 72px 16px 20px; }
     const tbody = $('#tbody'), kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe'), kpiCa=$('#kpiCa');
     const form = $('#formTicket'); const syncBadge = $('#syncBadge'); const who = $('#whoami');
 
-    /* ====== Tema (solo selector) ====== */
+    /* ====== Tema ====== */
     const themePick = $('#themePick');
     (function initTheme(){
       const savedTheme = localStorage.getItem('ui_theme') || 'mint';
@@ -523,6 +499,7 @@ main{ margin: 2px 72px 16px 20px; }
     }
 
     /* ====== crear ticket ====== */
+    const form = $('#formTicket');
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const analista = $('#analista').value;
@@ -582,26 +559,3 @@ main{ margin: 2px 72px 16px 20px; }
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
