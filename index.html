@@ -40,20 +40,64 @@
 
     /* ====== Layout ====== */
     /* Izquierda: columna estrecha (form + filtros). Derecha: ESTADO DE REPORTE (ancho) */
-    main{
-      max-width:1320px;
-      width:calc(100% - 32px);
-      margin:8px auto 16px;
-      padding:0 16px;
-      display:grid;
-      gap:24px;
-      grid-template-columns:560px 1fr;  /* izquierda 460px, derecha ocupa el resto (más ancho) */
-      align-items:start;
-    }
-    .leftCol{ display:grid; gap:16px; align-content:start; }
-    @media (max-width:1100px){
-      main{ grid-template-columns:1fr; }
-    }
+  /* ====== Layout (responsive) ====== */
+main{
+  /* contenedor centrado y fluido */
+  --max: 1400px;
+  width: min(var(--max), 96vw);
+  margin: 8px auto 16px;
+  padding: 0 12px;
+
+  display: grid;
+  gap: 24px;
+
+  /* izquierda (form+filtros) variable, derecha ocupa el resto */
+  grid-template-columns: clamp(380px, 34vw, 560px) 1fr;
+  align-items: start;
+}
+.leftCol{ display:grid; gap:16px; align-content:start; }
+
+/* monitores muy grandes: un poco más ancho */
+@media (min-width: 1600px){
+  main{
+    --max: 1600px;
+    grid-template-columns: clamp(420px, 32vw, 640px) 1fr;
+  }
+}
+
+/* tablets/móviles: apilar en una sola columna */
+@media (max-width: 1024px){
+  main{ grid-template-columns: 1fr; }
+}
+
+/* ====== KPIs fluidos ====== */
+.kpis{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap:10px;
+  margin-bottom:8px;
+}
+
+/* ====== Tabla responsive ====== */
+table{
+  width:100%;
+  min-width: 760px;              /* evita que se comprima demasiado */
+  border-collapse:separate;
+  border-spacing:0 10px;
+  color:var(--text);
+}
+
+/* En pantallas medianas, ocultar Motivo y Acciones (9 y 10) */
+@media (max-width: 900px){
+  thead th:nth-child(9), tbody td:nth-child(9),
+  thead th:nth-child(10), tbody td:nth-child(10){ display:none; }
+}
+
+/* En pantallas pequeñas, ocultar también Prioridad (6) */
+@media (max-width: 700px){
+  thead th:nth-child(6), tbody td:nth-child(6){ display:none; }
+}
+
 
     .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 20px rgba(13,19,51,.06)}
     .card h2{margin:0;padding:16px 16px 0}
@@ -555,4 +599,5 @@
   </script>
 </body>
 </html>
+
 
