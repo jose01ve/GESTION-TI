@@ -319,7 +319,7 @@
             <thead>
               <tr>
                 <th>Ticket</th><th>Analista</th><th>Categoría</th><th>Falla</th><th>Usuario</th>
-                <th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Solución</th><th>Motivo</th><th>Acciones</th> <!-- NEW -->
+                <th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th> <!-- NEW -->
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -526,37 +526,40 @@
       rows.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
       return rows;
     }
+
     function render(countersFromAPI){
-      const rows = currentRows();
-      if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI); else setCounters(computeCounters(rows));
-      syncBadge.innerHTML = `Fuente: <strong>${lastSource}</strong>`;
-      tbody.innerHTML = rows.length ? rows.map(t=>`
-        <tr>
-          <td>${t.id||''}</td>
-          <td>${esc(t.analista||'')}</td>
-          <td>${esc(t.categoria||'')}</td>
-          <td>${esc(t.falla||'')}</td>
-          <td>${esc(t.usuario||'')}</td>
-          <td>${badge(t.prioridad||'')}</td>
-          <td>${tagE(t.estado||'')}</td>
-          <td>${fmt(t.fecha)}</td>
-          <td>${esc(t.solucion || t.solution || (String(t.estado)==='Cerrado' ? (t.motivo||'') : ''))}</td> <!-- NEW: Solución -->
-          <td>${esc(t.motivo||'')}</td>
-          <td style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            <select class="estado-select" data-id="${t.id}">
-              <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
-              <option ${t.estado==='En Proceso'?'selected':''}>En Proceso</option>
-              <option ${t.estado==='Cerrado'?'selected':''}>Cerrado</option>
-              <option ${t.estado==='Cancelado'?'selected':''}>Cancelado</option>
-            </select>
-            <select class="prio-select" data-id="${t.id}">
-              <option ${t.prioridad==='Alta'?'selected':''}>Alta</option>
-              <option ${t.prioridad==='Media'?'selected':''}>Media</option>
-              <option ${t.prioridad==='Baja'?'selected':''}>Baja</option>
-            </select>
-          </td>
-        </tr>`).join('') : `<tr><td colspan="11" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
-    }
+  const rows = currentRows();
+  if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI);
+  else setCounters(computeCounters(rows));
+
+  syncBadge.innerHTML = `Fuente: <strong>${lastSource}</strong>`;
+
+  tbody.innerHTML = rows.length ? rows.map(t=>`
+    <tr>
+      <td>${t.id||''}</td>
+      <td>${esc(t.analista||'')}</td>
+      <td>${esc(t.categoria||'')}</td>
+      <td>${esc(t.falla||'')}</td>
+      <td>${esc(t.usuario||'')}</td>
+      <td>${badge(t.prioridad||'')}</td>
+      <td>${tagE(t.estado||'')}</td>
+      <td>${fmt(t.fecha)}</td>
+      <td style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select class="estado-select" data-id="${t.id}">
+          <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
+          <option ${t.estado==='En Proceso'?'selected':''}>En Proceso</option>
+          <option ${t.estado==='Cerrado'?'selected':''}>Cerrado</option>
+          <option ${t.estado==='Cancelado'?'selected':''}>Cancelado</option>
+        </select>
+        <select class="prio-select" data-id="${t.id}">
+          <option ${t.prioridad==='Alta'?'selected':''}>Alta</option>
+          <option ${t.prioridad==='Media'?'selected':''}>Media</option>
+          <option ${t.prioridad==='Baja'?'selected':''}>Baja</option>
+        </select>
+      </td>
+    </tr>`).join('') : `<tr><td colspan="9" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
+}
+
 
     /* ==================== WHOAMI + LIST ==================== */
     async function fetchWhoAmI(){
@@ -727,3 +730,4 @@
   </script>
 </body>
 </html>
+
