@@ -6,119 +6,205 @@
   <title>Gestión TI · Reporte de fallas</title>
 
   <style>
-    /* ========= 01) VARIABLES DE TEMA ========= */
+    /* ============================================================
+       01) VARIABLES DE TEMA
+       ============================================================ */
     :root{
-      --accent:#6475ff;
+      --accent:#6475ff;                 /* acento por defecto */
+      /* tema base: Claro */
       --bg:#eef2ff; --card:#ffffff; --text:#0d1333; --muted:#51608b;
       --border:rgba(13,19,51,.12); --field:#fbfcff;
     }
-    body[data-theme="dark"]{ --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9aa4bf; --border:rgba(255,255,255,.15); --field:#0b1220 }
-    body[data-theme="mint"]{ --bg:#e6fff4; --card:#ffffff; --text:#0d1333; --muted:#4d6a61; --border:rgba(13,19,51,.12); --field:#f7fffb }
-    body[data-theme="blue"]{ --bg:#e7f3ff; --card:#ffffff; --text:#0f1a2b; --muted:#3c587a; --border:rgba(15,26,43,.12); --field:#f7fbff }
-    body[data-theme="navy"]{ --bg:#0b1629; --card:#0f2038; --text:#ebf1ff; --muted:#9fb3d1; --border:rgba(255,255,255,.14); --field:#0c1b30 }
+    body[data-theme="dark"]{
+      --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9aa4bf;
+      --border:rgba(255,255,255,.15); --field:#0b1220;
+    }
+    body[data-theme="mint"]{
+      --bg:#e6fff4; --card:#ffffff; --text:#0d1333; --muted:#4d6a61;
+      --border:rgba(13,19,51,.12); --field:#f7fffb;
+    }
+    body[data-theme="blue"]{
+      --bg:#e7f3ff; --card:#ffffff; --text:#0f1a2b; --muted:#3c587a;
+      --border:rgba(15,26,43,.12); --field:#f7fbff;
+    }
+    body[data-theme="navy"]{
+      --bg:#0b1629; --card:#0f2038; --text:#ebf1ff; --muted:#9fb3d1;
+      --border:rgba(255,255,255,.14); --field:#0c1b30;
+    }
 
-    /* ========= 02) BASE ========= */
+    /* ============================================================
+       02) BASE
+       ============================================================ */
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{ margin:0; background:var(--bg); color:var(--text); font-family:system-ui, Segoe UI, Roboto, Arial, sans-serif }
+    body{
+      margin:0; background:var(--bg); color:var(--text);
+      font-family:system-ui, Segoe UI, Roboto, Arial, sans-serif;
+    }
 
-    /* ========= 03) TOPBAR ========= */
+    /* ============================================================
+       03) TOPBAR (Identidad + Clave + Tema)
+       ============================================================ */
     header{position:sticky; top:0; z-index:20; padding:4px 0}
-    .toprow{ max-width:1680px; margin:0 auto; padding:0 16px; display:flex; align-items:center; gap:12px; justify-content:flex-end }
+    .toprow{
+      max-width:1680px; margin:0 auto; padding:0 16px;
+      display:flex; align-items:center; gap:12px; justify-content:flex-end;
+    }
     .chip{font-size:.9rem; color:var(--muted)}
-    .ctl,.btn-sm{ height:36px; padding:6px 10px; border:1px solid var(--border); border-radius:10px; background:var(--field); color:var(--text) }
+    .ctl, .btn-sm{
+      height:36px; padding:6px 10px;
+      border:1px solid var(--border); border-radius:10px;
+      background:var(--field); color:var(--text);
+    }
     .btn-sm{ background:var(--card); cursor:pointer }
     .btn-sm.accent{ background:var(--accent); border-color:var(--accent); color:#fff }
     #themePick{ width:180px }
 
-    /* ========= 04) LOGO ========= */
-    .logoWrap{ max-width:1680px; margin:0 auto; padding:0 16px 6px; display:flex; justify-content:flex-start }
-    .logo{ height:clamp(84px, 10vh, 120px); opacity:.92; mix-blend-mode:multiply; filter:saturate(.9) contrast(1.06) brightness(1.03) }
+    /* ============================================================
+       04) LOGO (más grande y camuflado)
+       ============================================================ */
+    .logoWrap{
+      max-width:1680px; margin:0 auto; padding:0 16px 6px;
+      display:flex; justify-content:flex-start;
+    }
+    .logo{
+      height:clamp(84px, 10vh, 120px);
+      opacity:.92;
+      mix-blend-mode:multiply;
+      filter:saturate(.9) contrast(1.06) brightness(1.03);
+    }
 
-    /* ========= 05) LAYOUT ========= */
-    :root{ --stickyTop:58px }
-    main{ max-width:1680px; margin:4px auto 12px; padding:0 16px; display:grid; gap:16px }
-    @media(min-width:1200px){ main{ grid-template-columns:640px 1fr } }
-    .card{ background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 24px rgba(13,19,51,.08) }
-    .card h2{ position:sticky; top:0; z-index:2; margin:0; padding:12px 16px; background:linear-gradient(180deg,color-mix(in srgb,var(--card) 98%,transparent), color-mix(in srgb,var(--card) 92%,transparent)); border-bottom:1px solid var(--border) }
+    /* ============================================================
+       05) LAYOUT
+       ============================================================ */
+    :root{ --stickyTop: 58px }
+    main{
+      max-width:1680px; margin:4px auto 12px; padding:0 16px;
+      display:grid; gap:16px;
+    }
+    @media (min-width:1200px){
+      main{ grid-template-columns:640px 1fr }
+    }
+
+    .card{
+      background:var(--card); border:1px solid var(--border);
+      border-radius:16px; box-shadow:0 10px 24px rgba(13,19,51,.08);
+    }
+    .card h2{
+      position:sticky; top:0; z-index:2;
+      margin:0; padding:12px 16px;
+      background: linear-gradient(180deg,
+            color-mix(in srgb, var(--card) 98%, transparent) 0%,
+            color-mix(in srgb, var(--card) 92%, transparent) 100%);
+      border-bottom:1px solid var(--border);
+    }
     .card .body{ padding:16px }
-    #cardForm{ position:sticky; top:var(--stickyTop); align-self:start; max-height:calc(100vh - var(--stickyTop) - 8px); overflow:auto }
 
-    /* ========= 06) FORMULARIO ========= */
+    /* Form a la izquierda fijo */
+    #cardForm{
+      position:sticky; top:var(--stickyTop); align-self:start;
+      max-height:calc(100vh - var(--stickyTop) - 8px);
+      overflow:auto;
+    }
+
+    /* ============================================================
+       06) FORMULARIO
+       ============================================================ */
     form .grid{ display:grid; gap:12px }
     @media(min-width:560px){ form .grid{ grid-template-columns:1fr 1fr } }
-    label{ font-size:.9rem; color:var(--muted); display:block; margin-bottom:6px }
-    input,select,textarea{ width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:var(--field); color:var(--text) }
-    textarea{ min-height:96px }
-    .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px }
-    .btn{ border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:12px; padding:10px 14px; font-weight:600; cursor:pointer }
-    .btn.accent{ background:var(--accent); color:#fff; border-color:var(--accent); box-shadow:0 8px 16px color-mix(in srgb,var(--accent) 25%, transparent) }
-    .btn.secondary{ background:color-mix(in srgb,var(--accent) 10%, var(--card)); border-color:color-mix(in srgb,var(--accent) 30%, var(--border)) }
-    .btn.secondary:hover{ background:color-mix(in srgb,var(--accent) 14%, var(--card)) }
 
-    .mini{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px }
+    label{ font-size:.9rem; color:var(--muted); display:block; margin-bottom:6px }
+    input,select,textarea{
+      width:100%; padding:10px 12px; border:1px solid var(--border);
+      border-radius:12px; background:var(--field); color:var(--text);
+    }
+    textarea{ min-height:96px }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px }
+    .btn{
+      border:1px solid var(--border); background:var(--card); color:var(--text);
+      border-radius:12px; padding:10px 14px; font-weight:600; cursor:pointer;
+    }
+    .btn.accent{
+      background:var(--accent); color:#fff; border-color:var(--accent);
+      box-shadow:0 8px 16px color-mix(in srgb, var(--accent) 25%, transparent);
+    }
+    .btn.secondary{
+      background: color-mix(in srgb, var(--accent) 10%, var(--card));
+      border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+    }
+    .btn.secondary:hover{ background: color-mix(in srgb, var(--accent) 14%, var(--card)) }
+
+    .mini{ background:var(--card); border:1px solid var(--border);
+           border-radius:14px; padding:12px; }
     .mini h3{ margin:0 0 8px 0; font-size:1rem }
     .mini ul{ margin:0 0 0 18px; padding:0 }
-    .mini .dot{ font-weight:700; margin-right:6px }
 
-    details.snippets summary{ cursor:pointer; user-select:none; color:var(--muted); padding:8px 0; font-weight:600 }
-    .snippet-btn{ border:1px dashed var(--border); background:color-mix(in srgb,var(--accent) 8%, var(--card)); border-radius:10px; padding:8px 10px; cursor:pointer }
-    .snippet-btn:hover{ background:color-mix(in srgb,var(--accent) 12%, var(--card)) }
+    details.snippets summary{
+      cursor:pointer; user-select:none; color:var(--muted);
+      padding:8px 0; font-weight:600;
+    }
+    .snippet-btn{
+      border:1px dashed var(--border);
+      background:color-mix(in srgb, var(--accent) 8%, var(--card));
+      color:inherit; border-radius:10px; padding:8px 10px; cursor:pointer;
+    }
+    .snippet-btn:hover{ background:color-mix(in srgb, var(--accent) 12%, var(--card)) }
 
-    /* ========= 07) KPIs y TABLA ========= */
+    /* ============================================================
+       07) KPIs y TABLA
+       ============================================================ */
     .toolbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:8px 0 12px }
     .toolbar select{ padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:var(--field) }
     .muted{ color:var(--muted); font-size:.9rem }
+
     .kpis{ display:grid; grid-template-columns:repeat(5,minmax(180px,1fr)); gap:12px; margin-bottom:8px }
     .kpi{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px }
     .kpi .label{ font-size:.88rem; color:var(--muted); white-space:nowrap }
     .kpi .val{ font-weight:800; font-size:1.25rem }
+
     .tablebox{ overflow:auto; max-height: calc(100vh - 320px) }
     table{ width:100%; border-collapse:separate; border-spacing:0 10px; color:var(--text) }
-    thead th{ position:sticky; top:0; z-index:1; font-size:.86rem; color:var(--muted); text-align:left; padding:0 8px; white-space:nowrap; background: color-mix(in srgb, var(--card) 92%, transparent) }
+    thead th{
+      position:sticky; top:0; z-index:1;
+      font-size:.86rem; color:var(--muted); text-align:left; padding:0 8px; white-space:nowrap;
+      background: color-mix(in srgb, var(--card) 92%, transparent);
+    }
     tbody tr{ background:var(--card); border:1px solid var(--border) }
     tbody td{ padding:10px 8px; vertical-align:top }
-    tbody tr:hover{ box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 18%, transparent) inset }
+    tbody tr:hover{ box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent) inset; }
+
     .badge{ padding:4px 8px; border:1px solid var(--border); border-radius:999px; font-size:.78rem; white-space:nowrap }
     .prio-alta{ background:#fff5f5 } .prio-media{ background:#fff4e6 } .prio-baja{ background:#ebfbee }
     body[data-theme="dark"] .prio-alta{ background:#402b2b } body[data-theme="dark"] .prio-media{ background:#3e2f18 } body[data-theme="dark"] .prio-baja{ background:#1b3b2a }
     .e-abierto{ color:#e03131 } .e-proceso{ color:#f08c00 } .e-cerrado{ color:#2b8a3e } .e-cancelado{ color:#6b7280 }
 
-    /* ========= 08) AUTOCOMPLETE ========= */
     .ac{ position:relative }
-    .ac-list{ position:absolute; left:0; right:0; top:100%; background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 10px 24px rgba(13,19,51,.08); margin-top:6px; max-height:220px; overflow:auto; padding:6px; z-index:5 }
+    .ac-list{
+      position:absolute; left:0; right:0; top:100%;
+      background:var(--card); border:1px solid var(--border);
+      border-radius:12px; box-shadow:0 10px 24px rgba(13,19,51,.08);
+      margin-top:6px; max-height:220px; overflow:auto; padding:6px; z-index:5;
+    }
     .ac-list[hidden]{ display:none }
     .ac-list li{ list-style:none; padding:8px 12px; cursor:pointer; border-radius:10px }
-    .ac-list li[aria-selected="true"], .ac-list li:hover{ background:color-mix(in srgb,var(--accent) 10%, transparent) }
+    .ac-list li[aria-selected="true"], .ac-list li:hover{ background:color-mix(in srgb, var(--accent) 10%, transparent) }
 
     .notice{ display:none; margin-top:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px }
     footer{ max-width:1680px; margin:6px auto 28px; padding:0 16px; color:var(--muted); font-size:.9rem }
-
-    /* ========= 09) MODAL (dialog) ========= */
-    dialog.modal{
-      width:min(560px, 92vw);
-      border:1px solid var(--border);
-      border-radius:16px;
-      background:var(--card);
-      color:var(--text);
-      padding:0;
-    }
-    dialog::backdrop{ background:rgba(0,0,0,.35); backdrop-filter:saturate(110%) blur(3px) }
-    .modal header{ padding:14px 16px; border-bottom:1px solid var(--border) }
-    .modal .content{ padding:16px }
-    .modal footer{ padding:12px 16px; display:flex; gap:10px; justify-content:flex-end }
-    .modal textarea{ min-height:120px }
   </style>
 </head>
 <body data-theme="light">
-  <!-- ====== Barra superior ====== -->
+  <!-- ====== Barra superior: identidad + clave + selector de tema ====== -->
   <header>
     <div class="toprow">
       <small id="whoami" class="chip">Identidad: (no detectada)</small>
+
       <input id="keyInput" class="ctl" placeholder="Clave (opcional)" style="width:160px">
       <button id="saveKey" class="btn-sm accent">Guardar</button>
       <button id="clearKey" class="btn-sm" title="Olvidar">✕</button>
 
+      <!-- Tema base (data-theme) + color de acento (HEX) -->
       <select id="themePick" class="ctl" title="Tema">
         <optgroup label="Tema base">
           <option value="Claro"        data-theme="light">Tema: Claro (verde)</option>
@@ -141,12 +227,15 @@
 
   <!-- ====== Logo ====== -->
   <div class="logoWrap">
-    <img class="logo" src="Imagen/logo-empresas.jpg" alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango"
-         loading="lazy" onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';">
+    <img class="logo"
+         src="Imagen/logo-empresas.jpg"
+         alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango"
+         loading="lazy"
+         onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';">
   </div>
 
   <main>
-    <!-- ===================== REPORTE USUARIO ===================== -->
+    <!-- ===================== REPORTE USUARIO (fijo) ===================== -->
     <section id="cardForm" class="card">
       <h2>REPORTE USUARIO</h2>
       <div class="body">
@@ -157,12 +246,14 @@
               <select id="analista" required></select>
             </div>
 
+            <!-- (Correo analista: se calcula por catálogo, no se muestra) -->
+
             <div>
               <label for="categoria">Categoría *</label>
               <select id="categoria" required>
                 <option value="">Selecciona…</option>
                 <option>Red</option><option>Hardware</option><option>Software</option><option>Asesoría</option><option>Préstamo de activo</option>
-                <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Servidores</option><option>Otro</option>
+                <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Otro</option>
               </select>
             </div>
 
@@ -231,9 +322,24 @@
               </select>
             </div>
 
+            <!-- ==========================================================
+                 NUEVO BLOQUE: ¿Tiene requerimiento? (reemplaza "Adjunto")
+                 - reqTiene: Sí/No
+                 - reqNumero: número cuando es Sí (obligatorio)
+                 Se guardará en la columna "Adjunto" como:
+                    "REQ:<numero>"  ó  "" (si NO)
+               ========================================================== -->
             <div>
-              <label for="adj">Adjunto (opcional)</label>
-              <input id="adj" type="file" accept="image/*" />
+              <label for="reqTiene">¿Tiene requerimiento?</label>
+              <select id="reqTiene">
+                <option value="no" selected>No</option>
+                <option value="si">Sí</option>
+              </select>
+            </div>
+            <div>
+              <label for="reqNumero">Número de requerimiento</label>
+              <input id="reqNumero" inputmode="numeric" pattern="[0-9]*" placeholder="Ej: 123456" disabled />
+              <small class="help">Se habilita solo si seleccionas “Sí”.</small>
             </div>
           </div>
 
@@ -241,66 +347,40 @@
             <label for="descripcion">Descripción (opcional)</label>
             <textarea id="descripcion" placeholder="Describe el problema reportado…"></textarea>
 
-            <!-- Plantillas -->
+            <!-- PLANTILLAS -->
             <details class="snippets" open>
               <summary>► Plantillas de descripción</summary>
-
-              <details>
-  <div class="row" style="margin-top:8px;">
-    <button type="button" class="snippet-btn"
-      data-snippet="Usuario se comunica e informa tener problemas de acceso al servidor/equipo/recurso compartido con nombre xxxx.">
-      Soporte informático
-    </button>
-
-    <button type="button" class="snippet-btn"
-      data-snippet="El usuario informa no puede imprimir o que la impresora presenta fallos (atasco de papel, sin conexión, sin tinta, o no aparece en red).">
-      Problemas de impresión
-    </button>
-
-    <button type="button" class="snippet-btn"
-      data-snippet="Se requiere realizar la instalación/desinstalación del programa xxx en el equipo con serial xxx y nombre xxx.">
-      Instalación/desinstalación de software
-    </button>
-
-    <button type="button" class="snippet-btn"
-      data-snippet="Gestionar permisos en servidores/VPN.">
-      Permisos servidores/VPN
-    </button>
-
-    <button type="button" class="snippet-btn"
-      data-snippet="Gestionar creación de cuenta de red/correo o eliminación.">
-      Crear cuenta de red/correo/eliminar
-    </button>
-
-    <button type="button" class="snippet-btn"
-      data-snippet="Usuario reporta tener la cuenta de red bloqueada. Se desbloquea la cuenta de red indicada, se hacen pruebas y estas son satisfactorias.">
-      Desbloquear cuenta de red
-    </button>
-
-    <button type="button" class="snippet-btn"
-      data-snippet="Usuario informa tener problemas con la APP XXX.">
-      Problemas con aplicaciones
-    </button>
-  </div>
-</details>
-
+              <div class="row" style="margin-top:8px">
+                <button type="button" class="snippet-btn" data-snippet="Incidente de acceso: Usuario se comunica  e informa tener problemas de acceso al servidor xxxx.">Incidente de acceso</button>
+                <button type="button" class="snippet-btn" data-snippet="Usuario se comunica  e informa tener problemas de impresión">Problemas de impresión</button>
+                <button type="button" class="snippet-btn" data-snippet="Instalación de software: {NombreSW} versión {v}. Se valida licencia, compatibilidad y requisitos.">Instalación de software</button>
+                <button type="button" class="snippet-btn" data-snippet="Solicitud de equipo: {TipoEquipo}. Configuración estándar, usuario {Nombre}, ubicación {Sede}.">Solicitud de equipo</button>
+                <button type="button" class="snippet-btn" data-snippet="Soporte remoto: conexión vía {Herramienta}. Se revisan registros, se aplican pruebas y se documenta resultado.">Soporte remoto</button>
+                <button type="button" class="snippet-btn" data-snippet="Mantenimiento preventivo: verificación de antivirus, limpieza de temporales, actualizaciones y estado de disco.">Mantenimiento preventivo</button>
+                <button type="button" class="snippet-btn" data-snippet="Usuario reporta tener la cuenta de red bloqueada, Se desbloquea la cuenta de red indicada, se hacen pruebas y estas son satisfactorías.">Desbloquear cuenta de red</button>
+                <button type="button" class="snippet-btn" data-snippet="Usuario informa tener problemas con la APP XXX">Problemas con aplicaciones</button>
+              </div>
+            </details>
+          </div>
 
           <div id="notice" class="notice"></div>
           <div class="row">
             <button class="btn accent" type="submit">➕ Guardar reporte</button>
             <button class="btn secondary" type="reset">↺ Limpiar</button>
-            <input id="quickSearch" class="ctl" style="flex:1; min-width:220px" placeholder="Buscar tickets (ID, categoría, falla, usuario)">
+            <input id="quickSearch" class="ctl" style="flex:1; min-width:220px"
+                   placeholder="Buscar tickets (ID, categoría, falla, usuario)">
           </div>
 
+          <!-- Guías de apoyo -->
           <div class="row">
             <div class="mini" style="flex:1 1 280px">
               <h3>Checklist antes de crear</h3>
               <ul>
-                <li><span class="dot">•</span>Confirmar datos del usuario y equipo.</li>
-                <li><span class="dot">•</span>Clasificar <em>Categoría</em> y <em>Servicio prestado</em>.</li>
-                <li><span class="dot">•</span>Adjuntar evidencia (si aplica).</li>
-                <li><span class="dot">•</span>Describir impacto (usuarios/áreas afectadas).</li>
-                <li><span class="dot">•</span>Estimar prioridad (Alta/Media/Baja) según impacto.</li>
+                <li>Confirmar datos del usuario y equipo.</li>
+                <li>Clasificar <em>Categoría</em> y <em>Servicio prestado</em>.</li>
+                <li>Adjuntar evidencia (si aplica).</li>
+                <li>Describir impacto (usuarios/áreas afectadas).</li>
+                <li>Estimar prioridad (Alta/Media/Baja) según impacto.</li>
               </ul>
             </div>
             <div class="mini" style="flex:1 1 260px">
@@ -320,16 +400,32 @@
       <div class="body">
         <div class="toolbar">
           <span class="muted">Vista:</span>
-          <select id="viewSelect"><option value="mis">Asignados a mí</option><option value="todos">Todos (admin)</option></select>
+          <select id="viewSelect">
+            <option value="mis">Asignados a mí</option>
+            <option value="todos">Todos (admin)</option>
+          </select>
 
           <span class="muted">Analista:</span>
-          <select id="analystSelect"><option value="">Todos</option><option>Jose Salas</option><option>Sebastián Cataño</option><option>Sebastián Posada</option><option>Pablo Calle</option></select>
+          <select id="analystSelect">
+            <option value="">Todos</option>
+            <option>Jose Salas</option>
+            <option>Sebastián Cataño</option>
+            <option>Sebastián Posada</option>
+            <option>Pablo Calle</option>
+          </select>
 
           <span class="muted">Estado:</span>
-          <select id="statusSelect"><option value="">Todos</option><option value="pendientes">Pendientes</option><option value="Abierto">Abierto</option><option value="En Proceso">En Proceso</option><option value="Cerrado">Cerrado</option><option value="Cancelado">Cancelado</option></select>
+          <select id="statusSelect">
+            <option value="">Todos</option>
+            <option value="pendientes">Pendientes</option>
+            <option value="Abierto">Abierto</option>
+            <option value="En Proceso">En Proceso</option>
+            <option value="Cerrado">Cerrado</option>
+            <option value="Cancelado">Cancelado</option>
+          </select>
 
           <span class="muted">Mes:</span>
-          <select id="monthSelect"><option value="">Todos1</option></select>
+          <select id="monthSelect"><option value="">Todos</option></select>
 
           <span id="syncBadge" class="muted">Fuente: —</span>
         </div>
@@ -342,14 +438,12 @@
           <div class="kpi"><div class="label">Cancelados</div><div class="val" id="kpiCa">0</div></div>
         </div>
 
-         <!-- ========= VISTAS DEL ESTADO REPORTE ========= -->
-
         <div class="tablebox">
           <table>
             <thead>
               <tr>
                 <th>Ticket</th><th>Analista</th><th>Categoría</th><th>Falla</th><th>Usuario</th>
-                <th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th> <!-- NEW -->
+                <th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -359,29 +453,17 @@
     </section>
   </main>
 
-  <!-- ========= MODAL DE ESTADO (comentario html) ========= -->
-  <dialog id="statusModal" class="modal">
-    <header><h3 id="modalTitle" style="margin:0">Actualizar estado</h3></header>
-    <div class="content">
-      <label id="modalLabel" for="modalText" style="display:block; color:var(--muted); margin-bottom:6px">Detalle</label>
-      <textarea id="modalText" class="ctl" style="width:100%"></textarea>
-    </div>
-    <footer>
-      <button id="modalCancel" class="btn">Cancelar</button>
-      <button id="modalOk" class="btn accent">Aceptar</button>
-    </footer>
-  </dialog>
-
   <footer>⚡ App HTML sincroniza con Google Sheets. Eliminación deshabilitada; usar estado “Cancelado”.</footer>
 
   <script>
   (function(){
     'use strict';
 
-    /* ==================== CONFIG (comentario CSS)==================== */
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyO24dvH12TL0asMRdQU-LnoyC8LOuTZYE6hYKxuNW7K8ji5il7toDPup7OVd-8SO2Uxg/exec';
+    /* ==================== ENDPOINT & CONFIG ==================== */
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxCF5AeefF2vI3tmD1JYQvHmOhS0y7h-84wcobmkIpW_Q0UARPWNwdlfBbd1gbDz1GnSw/exec';
     const AUTO_REFRESH_MS = 30000;
 
+    /* Catálogos */
     const ANALISTAS = [
       { nombre:'Jose Salas',        email:'jsalas@sedic.com.co' },
       { nombre:'Sebastián Cataño',  email:'scatano@sedic.com.co' },
@@ -389,46 +471,13 @@
       { nombre:'Pablo Calle',       email:'pablocalle@ingetec.com.co' }
     ];
     const USUARIOS = [
-
-      'Clara Rosa Tamayo', 'Mario Patiño', 'Yuliana Andrea Moreno', 'Claudia Patricia Lopez', 'Tito Tulio Martinez', 'Jorge Eliecer Rodriguez', 'Juan de la Cruz Ramirez', 'Giselly Indira Gomez',
-'Edgar Alonso Ceballos', 'Jose Ivan Bohorquez', 'Yedison Ortiz', 'Carlos Mario Arango', 'Dani Alexander Hernandez', 'Jeisson Andres Gonzalez', 'Norman Diego Loaiza', 'William Ferney Serna',
-'Ricardo Palacio', 'Roman Dario Lopez', 'Rocio Johanna Bonilla', 'Yhorledy Aguiar', 'Daniel Enrique Hernandez', 'Constanza Lorena Rojas', 'Jainer Eduardo Ferrer', 'Wilson Antonio Garcia',
-'John Albeiro Grajales', 'Jorge Mario Lujan', 'Veronica Espinosa', 'Juliana Isaza', 'Heidy Lorena Zambrano', 'Marcela Pareja', 'Jose Victor Llinas', 'Ferney Alexis Sepulveda',
-'Luis Eduardo Arroyave', 'Angel Alberto Ramirez', 'Jose Vicente Sanchez', 'Juan Carlos Betancur', 'Henry Franklyn Alban', 'Yarlin Londoño', 'Carlos Freddy Perez', 'Luis Adriano Marin',
-'Jhon Fitzgerald Madrid', 'Luis Alberto Cortez', 'Yury Yanneth Velez', 'Jose Vicente Toro', 'Jorge Ignacio Muñoz', 'Ferney Holguin', 'Jonny de Jesus Tobon', 'John Jairo Pulido',
-'Dumar Mauricio Gallego', 'Carlos Arturo Corrales', 'Jairo Andres Pelaez', 'David Julian Guerrero', 'Paula Andrea Mora', 'John Freddy Henao', 'Javier Albeiro Palacio', 'Juan Pablo Hernandez',
-'Carlos Andres Vargas', 'Diego Fernando Guerrero', 'Andres Lamprea', 'Rosalba del Socorro Gomez', 'Jorge Ivan Ocampo', 'Gloria Patricia Granada', 'Robinson Augusto Henao', 'Jhon Fredy Callejas',
-'Oscar Dario Gonzalez', 'Jean Carlos Piedrahita', 'Wilmer Alberto Osuna', 'Jose Jovany Idarraga', 'Adolfo Sepulveda', 'Javier Eduardo Rodriguez', 'Robinson Uribe', 'Angel Alvaro Salguero',
-'Dora Serna', 'Alexis Gonzalez', 'Wilson Aragon', 'Carlos Alberto Gil', 'Edwin Fernando Ramos', 'Luis Fernando Nieto', 'Henry Silva', 'Juan Manuel Salgado',
-'Cruz Mary Perea', 'Andres Felipe Grisales', 'Andres Mauricio Salazar', 'Elkin Noraldo Chavarria', 'Jorge Ivan Vasquez', 'Santiago Gutierrez', 'Jonathan Alexander Iza', 'Alvaro Vicente Ariza',
-'Pablo Andres Lagos', 'Andres Felipe Rojas', 'Damaris Andrea Ballen', 'Jessica Alejandra Camero', 'Hipolito Martinez', 'Landa Sury Barreneche', 'Victor Hugo Cuartas', 'Jhon Fredy Garcia',
-'Maryulis Valbuena', 'Wilson de Jesus Morales', 'German Alonso Lopez', 'Fabian Ernesto Pobre', 'Rigoberto Castañeda', 'Julio Ernesto Salinas', 'German Dario Ballen', 'Sebastian Marquez',
-'Jenniffer Pulgarin', 'John Edison Ramirez', 'Jennifer Cortes', 'Juan Sebastian Gomez', 'Dario Ernesto Cardona', 'Wilson Ferney Galeano', 'Carlos Gabriel Romero', 'Edgar Ermilson Tapasco',
-'Pablo Calle', 'Cristian Camilo Garcia', 'Luis Fernando Correa', 'Mauricio Alberto Pulgarin', 'Tonys Manuel Ortiz', 'Julien Orlando Molina', 'Hollman Oswaldo Franco', 'Juan Pablo Peralta',
-'Victor Alfonso Garcia', 'Miguel Alejandro Romero', 'Carlos Augusto Alarcon', 'Alex Arles Argumedo', 'John Jairo Vahos', 'Jan Carlos Polo', 'Jhon Jairo Higuita', 'Andres Marulanda',
-'Fabian Rodrigo Pelaez', 'Carlos Mario Cortes', 'Estevinson Ramirez', 'Cristhian Camilo Giraldo', 'Osmey de Jesus Arrieta', 'Oscar Ricardo Alvarez', 'William Arturo Pachon', 'Alexander Echavarria',
-'Karen Lucia Lopez', 'Jonny Garcia', 'Mario Andres Ruiz', 'Libardo Andres Muñoz', 'Mario Antonio Higuera', 'Jessika Andrea Garces', 'Jenni Marcela De La Cruz', 'Angela Patricia Perez',
-'Maria Janeth Mahecha', 'Dairo Ramon Diaz', 'Erney Dario Puerta', 'John Jairo Patiño', 'John Fredys Mosquera', 'Nelson Enrique Gomez', 'John Fredy Arrubla', 'John Fredy Castañeda',
-'Marlon Sepulveda', 'Alvaro Diego Rengifo', 'Ivan Rodrigo Duarte', 'Wilson Dairon Vargas', 'Ivan Dario Gutierrez', 'Yuliana Andrea Loaiza', 'Harvy John Ferne Enciso', 'Hugo Alexander Chanci',
-'Carlos Andres Orrego', 'Lorena Martinez', 'Gladys Estela Vasquez', 'German Elias Ciro', 'Sebastian Posada', 'Cristian Leonardo Jaramillo', 'Gonzalo Antonio Pelaez', 'Cristian Arley Cordon',
-'Omar Gonzalo Ruiz', 'Jorge Alfonso Navarro', 'Luis Felipe Yosa', 'Jhon Anderson Chavarria', 'Mauricio Valencia', 'Jorge Mario Castañeda', 'William Fernando Chanci', 'Diana Paulina Gomez',
-'Juan Guillermo Cano', 'Jorge Mario Jaramillo', 'Gustavo Adolfo Montoya', 'Juan Daniel Mazo', 'Arcadio de Jesus Muñoz', 'Yessica Marcela Rico', 'Nelson Fabian Vasquez', 'Sergio Alberto Arboleda',
-'Claudia Patricia Lopez', 'Jessica Tatiana Zapata', 'Juan Carlos Chaves', 'Andres Leonardo Diaz', 'Diego Andres Lopez', 'Manuel Alejandro Molina', 'Oscar Julian Toro', 'Alexander Oquendo',
-'Edwin Bernardo Chanci', 'Andres Camilo Leyton', 'Cristian Esteban Arango', 'Wilson de Jesús Posada', 'Juan Daniel Arroyave', 'Cristina Quintero', 'Nelson Giovani Eusse', 'Johan Sebastian Pino',
-'Deisy Viviana Castrillon', 'Dilan Humberto Zabala', 'Sebastian Alejandro Cataño', 'Jhonatan Alexander Porras', 'Diego Armando Madera', 'Joan Eduardo Luna', 'Juan Esteban Cano', 'Carlos Albeiro Gil',
-'Deison Alberto Sepulveda', 'Jose Hollman Rodriguez', 'Jose Alonso Arango', 'Andres Eduardo Martinez', 'Elkin Jose Salas', 'Juan Esteban Gomez', 'Valentina Betancur', 'Mayra Alejandra Gutierrez',
-'Tatiana Jhoanna Jaramillo', 'Adriana Maria Atehortua', 'Mauricio Villano', 'Nelson Dario Alvarez', 'Jovar Eduardo Murillo', 'Juan Pablo Holguin', 'Jacobo Ortiz', 'Silvia Juliana Perez',
-'Adriana Maria Mejia', 'Carlos Andres Calderon', 'Liliana Astrid Espinosa', 'Jose Uriel Carmona', 'Edwin Valencia', 'Juan Esteban Aguiar', 'Juan Esteban Oquendo', 'David Alexander Zapata',
-'Elkin Alonso Castañeda', 'Eloy Emanuel Atencia', 'Kevin Andres Tamara', 'Jorge Andres Montoya', 'Wilson Hernando Piña', 'John Freddy Becerra', 'Lina Maria Areiza', 'Alejandro Mora',
-'Juan Esteban Posada', 'Eder Luis Argumedo', 'Karen Giraldo', 'Leydi Lorena Velasquez', 'Francisco Javier Orrego', 'Duban Rojo', 'Esteban Salazar', 'Luis Carlos Garces',
-'Rodrigo Vallejo', 'Andres Felipe Gonzalez', 'Carlos Hernan Jaramillo', 'Sandra Carolina Bohorquez', 'Leonardo Pareja', 'Carlos Andres Arenas', 'Jose Alejandro Avila', 'Esneider Gutierrez',
-'Mellissa Alejandra Verdugo', 'Richard David Ballesteros', 'Yormi Alexander Padilla', 'Daniela Mireya Matabajoy', 'Gustavo Adolfo Figueroa', 'Yesica Mildreth Ledesma', 'Cesar Arturo Molina', 'Hector Garcia',
-'Alejandro Valencia', 'Maria Fernanda Buendia', 'Holver Miguel Martes', 'Jorge Andres Bravo', 'Sara Michelle Herrera', 'Diego Alejandro Velasco', 'Karen Stefany Alvarez', 'Eliana Janeth Sanchez',
-'Wilson Jose Asprilla', 'Jhon Daider Benjumea', 'Gabriel Fernando Guarin', 'Juan Pablo Gomez', 'Pedro Julio Garcia', 'Jairo Alonso Arango', 'Marcos Aurelio Muñoz', 'Jorge Andres Muñoz',
-'Wilson Yamir Ocampo', 'Luis Ernesto Pino', 'Edwin Fernando Jaramillo', 'Haydn Collazos'
+      'Marcela Pareja','Juan Carlos Betancur','Diego Guerrero','Heidy Zambrano',
+      'Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez',
+      'Lina Areiza','María López','Andrés Gómez','Sofía Ríos','Mario Velez','Aide',
+      'Verónica Zapata','Jhon Madrid','Juan Carlos Betancur'
     ];
 
-    /* ==================== DOM ==================== */
+    /* DOM */
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
     const tbody = $('#tbody'),
@@ -438,13 +487,12 @@
           quickSearch = $('#quickSearch'), themePick = $('#themePick');
     const form = $('#formTicket'), syncBadge = $('#syncBadge'), who = $('#whoami');
 
-    /* Modal elems */
-    const modal = $('#statusModal'), modalTitle = $('#modalTitle'),
-          modalLabel = $('#modalLabel'), modalText = $('#modalText'),
-          modalOk = $('#modalOk'), modalCancel = $('#modalCancel');
+    /* NUEVOS CAMPOS (requerimiento) */
+    const reqTiene   = $('#reqTiene');
+    const reqNumero  = $('#reqNumero');
 
-    /* ==================== STATE ==================== */
-    const localKey = 'tickets_fallas_v9';
+    /* Estado local */
+    const localKey = 'tickets_fallas_v10';
     const loadLocal = () => { try{ return JSON.parse(localStorage.getItem(localKey))||[] } catch { return [] } };
     const saveLocal = v => localStorage.setItem(localKey, JSON.stringify(v));
     let ticketsLocal = loadLocal();
@@ -454,7 +502,7 @@
     let AUTH_KEY = '';
     let searchText = '';
 
-    /* ==================== TEMA ==================== */
+    /* ===== TEMA: base + acento ===== */
     function applyBaseTheme(theme){ document.body.setAttribute('data-theme', theme); localStorage.setItem('ui_theme', theme); }
     function applyAccent(hex){ document.documentElement.style.setProperty('--accent', hex); localStorage.setItem('ui_accent_hex', hex); }
     (function initTheme(){
@@ -479,7 +527,7 @@
       }
     }
 
-    /* ==================== CLAVE OPCIONAL ==================== */
+    /* ===== Clave (modelo B, opcional) ===== */
     const keyInput = $('#keyInput'), saveKeyBtn = $('#saveKey'), clearKeyBtn = $('#clearKey');
     (function initKey(){
       const urlKey = new URLSearchParams(location.search).get('key') || '';
@@ -491,13 +539,13 @@
     saveKeyBtn.addEventListener('click', ()=>{ AUTH_KEY = keyInput.value.trim(); localStorage.setItem('auth_key', AUTH_KEY); fetchWhoAmI().then(fetchRemote); });
     clearKeyBtn.addEventListener('click', ()=>{ AUTH_KEY=''; keyInput.value=''; localStorage.removeItem('auth_key'); fetchWhoAmI().then(fetchRemote); });
 
-    /* ==================== ANALISTAS ==================== */
+    /* ===== Analistas ===== */
     (function initAnalistas(){
       const sel = $('#analista');
       sel.innerHTML = '<option value="">Selecciona…</option>' + ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
     })();
 
-    /* ==================== AUTOCOMPLETE USUARIOS ==================== */
+    /* ===== Autocomplete usuarios ===== */
     const inputUsuario = $('#usuario'); const acList = $('#acList');
     const norm = (s)=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
     function filtraUsuarios(q){ const n=norm(q); if(!n) return []; return USUARIOS.filter(u=>norm(u).includes(n)).slice(0,8); }
@@ -506,7 +554,7 @@
     inputUsuario.addEventListener('focus', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
     document.addEventListener('click', (e)=>{ if (e.target.closest('#acList li')){ inputUsuario.value = e.target.textContent; acList.hidden = true; } else if(!e.target.closest('.ac')) { acList.hidden = true; } });
 
-    /* ===== Plantillas: insertar en cursor ===== */
+    /* ===== Plantillas de descripción ===== */
     document.addEventListener('click', (e)=>{
       const btn = e.target.closest('.snippet-btn');
       if (!btn) return;
@@ -517,7 +565,14 @@
       area.focus(); area.selectionStart = area.selectionEnd = s + txt.length;
     });
 
-    /* ==================== FILTROS ==================== */
+    /* ===== Requerimiento: UI enable/disable ===== */
+    reqTiene.addEventListener('change', ()=>{
+      const si = reqTiene.value === 'si';
+      reqNumero.disabled = !si;
+      if (!si) reqNumero.value = '';
+    });
+
+    /* ===== Barra de filtros ===== */
     (function fillMonths(){
       const now = new Date(); const items = ['<option value="">Todos</option>'];
       for (let i=0;i<12;i++){
@@ -538,10 +593,10 @@
     function persistView(){ localStorage.setItem('tickets_view', JSON.stringify({ view:viewSelect.value, analyst:analystSelect.value, status:statusSelect.value, month:monthSelect.value })); }
     [viewSelect,analystSelect,statusSelect,monthSelect].forEach(el => el.addEventListener('change', ()=>{ persistView(); fetchRemote(); }));
 
-    /* ==================== BUSCADOR RÁPIDO ==================== */
+    /* ===== Buscador rápido ===== */
     quickSearch.addEventListener('input', ()=>{ searchText = quickSearch.value; render(); });
 
-    /* ==================== HELPERS ==================== */
+    /* ===== Helpers ===== */
     const show = (msg, kind='ok')=>{
       notice.style.display='block'; notice.textContent=msg;
       notice.style.borderColor=(kind==='ok')?'#b2f2bb':'#ffc9c9';
@@ -554,7 +609,10 @@
 
     function computeCounters(rows){ const c = { total:rows.length, abiertos:0, en_proceso:0, cerrados:0, cancelados:0 };
       rows.forEach(t=>{ const s=String(t.estado||'').toLowerCase();
-        if(s==='abierto') c.abiertos++; else if(s==='en proceso') c.en_proceso++; else if(s==='cerrado') c.cerrados++; else if(s==='cancelado') c.cancelados++;
+        if(s==='abierto') c.abiertos++;
+        else if(s==='en proceso') c.en_proceso++;
+        else if(s==='cerrado') c.cerrados++;
+        else if(s==='cancelado') c.cancelados++;
       }); return c;
     }
     function setCounters(c){ kpiTotal.textContent=c.total; kpiAb.textContent=c.abiertos; kpiPr.textContent=c.en_proceso; kpiCe.textContent=c.cerrados; kpiCa.textContent=c.cancelados; }
@@ -589,42 +647,37 @@
       rows.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
       return rows;
     }
-
     function render(countersFromAPI){
-  const rows = currentRows();
-  if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI);
-  else setCounters(computeCounters(rows));
+      const rows = currentRows();
+      if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI); else setCounters(computeCounters(rows));
+      syncBadge.innerHTML = `Fuente: <strong>${lastSource}</strong>`;
+      tbody.innerHTML = rows.length ? rows.map(t=>`
+        <tr>
+          <td>${t.id||''}</td>
+          <td>${esc(t.analista||'')}</td>
+          <td>${esc(t.categoria||'')}</td>
+          <td>${esc(t.falla||'')}</td>
+          <td>${esc(t.usuario||'')}</td>
+          <td>${badge(t.prioridad||'')}</td>
+          <td>${tagE(t.estado||'')}</td>
+          <td>${fmt(t.fecha)}</td>
+          <td style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <select class="estado-select" data-id="${t.id}">
+              <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
+              <option ${t.estado==='En Proceso'?'selected':''}>En Proceso</option>
+              <option ${t.estado==='Cerrado'?'selected':''}>Cerrado</option>
+              <option ${t.estado==='Cancelado'?'selected':''}>Cancelado</option>
+            </select>
+            <select class="prio-select" data-id="${t.id}">
+              <option ${t.prioridad==='Alta'?'selected':''}>Alta</option>
+              <option ${t.prioridad==='Media'?'selected':''}>Media</option>
+              <option ${t.prioridad==='Baja'?'selected':''}>Baja</option>
+            </select>
+          </td>
+        </tr>`).join('') : `<tr><td colspan="9" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
+    }
 
-  syncBadge.innerHTML = `Fuente: <strong>${lastSource}</strong>`;
-
-  tbody.innerHTML = rows.length ? rows.map(t=>`
-    <tr>
-      <td>${t.id||''}</td>
-      <td>${esc(t.analista||'')}</td>
-      <td>${esc(t.categoria||'')}</td>
-      <td>${esc(t.falla||'')}</td>
-      <td>${esc(t.usuario||'')}</td>
-      <td>${badge(t.prioridad||'')}</td>
-      <td>${tagE(t.estado||'')}</td>
-      <td>${fmt(t.fecha)}</td>
-      <td style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <select class="estado-select" data-id="${t.id}">
-          <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
-          <option ${t.estado==='En Proceso'?'selected':''}>En Proceso</option>
-          <option ${t.estado==='Cerrado'?'selected':''}>Cerrado</option>
-          <option ${t.estado==='Cancelado'?'selected':''}>Cancelado</option>
-        </select>
-        <select class="prio-select" data-id="${t.id}">
-          <option ${t.prioridad==='Alta'?'selected':''}>Alta</option>
-          <option ${t.prioridad==='Media'?'selected':''}>Media</option>
-          <option ${t.prioridad==='Baja'?'selected':''}>Baja</option>
-        </select>
-      </td>
-    </tr>`).join('') : `<tr><td colspan="9" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
-}
-
-
-    /* ==================== WHOAMI + LIST ==================== */
+    /* ===== WHOAMI + LIST ===== */
     async function fetchWhoAmI(){
       try{
         const params = new URLSearchParams({ action:'whoami' });
@@ -659,7 +712,7 @@
       }catch(err){ ticketsRemote = null; render(); }
     }
 
-    /* ==================== POST ==================== */
+    /* ===== POST (create/update) ===== */
     async function postJSON(payload){
       if (AUTH_KEY) payload.key = AUTH_KEY;
       const res = await fetch(WEB_APP_URL, { method:'POST',
@@ -669,107 +722,94 @@
       try { return await res.json(); } catch { return { ok:false, error:'Respuesta no-JSON' }; }
     }
 
-    /* ==================== CREAR TICKET ==================== */
+    /* ===== Crear ticket ===== */
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
+
+      // Validación "requerimiento": si es "SÍ", el número es obligatorio
+      if (reqTiene.value === 'si' && !reqNumero.value.trim()){
+        show('Ingresa el número de requerimiento o selecciona "No".','err');
+        reqNumero.focus();
+        return;
+      }
+
       const analista   = $('#analista').value;
       const categoria  = $('#categoria').value;
       const falla      = $('#falla').value;
       const usuario    = $('#usuario').value.trim();
       const prioridad  = $('#prioridad').value;
       const descripcion= $('#descripcion').value.trim();
-      const adjInput   = $('#adj'); const adjuntoNombre = adjInput.files?.[0]?.name || '';
+
       if(!analista || !categoria || !falla || !usuario || !prioridad){
         show('Completa los campos obligatorios','err'); return;
       }
+
+      // Correo del analista (catálogo)
       const correoAnalista = (ANALISTAS.find(a=>a.nombre===analista)?.email) || '';
+
+      // Reutilizamos la columna "Adjunto" para guardar el requerimiento:
+      // - Si hay número: "REQ:<número>"
+      // - Si no: cadena vacía
+      const adjuntoNombre = (reqTiene.value === 'si' && reqNumero.value.trim())
+        ? `REQ:${reqNumero.value.trim()}`
+        : '';
+
       const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
       const nowISO = new Date().toISOString();
-      const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, adjuntoNombre, estado:'Abierto', fecha: nowISO };
+      const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad,
+                  descripcion, adjuntoNombre, estado:'Abierto', fecha: nowISO };
+
       ticketsLocal.unshift(t); saveLocal(ticketsLocal); render(); show('Guardado local. Enviando a Sheets…');
-      const d = await postJSON({ action:'create', id:t.id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion, estado:t.estado, fechaISO: nowISO, adjuntoNombre });
+
+      const d = await postJSON({
+        action:'create',
+        id:t.id, analista, correoAnalista, categoria, falla, usuario,
+        prioridad, descripcion, estado:t.estado, fechaISO: nowISO,
+        adjuntoNombre
+      });
       if (!d || !d.ok){ show('No se pudo crear en Sheets', 'err'); } else { fetchRemote(); }
       form.reset();
+      // Reiniciar controles de requerimiento
+      reqTiene.value = 'no';
+      reqNumero.value = '';
+      reqNumero.disabled = true;
     });
 
-    /* ==================== MODAL HELPER ==================== */
-    function askModal({title,label,placeholder='', required=false}){
-      return new Promise(resolve=>{
-        modalTitle.textContent = title;
-        modalLabel.textContent = label;
-        modalText.value = '';
-        modalText.placeholder = placeholder || '';
-        modalText.required = required;
-        const onOk = ()=>{ if(required && !modalText.value.trim()){ modalText.focus(); return; } cleanup(); modal.close(); resolve({ok:true, text: modalText.value.trim()}); };
-        const onCancel = ()=>{ cleanup(); modal.close(); resolve({ok:false}); };
-        function cleanup(){ modalOk.removeEventListener('click', onOk); modalCancel.removeEventListener('click', onCancel); modal.removeEventListener('cancel', onCancel); }
-        modalOk.addEventListener('click', onOk);
-        modalCancel.addEventListener('click', onCancel);
-        modal.addEventListener('cancel', onCancel);
-        modal.showModal();
-        setTimeout(()=>modalText.focus(), 50);
-      });
-    }
-
-    /* Guardar el estado previo del select (para revertir si se cancela) */
-    document.addEventListener('focusin',(e)=>{
-      const s = e.target.closest('.estado-select');
-      if (s) s.dataset.prev = s.value;
-    });
-
-    /* ==================== CAMBIOS ESTADO / PRIORIDAD ==================== */
+    /* ===== Cambios estado / prioridad ===== */
     document.addEventListener('change', async (e)=>{
       const selE = e.target.closest('.estado-select');
       const selP = e.target.closest('.prio-select');
-
       if (selE){
-        const id = selE.dataset.id;
-        const newStatus = selE.value;
-        const prev = selE.dataset.prev || 'Abierto';
-
-        let reasonOrSolution = '';
-
-        if (newStatus === 'Cancelado'){
-          const r = await askModal({title:'Cancelar ticket', label:'Motivo de cancelación', placeholder:'Describe el motivo…', required:true});
-          if (!r.ok){ selE.value = prev; return; }
-          reasonOrSolution = r.text;
-
-          // Local
+        const id = selE.dataset.id; const status = selE.value;
+        let reason = '';
+        if (status === 'Cancelado') {
+          // Motivo requerido solo si ACEPTA
+          const val = prompt('Motivo de cancelación:');
+          if (val === null) { // Presionó Cancelar => revertir selección visual
+            e.target.value = 'Abierto';
+            return;
+          }
+          reason = val.trim();
+        }
+        // Si es "Cerrado", abrimos modal para SOLUCIÓN (implementación previa tuya)
+        if (status === 'Cerrado') {
+          const solucion = prompt('Describe la solución brindada al usuario:');
+          if (solucion === null) { e.target.value = 'Abierto'; return; }
+          // Se envía al backend dentro de update_status (ya preparado)
+          const d = await postJSON({ action:'update_status', id, status, solution: solucion });
+          if (!(d && d.ok)) { show('No se pudo actualizar el estado', 'err'); return; }
+          // refresco local rápido
           const tL = ticketsLocal.find(x=>x.id===id);
-          if (tL){ tL.estado=newStatus; tL.motivo=reasonOrSolution; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
-          render();
-
-          // Remoto
-          const d = await postJSON({ action:'update_status', id, status:newStatus, reason: reasonOrSolution }); // mantiene compat
-          if (d && d.ok) fetchRemote();
-          return;
+          if (tL){ tL.estado='Cerrado'; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
+          render(); fetchRemote(); return;
         }
 
-        if (newStatus === 'Cerrado'){
-          const r = await askModal({title:'Cerrar ticket', label:'Solución aplicada', placeholder:'Describe la solución brindada…', required:true});
-          if (!r.ok){ selE.value = prev; return; }
-          reasonOrSolution = r.text;
-
-          // Local  // NEW
-          const tL = ticketsLocal.find(x=>x.id===id);
-          if (tL){ tL.estado=newStatus; tL.solucion=reasonOrSolution; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
-          render();
-
-          // Remoto  // NEW: enviamos solution (no reason)
-          const d = await postJSON({ action:'update_status', id, status:newStatus, solution: reasonOrSolution });
-          if (d && d.ok) fetchRemote();
-          return;
-        }
-
-        // Otros estados sin modal
         const tL = ticketsLocal.find(x=>x.id===id);
-        if (tL){ tL.estado=newStatus; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
+        if (tL){ tL.estado=status; tL.fecha=new Date().toISOString(); if(status==='Cancelado') tL.motivo=reason; saveLocal(ticketsLocal); }
         render();
-        const d = await postJSON({ action:'update_status', id, status:newStatus });
+        const d = await postJSON({ action:'update_status', id, status, reason });
         if (d && d.ok) fetchRemote();
-        return;
       }
-
       if (selP){
         const id = selP.dataset.id; const pr = selP.value;
         const tL = ticketsLocal.find(x=>x.id===id);
@@ -780,12 +820,12 @@
       }
     });
 
-    /* ==================== INIT ==================== */
+    /* ===== Init ===== */
     async function init(){
       await fetchWhoAmI();
       if (identity && !analystSelect.value) analystSelect.value = identity.name;
-      render();
-      fetchRemote();
+      render();               // local
+      fetchRemote();          // remoto
       setInterval(()=>{ if(!document.hidden) fetchRemote(); }, AUTO_REFRESH_MS);
     }
     init();
@@ -793,14 +833,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
