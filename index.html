@@ -6,205 +6,121 @@
   <title>Gestión TI · Reporte de fallas</title>
 
   <style>
-    /* ============================================================
-       01) VARIABLES DE TEMA
-       ============================================================ */
+    /* ========= 01) VARIABLES DE TEMA ========= */
     :root{
-      --accent:#6475ff;                 /* acento por defecto */
-      /* tema base: Claro */
+      --accent:#6475ff;                     /* color de acento (se puede cambiar en runtime) */
       --bg:#eef2ff; --card:#ffffff; --text:#0d1333; --muted:#51608b;
       --border:rgba(13,19,51,.12); --field:#fbfcff;
     }
-    body[data-theme="dark"]{
-      --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9aa4bf;
-      --border:rgba(255,255,255,.15); --field:#0b1220;
-    }
-    body[data-theme="mint"]{
-      --bg:#e6fff4; --card:#ffffff; --text:#0d1333; --muted:#4d6a61;
-      --border:rgba(13,19,51,.12); --field:#f7fffb;
-    }
-    body[data-theme="blue"]{
-      --bg:#e7f3ff; --card:#ffffff; --text:#0f1a2b; --muted:#3c587a;
-      --border:rgba(15,26,43,.12); --field:#f7fbff;
-    }
-    body[data-theme="navy"]{
-      --bg:#0b1629; --card:#0f2038; --text:#ebf1ff; --muted:#9fb3d1;
-      --border:rgba(255,255,255,.14); --field:#0c1b30;
-    }
+    body[data-theme="dark"]{ --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9aa4bf; --border:rgba(255,255,255,.15); --field:#0b1220 }
+    body[data-theme="mint"]{ --bg:#e6fff4; --card:#ffffff; --text:#0d1333; --muted:#4d6a61; --border:rgba(13,19,51,.12); --field:#f7fffb }
+    body[data-theme="blue"]{ --bg:#e7f3ff; --card:#ffffff; --text:#0f1a2b; --muted:#3c587a; --border:rgba(15,26,43,.12); --field:#f7fbff }
+    body[data-theme="navy"]{ --bg:#0b1629; --card:#0f2038; --text:#ebf1ff; --muted:#9fb3d1; --border:rgba(255,255,255,.14); --field:#0c1b30 }
 
-    /* ============================================================
-       02) BASE
-       ============================================================ */
+    /* ========= 02) BASE ========= */
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{
-      margin:0; background:var(--bg); color:var(--text);
-      font-family:system-ui, Segoe UI, Roboto, Arial, sans-serif;
-    }
+    body{ margin:0; background:var(--bg); color:var(--text); font-family:system-ui, Segoe UI, Roboto, Arial, sans-serif }
 
-    /* ============================================================
-       03) TOPBAR (Identidad + Clave + Tema)
-       ============================================================ */
+    /* ========= 03) TOPBAR ========= */
     header{position:sticky; top:0; z-index:20; padding:4px 0}
-    .toprow{
-      max-width:1680px; margin:0 auto; padding:0 16px;
-      display:flex; align-items:center; gap:12px; justify-content:flex-end;
-    }
+    .toprow{ max-width:1680px; margin:0 auto; padding:0 16px; display:flex; align-items:center; gap:12px; justify-content:flex-end }
     .chip{font-size:.9rem; color:var(--muted)}
-    .ctl, .btn-sm{
-      height:36px; padding:6px 10px;
-      border:1px solid var(--border); border-radius:10px;
-      background:var(--field); color:var(--text);
-    }
+    .ctl,.btn-sm{ height:36px; padding:6px 10px; border:1px solid var(--border); border-radius:10px; background:var(--field); color:var(--text) }
     .btn-sm{ background:var(--card); cursor:pointer }
     .btn-sm.accent{ background:var(--accent); border-color:var(--accent); color:#fff }
     #themePick{ width:180px }
 
-    /* ============================================================
-       04) LOGO (más grande y camuflado)
-       ============================================================ */
-    .logoWrap{
-      max-width:1680px; margin:0 auto; padding:0 16px 6px;
-      display:flex; justify-content:flex-start;
-    }
-    .logo{
-      height:clamp(84px, 10vh, 120px);
-      opacity:.92;
-      mix-blend-mode:multiply;
-      filter:saturate(.9) contrast(1.06) brightness(1.03);
-    }
+    /* ========= 04) LOGO ========= */
+    .logoWrap{ max-width:1680px; margin:0 auto; padding:0 16px 6px; display:flex; justify-content:flex-start }
+    .logo{ height:clamp(84px, 10vh, 120px); opacity:.92; mix-blend-mode:multiply; filter:saturate(.9) contrast(1.06) brightness(1.03) }
 
-    /* ============================================================
-       05) LAYOUT
-       ============================================================ */
-    :root{ --stickyTop: 58px }
-    main{
-      max-width:1680px; margin:4px auto 12px; padding:0 16px;
-      display:grid; gap:16px;
-    }
-    @media (min-width:1200px){
-      main{ grid-template-columns:640px 1fr }
-    }
-
-    .card{
-      background:var(--card); border:1px solid var(--border);
-      border-radius:16px; box-shadow:0 10px 24px rgba(13,19,51,.08);
-    }
-    .card h2{
-      position:sticky; top:0; z-index:2;
-      margin:0; padding:12px 16px;
-      background: linear-gradient(180deg,
-            color-mix(in srgb, var(--card) 98%, transparent) 0%,
-            color-mix(in srgb, var(--card) 92%, transparent) 100%);
-      border-bottom:1px solid var(--border);
-    }
+    /* ========= 05) LAYOUT ========= */
+    :root{ --stickyTop:58px }
+    main{ max-width:1680px; margin:4px auto 12px; padding:0 16px; display:grid; gap:16px }
+    @media(min-width:1200px){ main{ grid-template-columns:640px 1fr } }
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 24px rgba(13,19,51,.08) }
+    .card h2{ position:sticky; top:0; z-index:2; margin:0; padding:12px 16px; background:linear-gradient(180deg,color-mix(in srgb,var(--card) 98%,transparent), color-mix(in srgb,var(--card) 92%,transparent)); border-bottom:1px solid var(--border) }
     .card .body{ padding:16px }
+    /* Form de la izquierda siempre fijo */
+    #cardForm{ position:sticky; top:var(--stickyTop); align-self:start; max-height:calc(100vh - var(--stickyTop) - 8px); overflow:auto }
 
-    /* Form a la izquierda fijo */
-    #cardForm{
-      position:sticky; top:var(--stickyTop); align-self:start;
-      max-height:calc(100vh - var(--stickyTop) - 8px);
-      overflow:auto;
-    }
-
-    /* ============================================================
-       06) FORMULARIO
-       ============================================================ */
+    /* ========= 06) FORMULARIO ========= */
     form .grid{ display:grid; gap:12px }
     @media(min-width:560px){ form .grid{ grid-template-columns:1fr 1fr } }
-
     label{ font-size:.9rem; color:var(--muted); display:block; margin-bottom:6px }
-    input,select,textarea{
-      width:100%; padding:10px 12px; border:1px solid var(--border);
-      border-radius:12px; background:var(--field); color:var(--text);
-    }
+    input,select,textarea{ width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:var(--field); color:var(--text) }
     textarea{ min-height:96px }
-
     .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px }
-    .btn{
-      border:1px solid var(--border); background:var(--card); color:var(--text);
-      border-radius:12px; padding:10px 14px; font-weight:600; cursor:pointer;
-    }
-    .btn.accent{
-      background:var(--accent); color:#fff; border-color:var(--accent);
-      box-shadow:0 8px 16px color-mix(in srgb, var(--accent) 25%, transparent);
-    }
-    .btn.secondary{
-      background: color-mix(in srgb, var(--accent) 10%, var(--card));
-      border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
-    }
-    .btn.secondary:hover{ background: color-mix(in srgb, var(--accent) 14%, var(--card)) }
+    .btn{ border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:12px; padding:10px 14px; font-weight:600; cursor:pointer }
+    .btn.accent{ background:var(--accent); color:#fff; border-color:var(--accent); box-shadow:0 8px 16px color-mix(in srgb,var(--accent) 25%, transparent) }
+    .btn.secondary{ background:color-mix(in srgb,var(--accent) 10%, var(--card)); border-color:color-mix(in srgb,var(--accent) 30%, var(--border)) }
+    .btn.secondary:hover{ background:color-mix(in srgb,var(--accent) 14%, var(--card)) }
 
-    .mini{ background:var(--card); border:1px solid var(--border);
-           border-radius:14px; padding:12px; }
+    .mini{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px }
     .mini h3{ margin:0 0 8px 0; font-size:1rem }
     .mini ul{ margin:0 0 0 18px; padding:0 }
+    .mini .dot{ font-weight:700; margin-right:6px }
 
-    details.snippets summary{
-      cursor:pointer; user-select:none; color:var(--muted);
-      padding:8px 0; font-weight:600;
-    }
-    .snippet-btn{
-      border:1px dashed var(--border);
-      background:color-mix(in srgb, var(--accent) 8%, var(--card));
-      color:inherit; border-radius:10px; padding:8px 10px; cursor:pointer;
-    }
-    .snippet-btn:hover{ background:color-mix(in srgb, var(--accent) 12%, var(--card)) }
+    details.snippets summary{ cursor:pointer; user-select:none; color:var(--muted); padding:8px 0; font-weight:600 }
+    .snippet-btn{ border:1px dashed var(--border); background:color-mix(in srgb,var(--accent) 8%, var(--card)); border-radius:10px; padding:8px 10px; cursor:pointer }
+    .snippet-btn:hover{ background:color-mix(in srgb,var(--accent) 12%, var(--card)) }
 
-    /* ============================================================
-       07) KPIs y TABLA
-       ============================================================ */
+    /* ========= 07) KPIs y TABLA ========= */
     .toolbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:8px 0 12px }
     .toolbar select{ padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:var(--field) }
     .muted{ color:var(--muted); font-size:.9rem }
-
     .kpis{ display:grid; grid-template-columns:repeat(5,minmax(180px,1fr)); gap:12px; margin-bottom:8px }
     .kpi{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px }
     .kpi .label{ font-size:.88rem; color:var(--muted); white-space:nowrap }
     .kpi .val{ font-weight:800; font-size:1.25rem }
-
     .tablebox{ overflow:auto; max-height: calc(100vh - 320px) }
     table{ width:100%; border-collapse:separate; border-spacing:0 10px; color:var(--text) }
-    thead th{
-      position:sticky; top:0; z-index:1;
-      font-size:.86rem; color:var(--muted); text-align:left; padding:0 8px; white-space:nowrap;
-      background: color-mix(in srgb, var(--card) 92%, transparent);
-    }
+    thead th{ position:sticky; top:0; z-index:1; font-size:.86rem; color:var(--muted); text-align:left; padding:0 8px; white-space:nowrap; background: color-mix(in srgb, var(--card) 92%, transparent) }
     tbody tr{ background:var(--card); border:1px solid var(--border) }
     tbody td{ padding:10px 8px; vertical-align:top }
-    tbody tr:hover{ box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent) inset; }
-
+    tbody tr:hover{ box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 18%, transparent) inset }
     .badge{ padding:4px 8px; border:1px solid var(--border); border-radius:999px; font-size:.78rem; white-space:nowrap }
     .prio-alta{ background:#fff5f5 } .prio-media{ background:#fff4e6 } .prio-baja{ background:#ebfbee }
     body[data-theme="dark"] .prio-alta{ background:#402b2b } body[data-theme="dark"] .prio-media{ background:#3e2f18 } body[data-theme="dark"] .prio-baja{ background:#1b3b2a }
     .e-abierto{ color:#e03131 } .e-proceso{ color:#f08c00 } .e-cerrado{ color:#2b8a3e } .e-cancelado{ color:#6b7280 }
 
+    /* ========= 08) AUTOCOMPLETE ========= */
     .ac{ position:relative }
-    .ac-list{
-      position:absolute; left:0; right:0; top:100%;
-      background:var(--card); border:1px solid var(--border);
-      border-radius:12px; box-shadow:0 10px 24px rgba(13,19,51,.08);
-      margin-top:6px; max-height:220px; overflow:auto; padding:6px; z-index:5;
-    }
+    .ac-list{ position:absolute; left:0; right:0; top:100%; background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 10px 24px rgba(13,19,51,.08); margin-top:6px; max-height:220px; overflow:auto; padding:6px; z-index:5 }
     .ac-list[hidden]{ display:none }
     .ac-list li{ list-style:none; padding:8px 12px; cursor:pointer; border-radius:10px }
-    .ac-list li[aria-selected="true"], .ac-list li:hover{ background:color-mix(in srgb, var(--accent) 10%, transparent) }
+    .ac-list li[aria-selected="true"], .ac-list li:hover{ background:color-mix(in srgb,var(--accent) 10%, transparent) }
 
     .notice{ display:none; margin-top:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px }
     footer{ max-width:1680px; margin:6px auto 28px; padding:0 16px; color:var(--muted); font-size:.9rem }
+
+    /* ========= 09) MODAL (dialog) ========= */
+    dialog.modal{
+      width:min(560px, 92vw);
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:var(--card);
+      color:var(--text);
+      padding:0;
+    }
+    dialog::backdrop{ background:rgba(0,0,0,.35); backdrop-filter:saturate(110%) blur(3px) }
+    .modal header{ padding:14px 16px; border-bottom:1px solid var(--border) }
+    .modal .content{ padding:16px }
+    .modal footer{ padding:12px 16px; display:flex; gap:10px; justify-content:flex-end }
+    .modal textarea{ min-height:120px }
   </style>
 </head>
 <body data-theme="light">
-  <!-- ====== Barra superior: identidad + clave + selector de tema ====== -->
+  <!-- ====== Barra superior ====== -->
   <header>
     <div class="toprow">
       <small id="whoami" class="chip">Identidad: (no detectada)</small>
-
       <input id="keyInput" class="ctl" placeholder="Clave (opcional)" style="width:160px">
       <button id="saveKey" class="btn-sm accent">Guardar</button>
       <button id="clearKey" class="btn-sm" title="Olvidar">✕</button>
 
-      <!-- Tema base (data-theme) + color de acento (HEX) -->
+      <!-- Selector de tema base + acento por HEX -->
       <select id="themePick" class="ctl" title="Tema">
         <optgroup label="Tema base">
           <option value="Claro"        data-theme="light">Tema: Claro (verde)</option>
@@ -227,15 +143,12 @@
 
   <!-- ====== Logo ====== -->
   <div class="logoWrap">
-    <img class="logo"
-         src="Imagen/logo-empresas.jpg"
-         alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango"
-         loading="lazy"
-         onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';">
+    <img class="logo" src="Imagen/logo-empresas.jpg" alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango"
+         loading="lazy" onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';">
   </div>
 
   <main>
-    <!-- ===================== REPORTE USUARIO (fijo) ===================== -->
+    <!-- ===================== REPORTE USUARIO ===================== -->
     <section id="cardForm" class="card">
       <h2>REPORTE USUARIO</h2>
       <div class="body">
@@ -246,14 +159,12 @@
               <select id="analista" required></select>
             </div>
 
-            <!-- (Correo analista: se calcula por catálogo, no se muestra) -->
-
             <div>
               <label for="categoria">Categoría *</label>
               <select id="categoria" required>
                 <option value="">Selecciona…</option>
                 <option>Red</option><option>Hardware</option><option>Software</option><option>Asesoría</option><option>Préstamo de activo</option>
-                <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Otro</option>
+                <option>Correo</option><option>Impresión</option><option>Mantenimiento</option><option>Servidores</option><option>Otro</option>
               </select>
             </div>
 
@@ -261,6 +172,7 @@
               <label for="falla">Servicio prestado *</label>
               <select id="falla" required>
                 <option value="">Selecciona…</option>
+                <!-- … (tu catálogo completo) … -->
                 <option>Soporte a equipos informáticos</option>
                 <option>Configuración equipo</option>
                 <option>Desbloquear cuenta de red</option>
@@ -322,24 +234,19 @@
               </select>
             </div>
 
-            <!-- ==========================================================
-                 NUEVO BLOQUE: ¿Tiene requerimiento? (reemplaza "Adjunto")
-                 - reqTiene: Sí/No
-                 - reqNumero: número cuando es Sí (obligatorio)
-                 Se guardará en la columna "Adjunto" como:
-                    "REQ:<numero>"  ó  "" (si NO)
-               ========================================================== -->
+            <!-- NUEVO: Requerimiento (reemplaza 'Adjunto') -->
             <div>
-              <label for="reqTiene">¿Tiene requerimiento?</label>
-              <select id="reqTiene">
-                <option value="no" selected>No</option>
-                <option value="si">Sí</option>
-              </select>
-            </div>
-            <div>
-              <label for="reqNumero">Número de requerimiento</label>
-              <input id="reqNumero" inputmode="numeric" pattern="[0-9]*" placeholder="Ej: 123456" disabled />
-              <small class="help">Se habilita solo si seleccionas “Sí”.</small>
+              <label>¿Tiene requerimiento?</label>
+              <div class="row" style="margin-top:0">
+                <label style="display:flex;align-items:center;gap:6px">
+                  <input type="radio" name="hasReq" value="no" id="reqNo" checked> No
+                </label>
+                <label style="display:flex;align-items:center;gap:6px">
+                  <input type="radio" name="hasReq" value="si" id="reqSi"> Sí
+                </label>
+                <input id="reqNumber" class="ctl" placeholder="Número de requerimiento" style="flex:1;min-width:180px;display:none">
+              </div>
+              <small class="help">Si eliges “Sí”, debes escribir el número antes de guardar.</small>
             </div>
           </div>
 
@@ -347,18 +254,17 @@
             <label for="descripcion">Descripción (opcional)</label>
             <textarea id="descripcion" placeholder="Describe el problema reportado…"></textarea>
 
-            <!-- PLANTILLAS -->
+            <!-- Plantillas de descripción -->
             <details class="snippets" open>
               <summary>► Plantillas de descripción</summary>
               <div class="row" style="margin-top:8px">
-                <button type="button" class="snippet-btn" data-snippet="Incidente de acceso: Usuario se comunica  e informa tener problemas de acceso al servidor xxxx.">Incidente de acceso</button>
-                <button type="button" class="snippet-btn" data-snippet="Usuario se comunica  e informa tener problemas de impresión">Problemas de impresión</button>
-                <button type="button" class="snippet-btn" data-snippet="Instalación de software: {NombreSW} versión {v}. Se valida licencia, compatibilidad y requisitos.">Instalación de software</button>
-                <button type="button" class="snippet-btn" data-snippet="Solicitud de equipo: {TipoEquipo}. Configuración estándar, usuario {Nombre}, ubicación {Sede}.">Solicitud de equipo</button>
-                <button type="button" class="snippet-btn" data-snippet="Soporte remoto: conexión vía {Herramienta}. Se revisan registros, se aplican pruebas y se documenta resultado.">Soporte remoto</button>
-                <button type="button" class="snippet-btn" data-snippet="Mantenimiento preventivo: verificación de antivirus, limpieza de temporales, actualizaciones y estado de disco.">Mantenimiento preventivo</button>
-                <button type="button" class="snippet-btn" data-snippet="Usuario reporta tener la cuenta de red bloqueada, Se desbloquea la cuenta de red indicada, se hacen pruebas y estas son satisfactorías.">Desbloquear cuenta de red</button>
-                <button type="button" class="snippet-btn" data-snippet="Usuario informa tener problemas con la APP XXX">Problemas con aplicaciones</button>
+                <button type="button" class="snippet-btn" data-snippet="Usuario se comunica e informa tener problemas de acceso al servidor/equipo/recurso compartido con nombre xxxx.">Soporte informático</button>
+                <button type="button" class="snippet-btn" data-snippet="El usuario informa no puede imprimir o que la impresora presenta fallos (atasco de papel, sin conexión, sin tinta, o no aparece en red).">Problemas de impresión</button>
+                <button type="button" class="snippet-btn" data-snippet="Se requiere realizar la instalación/desinstalación del programa xxx en el equipo con serial xxx y nombre xxx.">Instalación/desinstalación de software</button>
+                <button type="button" class="snippet-btn" data-snippet="Gestionar permisos en servidores/VPN.">Permisos servidores/VPN</button>
+                <button type="button" class="snippet-btn" data-snippet="Gestionar creación de cuenta de red/correo o eliminación.">Crear cuenta de red/correo/eliminar</button>
+                <button type="button" class="snippet-btn" data-snippet="Usuario reporta tener la cuenta de red bloqueada. Se desbloquea la cuenta de red indicada, se hacen pruebas y estas son satisfactorias.">Desbloquear cuenta de red</button>
+                <button type="button" class="snippet-btn" data-snippet="Usuario informa tener problemas con la APP XXX.">Problemas con aplicaciones</button>
               </div>
             </details>
           </div>
@@ -367,20 +273,17 @@
           <div class="row">
             <button class="btn accent" type="submit">➕ Guardar reporte</button>
             <button class="btn secondary" type="reset">↺ Limpiar</button>
-            <input id="quickSearch" class="ctl" style="flex:1; min-width:220px"
-                   placeholder="Buscar tickets (ID, categoría, falla, usuario)">
+            <input id="quickSearch" class="ctl" style="flex:1; min-width:220px" placeholder="Buscar tickets (ID, categoría, falla, usuario)">
           </div>
 
-          <!-- Guías de apoyo -->
           <div class="row">
             <div class="mini" style="flex:1 1 280px">
               <h3>Checklist antes de crear</h3>
               <ul>
-                <li>Confirmar datos del usuario y equipo.</li>
-                <li>Clasificar <em>Categoría</em> y <em>Servicio prestado</em>.</li>
-                <li>Adjuntar evidencia (si aplica).</li>
-                <li>Describir impacto (usuarios/áreas afectadas).</li>
-                <li>Estimar prioridad (Alta/Media/Baja) según impacto.</li>
+                <li><span class="dot">•</span>Confirmar datos del usuario y equipo.</li>
+                <li><span class="dot">•</span>Clasificar <em>Categoría</em> y <em>Servicio prestado</em>.</li>
+                <li><span class="dot">•</span>Describir impacto (usuarios/áreas afectadas).</li>
+                <li><span class="dot">•</span>Estimar prioridad (Alta/Media/Baja) según impacto.</li>
               </ul>
             </div>
             <div class="mini" style="flex:1 1 260px">
@@ -400,29 +303,13 @@
       <div class="body">
         <div class="toolbar">
           <span class="muted">Vista:</span>
-          <select id="viewSelect">
-            <option value="mis">Asignados a mí</option>
-            <option value="todos">Todos (admin)</option>
-          </select>
+          <select id="viewSelect"><option value="mis">Asignados a mí</option><option value="todos">Todos (admin)</option></select>
 
           <span class="muted">Analista:</span>
-          <select id="analystSelect">
-            <option value="">Todos</option>
-            <option>Jose Salas</option>
-            <option>Sebastián Cataño</option>
-            <option>Sebastián Posada</option>
-            <option>Pablo Calle</option>
-          </select>
+          <select id="analystSelect"><option value="">Todos</option><option>Jose Salas</option><option>Sebastián Cataño</option><option>Sebastián Posada</option><option>Pablo Calle</option></select>
 
           <span class="muted">Estado:</span>
-          <select id="statusSelect">
-            <option value="">Todos</option>
-            <option value="pendientes">Pendientes</option>
-            <option value="Abierto">Abierto</option>
-            <option value="En Proceso">En Proceso</option>
-            <option value="Cerrado">Cerrado</option>
-            <option value="Cancelado">Cancelado</option>
-          </select>
+          <select id="statusSelect"><option value="">Todos</option><option value="pendientes">Pendientes</option><option value="Abierto">Abierto</option><option value="En Proceso">En Proceso</option><option value="Cerrado">Cerrado</option><option value="Cancelado">Cancelado</option></select>
 
           <span class="muted">Mes:</span>
           <select id="monthSelect"><option value="">Todos</option></select>
@@ -453,31 +340,40 @@
     </section>
   </main>
 
+  <!-- ========= MODAL DE ESTADO (bonito) ========= -->
+  <dialog id="statusModal" class="modal">
+    <header><h3 id="modalTitle" style="margin:0">Actualizar estado</h3></header>
+    <div class="content">
+      <label id="modalLabel" for="modalText" style="display:block; color:var(--muted); margin-bottom:6px">Detalle</label>
+      <textarea id="modalText" class="ctl" style="width:100%"></textarea>
+    </div>
+    <footer>
+      <button id="modalCancel" class="btn">Cancelar</button>
+      <button id="modalOk" class="btn accent">Aceptar</button>
+    </footer>
+  </dialog>
+
   <footer>⚡ App HTML sincroniza con Google Sheets. Eliminación deshabilitada; usar estado “Cancelado”.</footer>
 
   <script>
   (function(){
     'use strict';
 
-    /* ==================== ENDPOINT & CONFIG ==================== */
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxSQBN0CWCi-kE1DMZmYjyOx336yuwP3bKj_wVN7ZITq-mMApTFMlMVsXfOgnvhVP-mvA/exec';
+    /* ==================== CONFIG ==================== */
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw_U7ZLqFxQ8vZ6LRKxzWpvMOCLdJfzEoUBIIge5kz-6uiDGy5uHGMigDMeX5bSkc8X6g/exec'; // ← reemplaza por tu URL de Apps Script
     const AUTO_REFRESH_MS = 30000;
 
-    /* Catálogos */
     const ANALISTAS = [
       { nombre:'Jose Salas',        email:'jsalas@sedic.com.co' },
       { nombre:'Sebastián Cataño',  email:'scatano@sedic.com.co' },
       { nombre:'Sebastián Posada',  email:'sposada@sedic.com.co' },
       { nombre:'Pablo Calle',       email:'pablocalle@ingetec.com.co' }
     ];
-    const USUARIOS = [
-      'Marcela Pareja','Juan Carlos Betancur','Diego Guerrero','Heidy Zambrano',
-      'Jairo Pelaez','Oscar Álvarez','Laura Mejía','Carlos Ramírez','Diana Pérez',
-      'Lina Areiza','María López','Andrés Gómez','Sofía Ríos','Mario Velez','Aide',
-      'Verónica Zapata','Jhon Madrid','Juan Carlos Betancur'
-    ];
 
-    /* DOM */
+    /* === catálogo de usuarios (recortado por espacio) === */
+    const USUARIOS = ['Marcela Pareja','Jhon Madrid','Juan Carlos Betancur','Heidy Zambrano','Andrés Gómez','Carlos Ramírez','Lina Areiza','Diana Pérez'];
+
+    /* ==================== DOM ==================== */
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
     const tbody = $('#tbody'),
@@ -487,11 +383,12 @@
           quickSearch = $('#quickSearch'), themePick = $('#themePick');
     const form = $('#formTicket'), syncBadge = $('#syncBadge'), who = $('#whoami');
 
-    /* NUEVOS CAMPOS (requerimiento) */
-    const reqTiene   = $('#reqTiene');
-    const reqNumero  = $('#reqNumero');
+    /* Modal (bonito) */
+    const modal = $('#statusModal'), modalTitle = $('#modalTitle'),
+          modalLabel = $('#modalLabel'), modalText = $('#modalText'),
+          modalOk = $('#modalOk'), modalCancel = $('#modalCancel');
 
-    /* Estado local */
+    /* ==================== STATE ==================== */
     const localKey = 'tickets_fallas_v10';
     const loadLocal = () => { try{ return JSON.parse(localStorage.getItem(localKey))||[] } catch { return [] } };
     const saveLocal = v => localStorage.setItem(localKey, JSON.stringify(v));
@@ -502,7 +399,7 @@
     let AUTH_KEY = '';
     let searchText = '';
 
-    /* ===== TEMA: base + acento ===== */
+    /* ==================== TEMA ==================== */
     function applyBaseTheme(theme){ document.body.setAttribute('data-theme', theme); localStorage.setItem('ui_theme', theme); }
     function applyAccent(hex){ document.documentElement.style.setProperty('--accent', hex); localStorage.setItem('ui_accent_hex', hex); }
     (function initTheme(){
@@ -527,7 +424,7 @@
       }
     }
 
-    /* ===== Clave (modelo B, opcional) ===== */
+    /* ==================== CLAVE OPCIONAL ==================== */
     const keyInput = $('#keyInput'), saveKeyBtn = $('#saveKey'), clearKeyBtn = $('#clearKey');
     (function initKey(){
       const urlKey = new URLSearchParams(location.search).get('key') || '';
@@ -539,13 +436,13 @@
     saveKeyBtn.addEventListener('click', ()=>{ AUTH_KEY = keyInput.value.trim(); localStorage.setItem('auth_key', AUTH_KEY); fetchWhoAmI().then(fetchRemote); });
     clearKeyBtn.addEventListener('click', ()=>{ AUTH_KEY=''; keyInput.value=''; localStorage.removeItem('auth_key'); fetchWhoAmI().then(fetchRemote); });
 
-    /* ===== Analistas ===== */
+    /* ==================== ANALISTAS ==================== */
     (function initAnalistas(){
       const sel = $('#analista');
       sel.innerHTML = '<option value="">Selecciona…</option>' + ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
     })();
 
-    /* ===== Autocomplete usuarios ===== */
+    /* ==================== AUTOCOMPLETE USUARIOS ==================== */
     const inputUsuario = $('#usuario'); const acList = $('#acList');
     const norm = (s)=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
     function filtraUsuarios(q){ const n=norm(q); if(!n) return []; return USUARIOS.filter(u=>norm(u).includes(n)).slice(0,8); }
@@ -554,7 +451,7 @@
     inputUsuario.addEventListener('focus', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
     document.addEventListener('click', (e)=>{ if (e.target.closest('#acList li')){ inputUsuario.value = e.target.textContent; acList.hidden = true; } else if(!e.target.closest('.ac')) { acList.hidden = true; } });
 
-    /* ===== Plantillas de descripción ===== */
+    /* ===== Plantillas: insertar en cursor ===== */
     document.addEventListener('click', (e)=>{
       const btn = e.target.closest('.snippet-btn');
       if (!btn) return;
@@ -565,14 +462,12 @@
       area.focus(); area.selectionStart = area.selectionEnd = s + txt.length;
     });
 
-    /* ===== Requerimiento: UI enable/disable ===== */
-    reqTiene.addEventListener('change', ()=>{
-      const si = reqTiene.value === 'si';
-      reqNumero.disabled = !si;
-      if (!si) reqNumero.value = '';
-    });
+    /* ==================== REQUERIMIENTO UI ==================== */
+    const reqSi = $('#reqSi'), reqNo = $('#reqNo'), reqNumber = $('#reqNumber');
+    function toggleReq(){ reqNumber.style.display = reqSi.checked ? '' : 'none'; }
+    reqSi.addEventListener('change', toggleReq); reqNo.addEventListener('change', toggleReq);
 
-    /* ===== Barra de filtros ===== */
+    /* ==================== FILTROS ==================== */
     (function fillMonths(){
       const now = new Date(); const items = ['<option value="">Todos</option>'];
       for (let i=0;i<12;i++){
@@ -593,10 +488,10 @@
     function persistView(){ localStorage.setItem('tickets_view', JSON.stringify({ view:viewSelect.value, analyst:analystSelect.value, status:statusSelect.value, month:monthSelect.value })); }
     [viewSelect,analystSelect,statusSelect,monthSelect].forEach(el => el.addEventListener('change', ()=>{ persistView(); fetchRemote(); }));
 
-    /* ===== Buscador rápido ===== */
+    /* ==================== BUSCADOR RÁPIDO ==================== */
     quickSearch.addEventListener('input', ()=>{ searchText = quickSearch.value; render(); });
 
-    /* ===== Helpers ===== */
+    /* ==================== HELPERS ==================== */
     const show = (msg, kind='ok')=>{
       notice.style.display='block'; notice.textContent=msg;
       notice.style.borderColor=(kind==='ok')?'#b2f2bb':'#ffc9c9';
@@ -609,10 +504,7 @@
 
     function computeCounters(rows){ const c = { total:rows.length, abiertos:0, en_proceso:0, cerrados:0, cancelados:0 };
       rows.forEach(t=>{ const s=String(t.estado||'').toLowerCase();
-        if(s==='abierto') c.abiertos++;
-        else if(s==='en proceso') c.en_proceso++;
-        else if(s==='cerrado') c.cerrados++;
-        else if(s==='cancelado') c.cancelados++;
+        if(s==='abierto') c.abiertos++; else if(s==='en proceso') c.en_proceso++; else if(s==='cerrado') c.cerrados++; else if(s==='cancelado') c.cancelados++;
       }); return c;
     }
     function setCounters(c){ kpiTotal.textContent=c.total; kpiAb.textContent=c.abiertos; kpiPr.textContent=c.en_proceso; kpiCe.textContent=c.cerrados; kpiCa.textContent=c.cancelados; }
@@ -647,10 +539,14 @@
       rows.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
       return rows;
     }
+
     function render(countersFromAPI){
       const rows = currentRows();
-      if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI); else setCounters(computeCounters(rows));
+      if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI);
+      else setCounters(computeCounters(rows));
+
       syncBadge.innerHTML = `Fuente: <strong>${lastSource}</strong>`;
+
       tbody.innerHTML = rows.length ? rows.map(t=>`
         <tr>
           <td>${t.id||''}</td>
@@ -677,7 +573,7 @@
         </tr>`).join('') : `<tr><td colspan="9" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
-    /* ===== WHOAMI + LIST ===== */
+    /* ==================== WHOAMI + LIST ==================== */
     async function fetchWhoAmI(){
       try{
         const params = new URLSearchParams({ action:'whoami' });
@@ -712,7 +608,7 @@
       }catch(err){ ticketsRemote = null; render(); }
     }
 
-    /* ===== POST (create/update) ===== */
+    /* ==================== POST ==================== */
     async function postJSON(payload){
       if (AUTH_KEY) payload.key = AUTH_KEY;
       const res = await fetch(WEB_APP_URL, { method:'POST',
@@ -722,17 +618,9 @@
       try { return await res.json(); } catch { return { ok:false, error:'Respuesta no-JSON' }; }
     }
 
-    /* ===== Crear ticket ===== */
+    /* ==================== CREAR TICKET ==================== */
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
-
-      // Validación "requerimiento": si es "SÍ", el número es obligatorio
-      if (reqTiene.value === 'si' && !reqNumero.value.trim()){
-        show('Ingresa el número de requerimiento o selecciona "No".','err');
-        reqNumero.focus();
-        return;
-      }
-
       const analista   = $('#analista').value;
       const categoria  = $('#categoria').value;
       const falla      = $('#falla').value;
@@ -740,92 +628,114 @@
       const prioridad  = $('#prioridad').value;
       const descripcion= $('#descripcion').value.trim();
 
+      // Validación de “Requerimiento”
+      const tieneReq = reqSi.checked;
+      const reqNum   = reqNumber.value.trim();
+      if (tieneReq && !reqNum){ show('Escribe el número de requerimiento','err'); reqNumber.focus(); return; }
+
       if(!analista || !categoria || !falla || !usuario || !prioridad){
         show('Completa los campos obligatorios','err'); return;
       }
 
-      // Correo del analista (catálogo)
       const correoAnalista = (ANALISTAS.find(a=>a.nombre===analista)?.email) || '';
-
-      // Reutilizamos la columna "Adjunto" para guardar el requerimiento:
-      // - Si hay número: "REQ:<número>"
-      // - Si no: cadena vacía
-      const adjuntoNombre = (reqTiene.value === 'si' && reqNumero.value.trim())
-        ? `REQ:${reqNumero.value.trim()}`
-        : '';
-
       const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
       const nowISO = new Date().toISOString();
-      const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad,
-                  descripcion, adjuntoNombre, estado:'Abierto', fecha: nowISO };
 
+      // Guardamos en local (sin adjunto). Campo Requerimiento: "REQ-xxxxx" o ''.
+      const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion,
+                  requerimiento: tieneReq ? `REQ-${reqNum}` : '', estado:'Abierto', fecha: nowISO };
       ticketsLocal.unshift(t); saveLocal(ticketsLocal); render(); show('Guardado local. Enviando a Sheets…');
 
+      // Enviar a Sheets (el backend debe tener columna "Requerimiento")
       const d = await postJSON({
-        action:'create',
-        id:t.id, analista, correoAnalista, categoria, falla, usuario,
-        prioridad, descripcion, estado:t.estado, fechaISO: nowISO,
-        adjuntoNombre
+        action:'create', id:t.id, analista, correoAnalista, categoria, falla, usuario, prioridad,
+        descripcion, estado:t.estado, fechaISO: nowISO, requerimiento: t.requerimiento
       });
       if (!d || !d.ok){ show('No se pudo crear en Sheets', 'err'); } else { fetchRemote(); }
-      form.reset();
-      // Reiniciar controles de requerimiento
-      reqTiene.value = 'no';
-      reqNumero.value = '';
-      reqNumero.disabled = true;
+      form.reset(); toggleReq();
     });
 
-    /* ===== Cambios estado / prioridad ===== */
+    /* ==================== MODAL BONITO ==================== */
+    function askModal({title,label,placeholder='', required=false}){
+      return new Promise(resolve=>{
+        modalTitle.textContent = title;
+        modalLabel.textContent = label;
+        modalText.value = '';
+        modalText.placeholder = placeholder || '';
+        modalText.required = required;
+        const onOk = ()=>{ if(required && !modalText.value.trim()){ modalText.focus(); return; } cleanup(); modal.close(); resolve({ok:true, text: modalText.value.trim()}); };
+        const onCancel = ()=>{ cleanup(); modal.close(); resolve({ok:false}); };
+        function cleanup(){ modalOk.removeEventListener('click', onOk); modalCancel.removeEventListener('click', onCancel); modal.removeEventListener('cancel', onCancel); }
+        modalOk.addEventListener('click', onOk);
+        modalCancel.addEventListener('click', onCancel);
+        modal.addEventListener('cancel', onCancel);
+        modal.showModal();
+        setTimeout(()=>modalText.focus(), 50);
+      });
+    }
+
+    /* Guardar valor previo del select para revertir si se cancela */
+    document.addEventListener('focusin',(e)=>{
+      const s = e.target.closest('.estado-select');
+      if (s) s.dataset.prev = s.value;
+    });
+
+    /* ==================== CAMBIOS ESTADO / PRIORIDAD ==================== */
     document.addEventListener('change', async (e)=>{
       const selE = e.target.closest('.estado-select');
       const selP = e.target.closest('.prio-select');
+
       if (selE){
-        const id = selE.dataset.id; const status = selE.value;
-        let reason = '';
-        if (status === 'Cancelado') {
-          // Motivo requerido solo si ACEPTA
-          const val = prompt('Motivo de cancelación:');
-          if (val === null) { // Presionó Cancelar => revertir selección visual
-            e.target.value = 'Abierto';
-            return;
-          }
-          reason = val.trim();
-        }
-        // Si es "Cerrado", abrimos modal para SOLUCIÓN (implementación previa tuya)
-        if (status === 'Cerrado') {
-          const solucion = prompt('Describe la solución brindada al usuario:');
-          if (solucion === null) { e.target.value = 'Abierto'; return; }
-          // Se envía al backend dentro de update_status (ya preparado)
-          const d = await postJSON({ action:'update_status', id, status, solution: solucion });
-          if (!(d && d.ok)) { show('No se pudo actualizar el estado', 'err'); return; }
-          // refresco local rápido
+        const id = selE.dataset.id;
+        const newStatus = selE.value;
+        const prev = selE.dataset.prev || 'Abierto';
+
+        if (newStatus === 'Cancelado'){
+          const r = await askModal({title:'Cancelar ticket', label:'Motivo de cancelación', placeholder:'Describe el motivo…', required:true});
+          if (!r.ok){ selE.value = prev; return; }
           const tL = ticketsLocal.find(x=>x.id===id);
-          if (tL){ tL.estado='Cerrado'; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
-          render(); fetchRemote(); return;
+          if (tL){ tL.estado=newStatus; tL.motivo=r.text; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
+          render();
+          const d = await postJSON({ action:'update_status', id, status:newStatus, reason:r.text });
+          if (d && d.ok) fetchRemote();
+          return;
         }
 
+        if (newStatus === 'Cerrado'){
+          const r = await askModal({title:'Cerrar ticket', label:'Solución aplicada', placeholder:'Describe la solución brindada…', required:true});
+          if (!r.ok){ selE.value = prev; return; }
+          const tL = ticketsLocal.find(x=>x.id===id);
+          if (tL){ tL.estado=newStatus; tL.solucion=r.text; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
+          render();
+          const d = await postJSON({ action:'update_status', id, status:newStatus, solution:r.text });
+          if (d && d.ok) fetchRemote();
+          return;
+        }
+
+        // Otros estados
         const tL = ticketsLocal.find(x=>x.id===id);
-        if (tL){ tL.estado=status; tL.fecha=new Date().toISOString(); if(status==='Cancelado') tL.motivo=reason; saveLocal(ticketsLocal); }
+        if (tL){ tL.estado=newStatus; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
         render();
-        const d = await postJSON({ action:'update_status', id, status, reason });
-        if (d && d.ok) fetchRemote();
+        const d2 = await postJSON({ action:'update_status', id, status:newStatus });
+        if (d2 && d2.ok) fetchRemote();
       }
+
       if (selP){
         const id = selP.dataset.id; const pr = selP.value;
         const tL = ticketsLocal.find(x=>x.id===id);
         if (tL){ tL.prioridad=pr; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
         render();
-        const d2 = await postJSON({ action:'update_priority', id, prioridad: pr });
-        if (d2 && d2.ok) fetchRemote();
+        const d3 = await postJSON({ action:'update_priority', id, prioridad: pr });
+        if (d3 && d3.ok) fetchRemote();
       }
     });
 
-    /* ===== Init ===== */
+    /* ==================== INIT ==================== */
     async function init(){
       await fetchWhoAmI();
       if (identity && !analystSelect.value) analystSelect.value = identity.name;
-      render();               // local
-      fetchRemote();          // remoto
+      render();
+      fetchRemote();
       setInterval(()=>{ if(!document.hidden) fetchRemote(); }, AUTO_REFRESH_MS);
     }
     init();
@@ -833,4 +743,3 @@
   </script>
 </body>
 </html>
-
