@@ -70,7 +70,7 @@
     .toolbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:8px 0 12px }
     .toolbar select{ padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:var(--field) }
     .muted{ color:var(--muted); font-size:.9rem }
-    .kpis{ display:grid; grid-template-columns:repeat(5,minmax(180px,1fr)); gap:12px; margin-bottom:8px }
+    .kpis{ display:grid; grid-template-columns:repeat(6,minmax(160px,1fr)); gap:12px; margin-bottom:8px }
     .kpi{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px }
     .kpi .label{ font-size:.88rem; color:var(--muted); white-space:nowrap }
     .kpi .val{ font-weight:800; font-size:1.25rem }
@@ -109,6 +109,7 @@
     .modal .content{ padding:16px }
     .modal footer{ padding:12px 16px; display:flex; gap:10px; justify-content:flex-end }
     .modal textarea{ min-height:120px }
+    .desc-peek{ cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
   </style>
 </head>
 <body data-theme="light">
@@ -172,7 +173,7 @@
               <label for="falla">Servicio prestado *</label>
               <select id="falla" required>
                 <option value="">Selecciona…</option>
-                <!-- … (tu catálogo completo) … -->
+                <!-- (tu catálogo completo) -->
                 <option>Soporte a equipos informáticos</option>
                 <option>Configuración equipo</option>
                 <option>Desbloquear cuenta de red</option>
@@ -234,7 +235,7 @@
               </select>
             </div>
 
-            <!-- NUEVO: Requerimiento (reemplaza 'Adjunto') -->
+            <!-- NUEVO: Reemplaza “Adjunto” por requerimiento -->
             <div>
               <label>¿Tiene requerimiento?</label>
               <div class="row" style="margin-top:0">
@@ -323,6 +324,7 @@
           <div class="kpi"><div class="label">En proceso</div><div class="val" id="kpiPr">0</div></div>
           <div class="kpi"><div class="label">Cerrados</div><div class="val" id="kpiCe">0</div></div>
           <div class="kpi"><div class="label">Cancelados</div><div class="val" id="kpiCa">0</div></div>
+          <div class="kpi"><div class="label">Con requerimiento</div><div class="val" id="kpiRq">0</div></div>
         </div>
 
         <div class="tablebox">
@@ -330,6 +332,7 @@
             <thead>
               <tr>
                 <th>Ticket</th><th>Analista</th><th>Categoría</th><th>Falla</th><th>Usuario</th>
+                <th>Descripción</th><!-- NUEVO: vista truncada + clic -->
                 <th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th>
               </tr>
             </thead>
@@ -340,7 +343,7 @@
     </section>
   </main>
 
-  <!-- ========= MODAL DE ESTADO (bonito) ========= -->
+  <!-- ========= MODAL DE ESTADO / TEXTO (reutilizable) ========= -->
   <dialog id="statusModal" class="modal">
     <header><h3 id="modalTitle" style="margin:0">Actualizar estado</h3></header>
     <div class="content">
@@ -360,7 +363,7 @@
     'use strict';
 
     /* ==================== CONFIG ==================== */
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw_U7ZLqFxQ8vZ6LRKxzWpvMOCLdJfzEoUBIIge5kz-6uiDGy5uHGMigDMeX5bSkc8X6g/exec'; // ← reemplaza por tu URL de Apps Script
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby9RGDYNE_T1c6rRJjVNNMlIzZpZlD8QH115_bLpJPJn0lQhBL-HrcGNbVwGlOEVeLCVA/exec'; // ← Pega la URL de despliegue del script
     const AUTO_REFRESH_MS = 30000;
 
     const ANALISTAS = [
@@ -370,26 +373,26 @@
       { nombre:'Pablo Calle',       email:'pablocalle@ingetec.com.co' }
     ];
 
-    /* === catálogo de usuarios (recortado por espacio) === */
-    const USUARIOS = ['Marcela Pareja','Jhon Madrid','Juan Carlos Betancur','Heidy Zambrano','Andrés Gómez','Carlos Ramírez','Lina Areiza','Diana Pérez'];
+    /* USUARIOS: se llenará desde Sheets vía endpoint /contacts; este arreglo es fallback */
+    let USUARIOS = ['Marcela Pareja','Jhon Madrid','Juan Carlos Betancur','Heidy Zambrano','Andrés Gómez','Carlos Ramírez','Lina Areiza','Diana Pérez'];
 
     /* ==================== DOM ==================== */
     const $ = s => document.querySelector(s);
     const notice = $('#notice');
     const tbody = $('#tbody'),
-          kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe'), kpiCa=$('#kpiCa');
+          kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe'), kpiCa=$('#kpiCa'), kpiRq=$('#kpiRq');
     const viewSelect = $('#viewSelect'), analystSelect = $('#analystSelect'),
           statusSelect = $('#statusSelect'), monthSelect  = $('#monthSelect'),
           quickSearch = $('#quickSearch'), themePick = $('#themePick');
     const form = $('#formTicket'), syncBadge = $('#syncBadge'), who = $('#whoami');
 
-    /* Modal (bonito) */
+    /* Modal (reutilizable para estados y ver descripción) */
     const modal = $('#statusModal'), modalTitle = $('#modalTitle'),
           modalLabel = $('#modalLabel'), modalText = $('#modalText'),
           modalOk = $('#modalOk'), modalCancel = $('#modalCancel');
 
     /* ==================== STATE ==================== */
-    const localKey = 'tickets_fallas_v10';
+    const localKey = 'tickets_fallas_v11';
     const loadLocal = () => { try{ return JSON.parse(localStorage.getItem(localKey))||[] } catch { return [] } };
     const saveLocal = v => localStorage.setItem(localKey, JSON.stringify(v));
     let ticketsLocal = loadLocal();
@@ -498,16 +501,21 @@
       setTimeout(()=> notice.style.display='none', 2200);
     };
     const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
+    const trunc = (s,len=30)=>{ const t=String(s||''); return t.length>len ? t.slice(0,len)+'…' : t; };
     const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p||''}</span>`;
     const tagE  = e => { const s = String(e||''); const cls = (s==='Abierto')?'e-abierto':(s==='En Proceso')?'e-proceso':(s==='Cerrado')?'e-cerrado':'e-cancelado'; return `<strong class="${cls}">${s}</strong>`; };
     const fmt = iso => { const d = (iso instanceof Date) ? iso : new Date(iso); return isNaN(d) ? '' : d.toLocaleString(); };
 
-    function computeCounters(rows){ const c = { total:rows.length, abiertos:0, en_proceso:0, cerrados:0, cancelados:0 };
-      rows.forEach(t=>{ const s=String(t.estado||'').toLowerCase();
+    function computeCounters(rows){
+      const c = { total:rows.length, abiertos:0, en_proceso:0, cerrados:0, cancelados:0, con_req:0 };
+      rows.forEach(t=>{
+        const s=String(t.estado||'').toLowerCase();
         if(s==='abierto') c.abiertos++; else if(s==='en proceso') c.en_proceso++; else if(s==='cerrado') c.cerrados++; else if(s==='cancelado') c.cancelados++;
-      }); return c;
+        if (t.requerimiento) c.con_req++;
+      });
+      return c;
     }
-    function setCounters(c){ kpiTotal.textContent=c.total; kpiAb.textContent=c.abiertos; kpiPr.textContent=c.en_proceso; kpiCe.textContent=c.cerrados; kpiCa.textContent=c.cancelados; }
+    function setCounters(c){ kpiTotal.textContent=c.total; kpiAb.textContent=c.abiertos; kpiPr.textContent=c.en_proceso; kpiCe.textContent=c.cerrados; kpiCa.textContent=c.cancelados; kpiRq.textContent=c.con_req||0; }
 
     function currentBaseRows(){
       const base = Array.isArray(ticketsRemote) ? ticketsRemote : ticketsLocal;
@@ -531,7 +539,7 @@
       if (searchText && searchText.trim()){
         const n = searchText.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
         rows = rows.filter(r =>
-          (`${r.id} ${r.categoria} ${r.falla} ${r.usuario}`).toLowerCase()
+          (`${r.id} ${r.categoria} ${r.falla} ${r.usuario} ${r.descripcion||''}`).toLowerCase()
             .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
             .includes(n)
         );
@@ -540,6 +548,7 @@
       return rows;
     }
 
+    /* ========= render con columna "Descripción" (truncada + clic) ========= */
     function render(countersFromAPI){
       const rows = currentRows();
       if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI);
@@ -554,9 +563,18 @@
           <td>${esc(t.categoria||'')}</td>
           <td>${esc(t.falla||'')}</td>
           <td>${esc(t.usuario||'')}</td>
+
+          <!-- NUEVO: vista de descripción (30 chars) con data-full para abrir modal -->
+          <td>
+            ${t.descripcion
+              ? `<span class="desc-peek" data-id="${t.id}" data-full="${esc(t.descripcion)}" title="Ver descripción completa">${esc(trunc(t.descripcion,30))}</span>`
+              : '<span class="muted">—</span>'}
+          </td>
+
           <td>${badge(t.prioridad||'')}</td>
           <td>${tagE(t.estado||'')}</td>
           <td>${fmt(t.fecha)}</td>
+
           <td style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <select class="estado-select" data-id="${t.id}">
               <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
@@ -570,10 +588,10 @@
               <option ${t.prioridad==='Baja'?'selected':''}>Baja</option>
             </select>
           </td>
-        </tr>`).join('') : `<tr><td colspan="9" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
+        </tr>`).join('') : `<tr><td colspan="10" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
-    /* ==================== WHOAMI + LIST ==================== */
+    /* ==================== WHOAMI + LIST + CONTACTS ==================== */
     async function fetchWhoAmI(){
       try{
         const params = new URLSearchParams({ action:'whoami' });
@@ -608,6 +626,19 @@
       }catch(err){ ticketsRemote = null; render(); }
     }
 
+    /* NUEVO: cargar contactos de Sheets para autocomplete */
+    async function fetchContacts(){
+      try{
+        const params = new URLSearchParams({ action:'contacts' });
+        if (AUTH_KEY) params.set('key', AUTH_KEY);
+        const res = await fetch(WEB_APP_URL + '?' + params.toString());
+        const data = await res.json();
+        if (data && data.ok && Array.isArray(data.contacts) && data.contacts.length){
+          USUARIOS = data.contacts; // reemplaza catálogo local
+        }
+      }catch(e){ /* fallback al arreglo local */ }
+    }
+
     /* ==================== POST ==================== */
     async function postJSON(payload){
       if (AUTH_KEY) payload.key = AUTH_KEY;
@@ -629,9 +660,9 @@
       const descripcion= $('#descripcion').value.trim();
 
       // Validación de “Requerimiento”
-      const tieneReq = reqSi.checked;
-      const reqNum   = reqNumber.value.trim();
-      if (tieneReq && !reqNum){ show('Escribe el número de requerimiento','err'); reqNumber.focus(); return; }
+      const tieneReq = $('#reqSi').checked;
+      const reqNum   = $('#reqNumber').value.trim();
+      if (tieneReq && !reqNum){ show('Escribe el número de requerimiento','err'); $('#reqNumber').focus(); return; }
 
       if(!analista || !categoria || !falla || !usuario || !prioridad){
         show('Completa los campos obligatorios','err'); return;
@@ -641,12 +672,10 @@
       const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
       const nowISO = new Date().toISOString();
 
-      // Guardamos en local (sin adjunto). Campo Requerimiento: "REQ-xxxxx" o ''.
       const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion,
                   requerimiento: tieneReq ? `REQ-${reqNum}` : '', estado:'Abierto', fecha: nowISO };
       ticketsLocal.unshift(t); saveLocal(ticketsLocal); render(); show('Guardado local. Enviando a Sheets…');
 
-      // Enviar a Sheets (el backend debe tener columna "Requerimiento")
       const d = await postJSON({
         action:'create', id:t.id, analista, correoAnalista, categoria, falla, usuario, prioridad,
         descripcion, estado:t.estado, fechaISO: nowISO, requerimiento: t.requerimiento
@@ -655,14 +684,17 @@
       form.reset(); toggleReq();
     });
 
-    /* ==================== MODAL BONITO ==================== */
-    function askModal({title,label,placeholder='', required=false}){
+    /* ==================== MODAL REUTILIZABLE ==================== */
+    function askModal({title,label,placeholder='', required=false, readonly=false, okText='Aceptar'}){
       return new Promise(resolve=>{
         modalTitle.textContent = title;
         modalLabel.textContent = label;
         modalText.value = '';
         modalText.placeholder = placeholder || '';
         modalText.required = required;
+        modalText.readOnly = !!readonly;
+        modalOk.textContent = okText;
+
         const onOk = ()=>{ if(required && !modalText.value.trim()){ modalText.focus(); return; } cleanup(); modal.close(); resolve({ok:true, text: modalText.value.trim()}); };
         const onCancel = ()=>{ cleanup(); modal.close(); resolve({ok:false}); };
         function cleanup(){ modalOk.removeEventListener('click', onOk); modalCancel.removeEventListener('click', onCancel); modal.removeEventListener('cancel', onCancel); }
@@ -678,6 +710,15 @@
     document.addEventListener('focusin',(e)=>{
       const s = e.target.closest('.estado-select');
       if (s) s.dataset.prev = s.value;
+    });
+
+    /* ==================== CLICK EN DESCRIPCIÓN (abrir modal solo lectura) ==================== */
+    document.addEventListener('click', (e)=>{
+      const peek = e.target.closest('.desc-peek');
+      if (!peek) return;
+      const full = peek.dataset.full || '';
+      modalText.value = full;
+      askModal({ title:'Descripción completa', label:'Descripción', readonly:true, okText:'Cerrar' });
     });
 
     /* ==================== CAMBIOS ESTADO / PRIORIDAD ==================== */
@@ -733,6 +774,7 @@
     /* ==================== INIT ==================== */
     async function init(){
       await fetchWhoAmI();
+      await fetchContacts();     // NUEVO: trae usuarios desde Sheets
       if (identity && !analystSelect.value) analystSelect.value = identity.name;
       render();
       fetchRemote();
