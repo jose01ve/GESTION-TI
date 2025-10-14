@@ -363,7 +363,7 @@
     'use strict';
 
     /* ==================== CONFIG ==================== */
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby9RGDYNE_T1c6rRJjVNNMlIzZpZlD8QH115_bLpJPJn0lQhBL-HrcGNbVwGlOEVeLCVA/exec'; // ← Pega la URL de despliegue del script
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyhNyM8jxoxOSswRt5l983PHBcKVfLicTeE8yhag1b895P-rh7QxSm1H19_7Z1FUabZAA/exec'; // URL del Apps Script
     const AUTO_REFRESH_MS = 30000;
 
     const ANALISTAS = [
@@ -373,7 +373,7 @@
       { nombre:'Pablo Calle',       email:'pablocalle@ingetec.com.co' }
     ];
 
-    /* USUARIOS: se llenará desde Sheets vía endpoint /contacts; este arreglo es fallback */
+    /* USUARIOS: se llenará desde Sheets vía endpoint /contacts; este arreglo es fallback local */
     let USUARIOS = ['Marcela Pareja','Jhon Madrid','Juan Carlos Betancur','Heidy Zambrano','Andrés Gómez','Carlos Ramírez','Lina Areiza','Diana Pérez'];
 
     /* ==================== DOM ==================== */
@@ -685,15 +685,15 @@
     });
 
     /* ==================== MODAL REUTILIZABLE ==================== */
-    function askModal({title,label,placeholder='', required=false, readonly=false, okText='Aceptar'}){
+    function askModal({title,label,placeholder='', required=false, readonly=false, okText='Aceptar', value=null}){
       return new Promise(resolve=>{
         modalTitle.textContent = title;
         modalLabel.textContent = label;
-        modalText.value = '';
         modalText.placeholder = placeholder || '';
         modalText.required = required;
         modalText.readOnly = !!readonly;
         modalOk.textContent = okText;
+        modalText.value = (value!==null ? value : '');  // <<--- prefill seguro
 
         const onOk = ()=>{ if(required && !modalText.value.trim()){ modalText.focus(); return; } cleanup(); modal.close(); resolve({ok:true, text: modalText.value.trim()}); };
         const onCancel = ()=>{ cleanup(); modal.close(); resolve({ok:false}); };
@@ -712,13 +712,12 @@
       if (s) s.dataset.prev = s.value;
     });
 
-    /* ==================== CLICK EN DESCRIPCIÓN (abrir modal solo lectura) ==================== */
+    /* ==================== CLICK EN DESCRIPCIÓN (abre modal SOLO LECTURA con el texto completo) ==================== */
     document.addEventListener('click', (e)=>{
       const peek = e.target.closest('.desc-peek');
       if (!peek) return;
       const full = peek.dataset.full || '';
-      modalText.value = full;
-      askModal({ title:'Descripción completa', label:'Descripción', readonly:true, okText:'Cerrar' });
+      askModal({ title:'Descripción completa', label:'Descripción', readonly:true, okText:'Cerrar', value: full });
     });
 
     /* ==================== CAMBIOS ESTADO / PRIORIDAD ==================== */
