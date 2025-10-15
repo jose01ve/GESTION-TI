@@ -110,6 +110,20 @@
     .modal footer{ padding:12px 16px; display:flex; gap:10px; justify-content:flex-end }
     .modal textarea{ min-height:120px }
     .desc-peek{ cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
+
+    /* ========= 10) VISTA AGRUPADA POR ANALISTA ========= */
+    #groups[hidden]{ display:none }
+    .group{ border:1px solid var(--border); border-radius:14px; margin:10px 0; overflow:hidden; background:var(--card) }
+    .group summary{
+      list-style:none; cursor:pointer; user-select:none; padding:10px 12px;
+      display:flex; align-items:center; gap:10px; font-weight:700;
+      background:linear-gradient(180deg,color-mix(in srgb,var(--card) 98%,transparent), color-mix(in srgb,var(--card) 92%,transparent));
+      border-bottom:1px solid var(--border);
+    }
+    .group summary::marker{ display:none }
+    .group .meta{ color:var(--muted); font-weight:600; font-size:.9rem; margin-left:auto; display:flex; gap:12px }
+    .group .body{ padding:10px 12px }
+    .toolbar .stack{ display:flex; align-items:center; gap:8px; flex-wrap:wrap }
   </style>
 </head>
 <body data-theme="light">
@@ -315,6 +329,14 @@
           <span class="muted">Mes:</span>
           <select id="monthSelect"><option value="">Todos</option></select>
 
+          <div class="stack">
+            <label style="display:flex;align-items:center;gap:6px">
+              <input type="checkbox" id="groupMode"> Agrupar por analista
+            </label>
+            <button id="collapseAll" class="btn-sm" style="display:none">Minimizar todos</button>
+            <button id="expandAll" class="btn-sm" style="display:none">Maximizar todos</button>
+          </div>
+
           <span id="syncBadge" class="muted">Fuente: —</span>
         </div>
 
@@ -328,16 +350,20 @@
         </div>
 
         <div class="tablebox">
-          <table>
+          <!-- Tabla normal -->
+          <table id="ticketsTable">
             <thead>
               <tr>
                 <th>Ticket</th><th>Analista</th><th>Categoría</th><th>Falla</th><th>Usuario</th>
-                <th>Descripción</th><!-- NUEVO: vista truncada + clic -->
+                <th>Descripción</th>
                 <th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
           </table>
+
+          <!-- NUEVO: vista agrupada -->
+          <div id="groups" hidden></div>
         </div>
       </div>
     </section>
@@ -363,7 +389,7 @@
     'use strict';
 
     /* ==================== CONFIG ==================== */
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyhNyM8jxoxOSswRt5l983PHBcKVfLicTeE8yhag1b895P-rh7QxSm1H19_7Z1FUabZAA/exec'; // URL del Apps Script
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwQ5RLPhG7oyD5yFKN2rNBa6aXG8mTvOeRtGxd6imGO00vlWZq9bI5FMmPx2XuPXq5m/exec'; // ← tu URL de Apps Script
     const AUTO_REFRESH_MS = 30000;
 
     const ANALISTAS = [
@@ -373,7 +399,7 @@
       { nombre:'Pablo Calle',       email:'pablocalle@ingetec.com.co' }
     ];
 
-    /* USUARIOS: se llenará desde Sheets vía endpoint /contacts; este arreglo es fallback local */
+    /* USUARIOS: se llenará desde Sheets vía endpoint /contacts; este arreglo es fallback */
     let USUARIOS = ['Marcela Pareja','Jhon Madrid','Juan Carlos Betancur','Heidy Zambrano','Andrés Gómez','Carlos Ramírez','Lina Areiza','Diana Pérez'];
 
     /* ==================== DOM ==================== */
@@ -391,8 +417,13 @@
           modalLabel = $('#modalLabel'), modalText = $('#modalText'),
           modalOk = $('#modalOk'), modalCancel = $('#modalCancel');
 
+    /* VISTA AGRUPADA */
+    const groupMode = $('#groupMode'), groupsBox = $('#groups'),
+          ticketsTable = $('#ticketsTable'),
+          collapseAllBtn = $('#collapseAll'), expandAllBtn = $('#expandAll');
+
     /* ==================== STATE ==================== */
-    const localKey = 'tickets_fallas_v11';
+    const localKey = 'tickets_fallas_v12';
     const loadLocal = () => { try{ return JSON.parse(localStorage.getItem(localKey))||[] } catch { return [] } };
     const saveLocal = v => localStorage.setItem(localKey, JSON.stringify(v));
     let ticketsLocal = loadLocal();
@@ -487,9 +518,21 @@
       analystSelect.value= saved.analyst || '';
       statusSelect.value = saved.status || '';
       monthSelect.value  = saved.month || '';
+      groupMode.checked  = !!saved.groupMode;
     })();
-    function persistView(){ localStorage.setItem('tickets_view', JSON.stringify({ view:viewSelect.value, analyst:analystSelect.value, status:statusSelect.value, month:monthSelect.value })); }
-    [viewSelect,analystSelect,statusSelect,monthSelect].forEach(el => el.addEventListener('change', ()=>{ persistView(); fetchRemote(); }));
+    function persistView(){ localStorage.setItem('tickets_view', JSON.stringify({ view:viewSelect.value, analyst:analystSelect.value, status:statusSelect.value, month:monthSelect.value, groupMode:groupMode.checked })); }
+    [viewSelect,analystSelect,statusSelect,monthSelect,groupMode].forEach(el => el.addEventListener('change', ()=>{ persistView(); fetchRemote(); }));
+
+    /* Mostrar/ocultar controles de agrupar */
+    function toggleGroupControls(){
+      const show = groupMode.checked;
+      collapseAllBtn.style.display = show ? '' : 'none';
+      expandAllBtn.style.display   = show ? '' : 'none';
+      ticketsTable.style.display   = show ? 'none' : '';
+      groupsBox.hidden             = !show;
+    }
+    collapseAllBtn.addEventListener('click', ()=>{ groupsBox.querySelectorAll('details.group').forEach(d=>d.open=false); });
+    expandAllBtn.addEventListener('click',   ()=>{ groupsBox.querySelectorAll('details.group').forEach(d=>d.open=true); });
 
     /* ==================== BUSCADOR RÁPIDO ==================== */
     quickSearch.addEventListener('input', ()=>{ searchText = quickSearch.value; render(); });
@@ -548,12 +591,10 @@
       return rows;
     }
 
-    /* ========= render con columna "Descripción" (truncada + clic) ========= */
-    function render(countersFromAPI){
-      const rows = currentRows();
+    /* ========= render NORMAL ========= */
+    function renderTable(rows, countersFromAPI){
       if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI);
       else setCounters(computeCounters(rows));
-
       syncBadge.innerHTML = `Fuente: <strong>${lastSource}</strong>`;
 
       tbody.innerHTML = rows.length ? rows.map(t=>`
@@ -563,18 +604,10 @@
           <td>${esc(t.categoria||'')}</td>
           <td>${esc(t.falla||'')}</td>
           <td>${esc(t.usuario||'')}</td>
-
-          <!-- NUEVO: vista de descripción (30 chars) con data-full para abrir modal -->
-          <td>
-            ${t.descripcion
-              ? `<span class="desc-peek" data-id="${t.id}" data-full="${esc(t.descripcion)}" title="Ver descripción completa">${esc(trunc(t.descripcion,30))}</span>`
-              : '<span class="muted">—</span>'}
-          </td>
-
+          <td>${t.descripcion ? `<span class="desc-peek" data-id="${t.id}" data-full="${esc(t.descripcion)}" title="Ver descripción completa">${esc(trunc(t.descripcion,30))}</span>` : '<span class="muted">—</span>'}</td>
           <td>${badge(t.prioridad||'')}</td>
           <td>${tagE(t.estado||'')}</td>
           <td>${fmt(t.fecha)}</td>
-
           <td style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <select class="estado-select" data-id="${t.id}">
               <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
@@ -591,6 +624,91 @@
         </tr>`).join('') : `<tr><td colspan="10" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
+    /* ========= render AGRUPADO ========= */
+    function renderGrouped(rows, countersFromAPI){
+      if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI);
+      else setCounters(computeCounters(rows));
+      syncBadge.innerHTML = `Fuente: <strong>${lastSource}</strong>`;
+      toggleGroupControls();
+
+      // Agrupar por analista (mantiene “Sin asignar” si vacío)
+      const map = new Map();
+      rows.forEach(r=>{
+        const k = r.analista && String(r.analista).trim() ? r.analista : 'Sin asignar';
+        if(!map.has(k)) map.set(k, []);
+        map.get(k).push(r);
+      });
+
+      const sections = [];
+      for (const [analista, arr] of map.entries()){
+        const c = computeCounters(arr);
+        const rowsHtml = arr.map(t=>`
+          <tr>
+            <td>${t.id||''}</td>
+            <td>${esc(t.categoria||'')}</td>
+            <td>${esc(t.falla||'')}</td>
+            <td>${esc(t.usuario||'')}</td>
+            <td>${t.descripcion ? `<span class="desc-peek" data-id="${t.id}" data-full="${esc(t.descripcion)}" title="Ver descripción completa">${esc(trunc(t.descripcion,30))}</span>` : '<span class="muted">—</span>'}</td>
+            <td>${badge(t.prioridad||'')}</td>
+            <td>${tagE(t.estado||'')}</td>
+            <td>${fmt(t.fecha)}</td>
+            <td style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <select class="estado-select" data-id="${t.id}">
+                <option ${t.estado==='Abierto'?'selected':''}>Abierto</option>
+                <option ${t.estado==='En Proceso'?'selected':''}>En Proceso</option>
+                <option ${t.estado==='Cerrado'?'selected':''}>Cerrado</option>
+                <option ${t.estado==='Cancelado'?'selected':''}>Cancelado</option>
+              </select>
+              <select class="prio-select" data-id="${t.id}">
+                <option ${t.prioridad==='Alta'?'selected':''}>Alta</option>
+                <option ${t.prioridad==='Media'?'selected':''}>Media</option>
+                <option ${t.prioridad==='Baja'?'selected':''}>Baja</option>
+              </select>
+            </td>
+          </tr>
+        `).join('');
+
+        sections.push(`
+          <details class="group" open>
+            <summary>
+              ${esc(analista)}
+              <span class="meta">
+                <span>Total: ${c.total}</span>
+                <span>Abiertos: ${c.abiertos}</span>
+                <span>Proceso: ${c.en_proceso}</span>
+                <span>Cerrados: ${c.cerrados}</span>
+                <span>Cancelados: ${c.cancelados}</span>
+              </span>
+            </summary>
+            <div class="body">
+              <table style="width:100%; border-collapse:separate; border-spacing:0 10px">
+                <thead>
+                  <tr>
+                    <th>Ticket</th><th>Categoría</th><th>Falla</th><th>Usuario</th>
+                    <th>Descripción</th><th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>${rowsHtml || `<tr><td colspan="9" class="muted">Sin casos</td></tr>`}</tbody>
+              </table>
+            </div>
+          </details>
+        `);
+      }
+
+      groupsBox.innerHTML = sections.join('') || `<div class="muted" style="padding:12px">Sin resultados</div>`;
+    }
+
+    /* ========= render dispatcher ========= */
+    function render(countersFromAPI){
+      const rows = currentRows();
+      if (groupMode.checked){
+        renderGrouped(rows, countersFromAPI);
+      } else {
+        toggleGroupControls();
+        renderTable(rows, countersFromAPI);
+      }
+    }
+
     /* ==================== WHOAMI + LIST + CONTACTS ==================== */
     async function fetchWhoAmI(){
       try{
@@ -605,17 +723,24 @@
         if (identity && !analystSelect.value) analystSelect.value = identity.name;
       }catch{ identity = null; who.textContent = 'Identidad: (no detectada)'; }
     }
+
     async function fetchRemote(){
       try{
         const params = new URLSearchParams();
         params.set('action','list');
-        params.set('view', viewSelect.value);
-        if (analystSelect.value) params.set('analyst', analystSelect.value);
+
+        // Si está activado "Agrupar" y somos admin, pedimos "todos" al backend.
+        const isAdmin = identity && identity.role==='admin';
+        const desiredView = (groupMode.checked && isAdmin) ? 'todos' : viewSelect.value;
+        params.set('view', desiredView);
+
+        if (analystSelect.value && !groupMode.checked) params.set('analyst', analystSelect.value);
         if (statusSelect.value==='pendientes') params.set('state','pendientes');
         else if (statusSelect.value) params.set('status', statusSelect.value);
         if (monthSelect.value) params.set('ym', monthSelect.value);
         params.set('limit','1500');
         if (AUTH_KEY) params.set('key', AUTH_KEY);
+
         const res = await fetch(WEB_APP_URL + '?' + params.toString());
         const data = await res.json();
         if (data && data.ok && Array.isArray(data.items)){
@@ -685,15 +810,15 @@
     });
 
     /* ==================== MODAL REUTILIZABLE ==================== */
-    function askModal({title,label,placeholder='', required=false, readonly=false, okText='Aceptar', value=null}){
+    function askModal({title,label,placeholder='', required=false, readonly=false, okText='Aceptar'}){
       return new Promise(resolve=>{
         modalTitle.textContent = title;
         modalLabel.textContent = label;
+        modalText.value = '';
         modalText.placeholder = placeholder || '';
         modalText.required = required;
         modalText.readOnly = !!readonly;
         modalOk.textContent = okText;
-        modalText.value = (value!==null ? value : '');  // <<--- prefill seguro
 
         const onOk = ()=>{ if(required && !modalText.value.trim()){ modalText.focus(); return; } cleanup(); modal.close(); resolve({ok:true, text: modalText.value.trim()}); };
         const onCancel = ()=>{ cleanup(); modal.close(); resolve({ok:false}); };
@@ -712,12 +837,13 @@
       if (s) s.dataset.prev = s.value;
     });
 
-    /* ==================== CLICK EN DESCRIPCIÓN (abre modal SOLO LECTURA con el texto completo) ==================== */
+    /* ==================== CLICK EN DESCRIPCIÓN (abrir modal solo lectura) ==================== */
     document.addEventListener('click', (e)=>{
       const peek = e.target.closest('.desc-peek');
       if (!peek) return;
       const full = peek.dataset.full || '';
-      askModal({ title:'Descripción completa', label:'Descripción', readonly:true, okText:'Cerrar', value: full });
+      modalText.value = full;
+      askModal({ title:'Descripción completa', label:'Descripción', readonly:true, okText:'Cerrar' });
     });
 
     /* ==================== CAMBIOS ESTADO / PRIORIDAD ==================== */
@@ -773,7 +899,8 @@
     /* ==================== INIT ==================== */
     async function init(){
       await fetchWhoAmI();
-      await fetchContacts();     // NUEVO: trae usuarios desde Sheets
+      await fetchContacts();     // usuarios desde Sheets
+      toggleGroupControls();     // sincroniza visibilidad inicial
       if (identity && !analystSelect.value) analystSelect.value = identity.name;
       render();
       fetchRemote();
@@ -784,4 +911,3 @@
   </script>
 </body>
 </html>
-
