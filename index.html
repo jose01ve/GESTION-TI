@@ -693,27 +693,46 @@
       form.reset(); toggleReq();
     });
 
-    /* ==================== MODAL REUTILIZABLE ==================== */
-    function askModal({title,label,placeholder='', required=false, readonly=false, okText='Aceptar'}){
-      return new Promise(resolve=>{
-        modalTitle.textContent = title;
-        modalLabel.textContent = label;
-        modalText.value = '';
-        modalText.placeholder = placeholder || '';
-        modalText.required = required;
-        modalText.readOnly = !!readonly;
-        modalOk.textContent = okText;
 
-        const onOk = ()=>{ if(required && !modalText.value.trim()){ modalText.focus(); return; } cleanup(); modal.close(); resolve({ok:true, text: modalText.value.trim()}); };
-        const onCancel = ()=>{ cleanup(); modal.close(); resolve({ok:false}); };
-        function cleanup(){ modalOk.removeEventListener('click', onOk); modalCancel.removeEventListener('click', onCancel); modal.removeEventListener('cancel', onCancel); }
-        modalOk.addEventListener('click', onOk);
-        modalCancel.addEventListener('click', onCancel);
-        modal.addEventListener('cancel', onCancel);
-        modal.showModal();
-        setTimeout(()=>modalText.focus(), 50);
-      });
+ /* ==================== MODAL REUTILIZABLE ==================== */
+function askModal({
+  title,
+  label,
+  placeholder='',
+  required=false,
+  readonly=false,
+  okText='Aceptar',
+  prefill=''            // ← NUEVO: texto inicial opcional
+}){
+  return new Promise(resolve=>{
+    modalTitle.textContent = title;
+    modalLabel.textContent = label;
+
+    // Cargar el texto inicial (si viene). No lo borres.
+    modalText.value = (typeof prefill === 'string') ? prefill : '';
+    modalText.placeholder = placeholder || '';
+    modalText.required = required;
+    modalText.readOnly = !!readonly;
+    modalOk.textContent = okText;
+
+    const onOk = ()=>{
+      if(required && !modalText.value.trim()){ modalText.focus(); return; }
+      cleanup(); modal.close();
+      resolve({ok:true, text: modalText.value.trim()});
+    };
+    const onCancel = ()=>{ cleanup(); modal.close(); resolve({ok:false}); };
+    function cleanup(){
+      modalOk.removeEventListener('click', onOk);
+      modalCancel.removeEventListener('click', onCancel);
+      modal.removeEventListener('cancel', onCancel);
     }
+    modalOk.addEventListener('click', onOk);
+    modalCancel.addEventListener('click', onCancel);
+    modal.addEventListener('cancel', onCancel);
+    modal.showModal();
+    setTimeout(()=>modalText.focus(), 50);
+  });
+}
 
     /* Guardar valor previo del select para revertir si se cancela */
     document.addEventListener('focusin',(e)=>{
@@ -722,13 +741,20 @@
     });
 
     /* ==================== CLICK EN DESCRIPCIÓN (abrir modal solo lectura) ==================== */
-    document.addEventListener('click', (e)=>{
-      const peek = e.target.closest('.desc-peek');
-      if (!peek) return;
-      const full = peek.dataset.full || '';
-      modalText.value = full;
-      askModal({ title:'Descripción completa', label:'Descripción', readonly:true, okText:'Cerrar' });
-    });
+document.addEventListener('click', (e)=>{
+  const peek = e.target.closest('.desc-peek');
+  if (!peek) return;
+  const full = peek.dataset.full || '';
+  // Pasar el contenido como prefill para que no se borre
+  askModal({
+    title:'Descripción completa',
+    label:'Descripción',
+    readonly:true,
+    okText:'Cerrar',
+    prefill: full
+  });
+});
+
 
     /* ==================== CAMBIOS ESTADO / PRIORIDAD ==================== */
     document.addEventListener('change', async (e)=>{
@@ -794,4 +820,5 @@
   </script>
 </body>
 </html>
+
 
