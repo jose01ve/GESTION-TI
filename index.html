@@ -116,12 +116,10 @@
   <!-- ====== Barra superior ====== -->
   <header>
     <div class="toprow">
-       <small id="whoami" class="chip">Identidad: (no detectada)</small>
+      <small id="whoami" class="chip">Identidad: (no detectada)</small>
       <input id="keyInput" class="ctl" placeholder="Clave (opcional)" style="width:160px">
       <button id="saveKey" class="btn-sm accent">Guardar</button>
       <button id="clearKey" class="btn-sm" title="Olvidar">✕</button>
-     
-     
 
       <!-- Selector de tema base + acento por HEX -->
       <select id="themePick" class="ctl" title="Tema">
@@ -175,11 +173,10 @@
               <label for="falla">Servicio prestado *</label>
               <select id="falla" required>
                 <option value="">Selecciona…</option>
-                <!-- (tu catálogo completo) -->
+                <!-- (catálogo recortado por espacio) -->
                 <option>Soporte a equipos informáticos</option>
                 <option>Configuración equipo</option>
                 <option>Desbloquear cuenta de red</option>
-                 <option>Devolución activo a EPM</option>
                 <option>Préstamo Video Beam / Préstamo equipo</option>
                 <option>Crear acta</option>
                 <option>Instalación de PC-Dis \ Préstamo de equipo \ Dispositivo</option>
@@ -187,7 +184,6 @@
                 <option>Retiro de equipo a usuario</option>
                 <option>Traslado de puesto</option>
                 <option>Instalación de software - Desinstalación \ Traslado SW</option>
-                <option>Desbloqueo punto de red</option>
                 <option>Adquisición de Software y Hardware</option>
                 <option>Asignación de puesto nuevo</option>
                 <option>Creación de cuentas de red</option>
@@ -238,7 +234,7 @@
               </select>
             </div>
 
-            <!-- NUEVO: Reemplaza “Adjunto” por requerimiento -->
+            <!-- Reemplaza “Adjunto” por número de requerimiento -->
             <div>
               <label>¿Tiene requerimiento?</label>
               <div class="row" style="margin-top:0">
@@ -335,8 +331,11 @@
             <thead>
               <tr>
                 <th>Ticket</th><th>Analista</th><th>Categoría</th><th>Falla</th><th>Usuario</th>
-                <th>Descripción</th><!-- NUEVO: vista truncada + clic -->
-                <th>Prioridad</th><th>Estado</th><th>Fecha</th><th>Acciones</th>
+                <th>Descripción</th><!-- vista truncada + clic -->
+                <th>Prioridad</th><th>Estado</th>
+                <th>Fecha</th><!-- creación -->
+                <th>Fecha cierre</th><!-- NUEVO, solo si backend la envía -->
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -366,7 +365,8 @@
     'use strict';
 
     /* ==================== CONFIG ==================== */
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwP6jNB5CXZXsHzVEIWfHVEbpEdsh3jVNTvYqrYUqlwJlTid_vUHteSz94Q1N-uUyd44A/exec'; // URL del Apps Script
+    /* Pega aquí la URL de despliegue de tu Apps Script (la más reciente) */
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx3yTCRCMfYisiU4yVOIJ9UqdgCtNrASokyPuT1HiaZYtoHfXzi_p6xXsG-vf37HbGt0g/exec';
     const AUTO_REFRESH_MS = 30000;
 
     const ANALISTAS = [
@@ -376,7 +376,7 @@
       { nombre:'Pablo Calle',       email:'pablocalle@ingetec.com.co' }
     ];
 
-    /* USUARIOS: se llenará desde Sheets vía endpoint /contacts; este arreglo es fallback local */
+    /* USUARIOS: se llenará desde Sheets vía endpoint /contacts; este arreglo es fallback */
     let USUARIOS = ['Marcela Pareja','Jhon Madrid','Juan Carlos Betancur','Heidy Zambrano','Andrés Gómez','Carlos Ramírez','Lina Areiza','Diana Pérez'];
 
     /* ==================== DOM ==================== */
@@ -395,7 +395,7 @@
           modalOk = $('#modalOk'), modalCancel = $('#modalCancel');
 
     /* ==================== STATE ==================== */
-    const localKey = 'tickets_fallas_v11';
+    const localKey = 'tickets_fallas_v12';
     const loadLocal = () => { try{ return JSON.parse(localStorage.getItem(localKey))||[] } catch { return [] } };
     const saveLocal = v => localStorage.setItem(localKey, JSON.stringify(v));
     let ticketsLocal = loadLocal();
@@ -551,7 +551,7 @@
       return rows;
     }
 
-    /* ========= render con columna "Descripción" (truncada + clic) ========= */
+    /* ========= render: incluye columna "Descripción" (truncada + clic) y "Fecha cierre" ========= */
     function render(countersFromAPI){
       const rows = currentRows();
       if (countersFromAPI && lastSource==='Sheets') setCounters(countersFromAPI);
@@ -567,7 +567,7 @@
           <td>${esc(t.falla||'')}</td>
           <td>${esc(t.usuario||'')}</td>
 
-          <!-- NUEVO: vista de descripción (30 chars) con data-full para abrir modal -->
+          <!-- Descripción (30 chars) con data-full para abrir modal -->
           <td>
             ${t.descripcion
               ? `<span class="desc-peek" data-id="${t.id}" data-full="${esc(t.descripcion)}" title="Ver descripción completa">${esc(trunc(t.descripcion,30))}</span>`
@@ -576,7 +576,10 @@
 
           <td>${badge(t.prioridad||'')}</td>
           <td>${tagE(t.estado||'')}</td>
+
+          <!-- Fecha de creación y fecha de cierre -->
           <td>${fmt(t.fecha)}</td>
+          <td>${t.fechaCierre ? fmt(t.fechaCierre) : '<span class="muted">—</span>'}</td>
 
           <td style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <select class="estado-select" data-id="${t.id}">
@@ -591,7 +594,7 @@
               <option ${t.prioridad==='Baja'?'selected':''}>Baja</option>
             </select>
           </td>
-        </tr>`).join('') : `<tr><td colspan="10" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
+        </tr>`).join('') : `<tr><td colspan="11" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
     /* ==================== WHOAMI + LIST + CONTACTS ==================== */
@@ -629,7 +632,7 @@
       }catch(err){ ticketsRemote = null; render(); }
     }
 
-    /* NUEVO: cargar contactos de Sheets para autocomplete */
+    /* Cargar contactos de Sheets para autocomplete */
     async function fetchContacts(){
       try{
         const params = new URLSearchParams({ action:'contacts' });
@@ -675,10 +678,13 @@
       const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
       const nowISO = new Date().toISOString();
 
+      // Guardamos local primero (Fecha = creación)
       const t = { id, analista, correoAnalista, categoria, falla, usuario, prioridad, descripcion,
-                  requerimiento: tieneReq ? `REQ-${reqNum}` : '', estado:'Abierto', fecha: nowISO };
+                  requerimiento: tieneReq ? `REQ-${reqNum}` : '', estado:'Abierto', fecha: nowISO,
+                  fechaCierre: '' };
       ticketsLocal.unshift(t); saveLocal(ticketsLocal); render(); show('Guardado local. Enviando a Sheets…');
 
+      // Enviar a Sheets
       const d = await postJSON({
         action:'create', id:t.id, analista, correoAnalista, categoria, falla, usuario, prioridad,
         descripcion, estado:t.estado, fechaISO: nowISO, requerimiento: t.requerimiento
@@ -688,15 +694,15 @@
     });
 
     /* ==================== MODAL REUTILIZABLE ==================== */
-    function askModal({title,label,placeholder='', required=false, readonly=false, okText='Aceptar', value=null}){
+    function askModal({title,label,placeholder='', required=false, readonly=false, okText='Aceptar'}){
       return new Promise(resolve=>{
         modalTitle.textContent = title;
         modalLabel.textContent = label;
+        modalText.value = '';
         modalText.placeholder = placeholder || '';
         modalText.required = required;
         modalText.readOnly = !!readonly;
         modalOk.textContent = okText;
-        modalText.value = (value!==null ? value : '');  // <<--- prefill seguro
 
         const onOk = ()=>{ if(required && !modalText.value.trim()){ modalText.focus(); return; } cleanup(); modal.close(); resolve({ok:true, text: modalText.value.trim()}); };
         const onCancel = ()=>{ cleanup(); modal.close(); resolve({ok:false}); };
@@ -715,12 +721,13 @@
       if (s) s.dataset.prev = s.value;
     });
 
-    /* ==================== CLICK EN DESCRIPCIÓN (abre modal SOLO LECTURA con el texto completo) ==================== */
+    /* ==================== CLICK EN DESCRIPCIÓN (abrir modal solo lectura) ==================== */
     document.addEventListener('click', (e)=>{
       const peek = e.target.closest('.desc-peek');
       if (!peek) return;
       const full = peek.dataset.full || '';
-      askModal({ title:'Descripción completa', label:'Descripción', readonly:true, okText:'Cerrar', value: full });
+      modalText.value = full;
+      askModal({ title:'Descripción completa', label:'Descripción', readonly:true, okText:'Cerrar' });
     });
 
     /* ==================== CAMBIOS ESTADO / PRIORIDAD ==================== */
@@ -737,7 +744,7 @@
           const r = await askModal({title:'Cancelar ticket', label:'Motivo de cancelación', placeholder:'Describe el motivo…', required:true});
           if (!r.ok){ selE.value = prev; return; }
           const tL = ticketsLocal.find(x=>x.id===id);
-          if (tL){ tL.estado=newStatus; tL.motivo=r.text; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
+          if (tL){ tL.estado=newStatus; tL.motivo=r.text; saveLocal(ticketsLocal); }
           render();
           const d = await postJSON({ action:'update_status', id, status:newStatus, reason:r.text });
           if (d && d.ok) fetchRemote();
@@ -748,7 +755,7 @@
           const r = await askModal({title:'Cerrar ticket', label:'Solución aplicada', placeholder:'Describe la solución brindada…', required:true});
           if (!r.ok){ selE.value = prev; return; }
           const tL = ticketsLocal.find(x=>x.id===id);
-          if (tL){ tL.estado=newStatus; tL.solucion=r.text; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
+          if (tL){ tL.estado=newStatus; tL.solucion=r.text; tL.fechaCierre = new Date().toISOString(); saveLocal(ticketsLocal); }
           render();
           const d = await postJSON({ action:'update_status', id, status:newStatus, solution:r.text });
           if (d && d.ok) fetchRemote();
@@ -757,7 +764,7 @@
 
         // Otros estados
         const tL = ticketsLocal.find(x=>x.id===id);
-        if (tL){ tL.estado=newStatus; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
+        if (tL){ tL.estado=newStatus; /* no tocamos fechas */ saveLocal(ticketsLocal); }
         render();
         const d2 = await postJSON({ action:'update_status', id, status:newStatus });
         if (d2 && d2.ok) fetchRemote();
@@ -766,7 +773,7 @@
       if (selP){
         const id = selP.dataset.id; const pr = selP.value;
         const tL = ticketsLocal.find(x=>x.id===id);
-        if (tL){ tL.prioridad=pr; tL.fecha=new Date().toISOString(); saveLocal(ticketsLocal); }
+        if (tL){ tL.prioridad=pr; saveLocal(ticketsLocal); }
         render();
         const d3 = await postJSON({ action:'update_priority', id, prioridad: pr });
         if (d3 && d3.ok) fetchRemote();
@@ -776,7 +783,7 @@
     /* ==================== INIT ==================== */
     async function init(){
       await fetchWhoAmI();
-      await fetchContacts();     // NUEVO: trae usuarios desde Sheets
+      await fetchContacts();     // trae usuarios desde Sheets
       if (identity && !analystSelect.value) analystSelect.value = identity.name;
       render();
       fetchRemote();
@@ -787,8 +794,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
