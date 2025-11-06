@@ -6,23 +6,17 @@
   <title>Gestión TI · Reporte de fallas</title>
 
   <style>
-    /* ========= 01) VARIABLES DE TEMA ========= */
     :root{
-      --accent:#6475ff;                     /* color de acento */
+      --accent:#6475ff;
       --bg:#eef2ff; --card:#ffffff; --text:#0d1333; --muted:#51608b;
       --border:rgba(13,19,51,.12); --field:#fbfcff;
     }
     body[data-theme="dark"]{ --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9aa4bf; --border:rgba(255,255,255,.15); --field:#0b1220 }
-    body[data-theme="mint"]{ --bg:#e6fff4; --card:#ffffff; --text:#0d1333; --muted:#4d6a61; --border:rgba(13,19,51,.12); --field:#f7fffb }
-    body[data-theme="blue"]{ --bg:#e7f3ff; --card:#ffffff; --text:#0f1a2b; --muted:#3c587a; --border:rgba(15,26,43,.12); --field:#f7fbff }
-    body[data-theme="navy"]{ --bg:#0b1629; --card:#0f2038; --text:#ebf1ff; --muted:#9fb3d1; --border:rgba(255,255,255,.14); --field:#0c1b30 }
 
-    /* ========= 02) BASE ========= */
     *{box-sizing:border-box}
     html,body{height:100%}
     body{ margin:0; background:var(--bg); color:var(--text); font-family:system-ui, Segoe UI, Roboto, Arial, sans-serif }
 
-    /* ========= 03) TOPBAR ========= */
     header{position:sticky; top:0; z-index:20; padding:4px 0}
     .toprow{ max-width:1680px; margin:0 auto; padding:0 16px; display:flex; align-items:center; gap:12px; justify-content:flex-end }
     .chip{font-size:.9rem; color:var(--muted)}
@@ -31,21 +25,17 @@
     .btn-sm.accent{ background:var(--accent); border-color:var(--accent); color:#fff }
     #themePick{ width:180px }
 
-    /* ========= 04) LOGO ========= */
     .logoWrap{ max-width:1680px; margin:0 auto; padding:0 16px 6px; display:flex; justify-content:flex-start }
     .logo{ height:clamp(84px, 10vh, 120px); opacity:.92; mix-blend-mode:multiply; filter:saturate(.9) contrast(1.06) brightness(1.03) }
 
-    /* ========= 05) LAYOUT ========= */
     :root{ --stickyTop:58px }
     main{ max-width:1680px; margin:4px auto 12px; padding:0 16px; display:grid; gap:16px }
     @media(min-width:1200px){ main{ grid-template-columns:640px 1fr } }
     .card{ background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 24px rgba(13,19,51,.08) }
     .card h2{ position:sticky; top:0; z-index:2; margin:0; padding:12px 16px; background:linear-gradient(180deg,color-mix(in srgb,var(--card) 98%,transparent), color-mix(in srgb,var(--card) 92%,transparent)); border-bottom:1px solid var(--border) }
     .card .body{ padding:16px }
-    /* Form de la izquierda siempre fijo */
     #cardForm{ position:sticky; top:var(--stickyTop); align-self:start; max-height:calc(100vh - var(--stickyTop) - 8px); overflow:auto }
 
-    /* ========= 06) FORMULARIO ========= */
     form .grid{ display:grid; gap:12px }
     @media(min-width:560px){ form .grid{ grid-template-columns:1fr 1fr } }
     label{ font-size:.9rem; color:var(--muted); display:block; margin-bottom:6px }
@@ -53,20 +43,8 @@
     textarea{ min-height:96px }
     .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px }
     .btn{ border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:12px; padding:10px 14px; font-weight:600; cursor:pointer }
-    .btn.accent{ background:var(--accent); color:#fff; border-color:var(--accent); box-shadow:0 8px 16px color-mix(in srgb,var(--accent) 25%, transparent) }
-    .btn.secondary{ background:color-mix(in srgb,var(--accent) 10%, var(--card)); border-color:color-mix(in srgb,var(--accent) 30%, var(--border)) }
-    .btn.secondary:hover{ background:color-mix(in srgb,var(--accent) 14%, var(--card)) }
+    .btn.accent{ background:var(--accent); color:#fff; border-color:var(--accent) }
 
-    .mini{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px }
-    .mini h3{ margin:0 0 8px 0; font-size:1rem }
-    .mini ul{ margin:0 0 0 18px; padding:0 }
-    .mini .dot{ font-weight:700; margin-right:6px }
-
-    details.snippets summary{ cursor:pointer; user-select:none; color:var(--muted); padding:8px 0; font-weight:600 }
-    .snippet-btn{ border:1px dashed var(--border); background:color-mix(in srgb,var(--accent) 8%, var(--card)); border-radius:10px; padding:8px 10px; cursor:pointer }
-    .snippet-btn:hover{ background:color-mix(in srgb,var(--accent) 12%, var(--card)) }
-
-    /* ========= 07) KPIs y TABLA ========= */
     .toolbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:8px 0 12px }
     .toolbar select{ padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:var(--field) }
     .muted{ color:var(--muted); font-size:.9rem }
@@ -75,9 +53,8 @@
     .kpi .label{ font-size:.88rem; color:var(--muted); white-space:nowrap }
     .kpi .val{ font-weight:800; font-size:1.25rem }
 
-    /* Caja de tabla con scroll horizontal si hace falta */
     .tablebox{ overflow:auto; max-height: calc(100vh - 320px) }
-    table{ width:100%; min-width:1100px; border-collapse:separate; border-spacing:0 10px; color:var(--text) }
+    table{ width:100%; min-width:1200px; border-collapse:separate; border-spacing:0 10px; color:var(--text) }
     thead th{ position:sticky; top:0; z-index:1; font-size:.86rem; color:var(--muted); text-align:left; padding:0 8px; white-space:nowrap; background: color-mix(in srgb, var(--card) 92%, transparent) }
     tbody tr{ background:var(--card); border:1px solid var(--border) }
     tbody td{ padding:10px 8px; vertical-align:top }
@@ -85,43 +62,29 @@
 
     .badge{ padding:4px 8px; border:1px solid var(--border); border-radius:999px; font-size:.78rem; white-space:nowrap }
     .prio-alta{ background:#fff5f5 } .prio-media{ background:#fff4e6 } .prio-baja{ background:#ebfbee }
-    body[data-theme="dark"] .prio-alta{ background:#402b2b } body[data-theme="dark"] .prio-media{ background:#3e2f18 } body[data-theme="dark"] .prio-baja{ background:#1b3b2a }
     .e-abierto{ color:#e03131 } .e-proceso{ color:#f08c00 } .e-cerrado{ color:#2b8a3e } .e-cancelado{ color:#6b7280 }
 
-    /* ========= 08) AUTOCOMPLETE ========= */
     .ac{ position:relative }
     .ac-list{ position:absolute; left:0; right:0; top:100%; background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 10px 24px rgba(13,19,51,.08); margin-top:6px; max-height:220px; overflow:auto; padding:6px; z-index:5 }
     .ac-list[hidden]{ display:none }
     .ac-list li{ list-style:none; padding:8px 12px; cursor:pointer; border-radius:10px }
     .ac-list li[aria-selected="true"], .ac-list li:hover{ background:color-mix(in srgb,var(--accent) 10%, transparent) }
 
-    .notice{ display:none; margin-top:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px }
-    footer{ max-width:1680px; margin:6px auto 28px; padding:0 16px; color:var(--muted); font-size:.9rem }
-
-    /* ========= 09) MODAL ========= */
-    dialog.modal{
-      width:min(560px, 92vw);
-      border:1px solid var(--border);
-      border-radius:16px;
-      background:var(--card);
-      color:var(--text);
-      padding:0;
-    }
+    dialog.modal{ width:min(560px, 92vw); border:1px solid var(--border); border-radius:16px; background:var(--card); color:var(--text); padding:0 }
     dialog::backdrop{ background:rgba(0,0,0,.35); backdrop-filter:saturate(110%) blur(3px) }
     .modal header{ padding:14px 16px; border-bottom:1px solid var(--border) }
     .modal .content{ padding:16px }
     .modal footer{ padding:12px 16px; display:flex; gap:10px; justify-content:flex-end }
-    .modal textarea{ min-height:120px }
     .desc-peek{ cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
 
-    /* ========= 10) Columnas con ancho mínimo ========= */
+    /* Columnas clave */
     .col-date{ width:150px; min-width:150px; white-space:nowrap; }
+    .col-close{ width:150px; min-width:150px; white-space:nowrap; }
     .col-actions{ width:160px; min-width:160px; }
     .actions{ display:flex; gap:8px; flex-wrap:wrap; align-items:center }
   </style>
 </head>
 <body data-theme="light">
-  <!-- ====== Barra superior ====== -->
   <header>
     <div class="toprow">
       <small id="whoami" class="chip">Identidad: (no detectada)</small>
@@ -129,44 +92,102 @@
       <button id="saveKey" class="btn-sm accent">Guardar</button>
       <button id="clearKey" class="btn-sm" title="Olvidar">✕</button>
 
-      <!-- Selector de tema base + acento por HEX -->
       <select id="themePick" class="ctl" title="Tema">
-        <optgroup label="Tema base">
-          <option value="Claro" data-theme="light">Tema: Claro (verde)</option>
-          <option value="Oscuro" data-theme="dark">Tema: Oscuro</option>
-          <option value="Mint" data-theme="mint">Tema: Mint</option>
-          <option value="Azul" data-theme="blue">Tema: Azul</option>
-          <option value="Azul oscuro" data-theme="navy">Tema: Azul oscuro</option>
-        </optgroup>
-        <optgroup label="Color de acento (HEX)">
-          <option value="Verde" data-hex="#92e87c">Acento: Verde</option>
-          <option value="Amarillo" data-hex="#ffe764">Acento: Amarillo</option>
-          <option value="Rojo" data-hex="#e74176">Acento: Rojo</option>
-          <option value="Azul" data-hex="#0040a8">Acento: Azul</option>
-          <option value="Azul claro" data-hex="#20a1d8">Acento: Azul claro</option>
-          <option value="Azul oscuro" data-hex="#003f84">Acento: Azul oscuro</option>
-        </optgroup>
+        <option data-theme="light" selected>Claro</option>
+        <option data-theme="dark">Oscuro</option>
       </select>
     </div>
   </header>
 
-  <!-- ====== Logo ====== -->
   <div class="logoWrap">
-    <img class="logo" src="Imagen/logo-empresas.jpg" alt="INGETEC / SEDIC · Proyecto Hidroeléctrico Ituango"
+    <img class="logo" src="Imagen/logo-empresas.jpg" alt="INGETEC / SEDIC"
          loading="lazy" onerror="this.onerror=null;this.src='https://jose01ve.github.io/GESTION-TI/Imagen/logo-empresas.jpg';">
   </div>
 
   <main>
-    <!-- ===================== REPORTE USUARIO ===================== -->
+    <!-- =============== REPORTE USUARIO (FORM) =============== -->
     <section id="cardForm" class="card">
       <h2>REPORTE USUARIO</h2>
       <div class="body">
-        <!-- (tu mismo formulario: sin cambios funcionales) -->
-        <!-- ... lo omitimos por brevedad si ya lo tienes, pero puedes dejar el que venías usando -->
+        <form id="formTicket" action="javascript:void(0)" autocomplete="off">
+          <div class="grid">
+            <div>
+              <label for="analista">Analista Responsable *</label>
+              <select id="analista" required></select>
+            </div>
+
+            <div>
+              <label for="categoria">Categoría *</label>
+              <select id="categoria" required>
+                <option value="">Selecciona…</option>
+                <option>Red</option><option>Hardware</option><option>Software</option><option>Asesoría</option>
+                <option>Préstamo de activo</option><option>Correo</option><option>Impresión</option>
+                <option>Mantenimiento</option><option>Servidores</option><option>Otro</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="falla">Servicio prestado *</label>
+              <select id="falla" required>
+                <option value="">Selecciona…</option>
+                <option>Soporte a equipos informáticos</option>
+                <option>Configuración equipo</option>
+                <option>Desbloquear cuenta de red</option>
+                <option>Instalación de software - Desinstalación \ Traslado SW</option>
+                <option>Asignar Permiso en servidores \ Retirar permisos</option>
+                <option>Gestión en Vault</option>
+                <option>Inventario de Equipos</option>
+                <option>Permisos VPN</option>
+                <option>Gestión en obra</option>
+                <option>Crear cuenta de correo</option>
+                <option>Recuperación de información</option>
+              </select>
+            </div>
+
+            <div class="ac">
+              <label for="usuario">Usuario quien reporta *</label>
+              <input id="usuario" placeholder="Escribe nombre o apellido" required />
+              <ul id="acList" class="ac-list" hidden></ul>
+              <small class="help">Escribe y elige entre las sugerencias.</small>
+            </div>
+
+            <div>
+              <label for="prioridad">Prioridad *</label>
+              <select id="prioridad" required>
+                <option value="">Selecciona…</option><option>Alta</option><option>Media</option><option>Baja</option>
+              </select>
+            </div>
+
+            <div>
+              <label>¿Tiene requerimiento?</label>
+              <div class="row" style="margin-top:0">
+                <label style="display:flex;align-items:center;gap:6px">
+                  <input type="radio" name="hasReq" value="no" id="reqNo" checked> No
+                </label>
+                <label style="display:flex;align-items:center;gap:6px">
+                  <input type="radio" name="hasReq" value="si" id="reqSi"> Sí
+                </label>
+                <input id="reqNumber" class="ctl" placeholder="Número de requerimiento" style="flex:1;min-width:180px;display:none">
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:10px">
+            <label for="descripcion">Descripción (opcional)</label>
+            <textarea id="descripcion" placeholder="Describe el problema…"></textarea>
+          </div>
+
+          <div id="notice" class="notice"></div>
+          <div class="row">
+            <button class="btn accent" type="submit">➕ Guardar reporte</button>
+            <button class="btn" type="reset">↺ Limpiar</button>
+            <input id="quickSearch" class="ctl" style="flex:1; min-width:220px" placeholder="Buscar tickets (ID, categoría, falla, usuario)">
+          </div>
+        </form>
       </div>
     </section>
 
-    <!-- ===================== ESTADO DE REPORTE ===================== -->
+    <!-- =============== ESTADO DE REPORTE =============== -->
     <section id="cardReport" class="card">
       <h2>ESTADO DE REPORTE</h2>
       <div class="body">
@@ -197,20 +218,10 @@
 
         <div class="tablebox">
           <table>
-            <!-- Forzamos anchos mínimos de columnas sensibles -->
             <colgroup>
-              <col> <!-- Ticket -->
-              <col> <!-- Analista -->
-              <col> <!-- Categoría -->
-              <col> <!-- Falla -->
-              <col> <!-- Usuario -->
-              <col> <!-- Descripción -->
-              <col> <!-- Prioridad -->
-              <col> <!-- Estado -->
-              <col class="col-date"> <!-- Fecha -->
-              <col class="col-actions"> <!-- Acciones -->
+              <col><col><col><col><col><col><col><col>
+              <col class="col-date"><col class="col-close"><col class="col-actions">
             </colgroup>
-
             <thead>
               <tr>
                 <th>Ticket</th>
@@ -222,6 +233,7 @@
                 <th>Prioridad</th>
                 <th>Estado</th>
                 <th>Fecha</th>
+                <th>F. cierre</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -232,7 +244,7 @@
     </section>
   </main>
 
-  <!-- ========= MODAL ========= -->
+  <!-- =============== MODAL =============== -->
   <dialog id="statusModal" class="modal">
     <header><h3 id="modalTitle" style="margin:0">Actualizar estado</h3></header>
     <div class="content">
@@ -245,55 +257,258 @@
     </footer>
   </dialog>
 
-  <footer>⚡ App HTML sincroniza con Google Sheets.</footer>
+  <footer style="max-width:1680px; margin:6px auto 28px; padding:0 16px; color:var(--muted); font-size:.9rem">
+    ⚡ App HTML sincroniza con Google Sheets.
+  </footer>
 
   <script>
   (function(){
     'use strict';
 
-    /* ==================== CONFIG MÍNIMA (ajusta tu URL) ==================== */
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwveRh7FMwAx7FmmWq8_T1oQBYNfMXEcRooFNSDD4Q0ercRfhnc7hOfPLMkmU91P0WuRA/exec';  // ← reemplaza por tu despliegue
-    const AUTO_REFRESH_MS = 5000;
+    /* ==== CONFIG: usa tu URL actual de Apps Script ==== */
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyoV7GkNPk1CnnSHvDZIr0J3or3fvUdtTiObsNiwQ3jjqiOHQU0WAb-R4BP76y48pB3Gw/exec';
+    const AUTO_REFRESH_MS = 30000;
 
-    /* ==================== DOM BÁSICO ==================== */
+    /* ==== CATÁLOGOS ==== */
+    const ANALISTAS = [
+      { nombre:'Jose Salas',        email:'jsalas@sedic.com.co' },
+      { nombre:'Sebastián Cataño',  email:'scatano@sedic.com.co' },
+      { nombre:'Sebastián Posada',  email:'sposada@sedic.com.co' },
+      { nombre:'Pablo Calle',       email:'pablocalle@ingetec.com.co' }
+    ];
+    let USUARIOS = ['Marcela Pareja','Jhon Madrid','Heidy Zambrano','Andrés Gómez','Carlos Ramírez','Lina Areiza'];
+
+    /* ==== DOM ==== */
     const $ = s => document.querySelector(s);
-    const tbody = $('#tbody'),
-          kpiTotal=$('#kpiTotal'), kpiAb=$('#kpiAb'), kpiPr=$('#kpiPr'), kpiCe=$('#kpiCe'), kpiCa=$('#kpiCa'), kpiRq=$('#kpiRq');
-    const viewSelect = $('#viewSelect'), analystSelect = $('#analystSelect'),
-          statusSelect = $('#statusSelect'), monthSelect  = $('#monthSelect'),
-          who = $('#whoami');
+    const who = $('#whoami'), notice = $('#notice');
+    const form = $('#formTicket');
+    const tbody = $('#tbody');
+    const viewSelect=$('#viewSelect'), analystSelect=$('#analystSelect'),
+          statusSelect=$('#statusSelect'), monthSelect=$('#monthSelect'),
+          syncBadge=$('#syncBadge'), quickSearch=$('#quickSearch');
 
-    /* Modal */
-    const modal = $('#statusModal'), modalTitle = $('#modalTitle'),
-          modalLabel = $('#modalLabel'), modalText = $('#modalText'),
-          modalOk = $('#modalOk'), modalCancel = $('#modalCancel');
+    const modal = $('#statusModal'), modalTitle=$('#modalTitle'),
+          modalLabel=$('#modalLabel'), modalText=$('#modalText'),
+          modalOk=$('#modalOk'), modalCancel=$('#modalCancel');
 
-    /* ==================== STATE ==================== */
-    let ticketsRemote = null;
+    /* ==== STATE ==== */
+    let ticketsRemote = [];
     let identity = null;
     let AUTH_KEY = localStorage.getItem('auth_key') || '';
+    let searchText = '';
 
-    /* ==================== HELPERS ==================== */
+    /* ==== HELPERS ==== */
     const esc = s => String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
     const trunc = (s,len=30)=>{ const t=String(s||''); return t.length>len ? t.slice(0,len)+'…' : t; };
     const badge = p => `<span class="badge ${p==='Alta'?'prio-alta':p==='Media'?'prio-media':'prio-baja'}">${p||''}</span>`;
     const tagE  = e => { const s = String(e||''); const cls = (s==='Abierto')?'e-abierto':(s==='En Proceso')?'e-proceso':(s==='Cerrado')?'e-cerrado':'e-cancelado'; return `<strong class="${cls}">${s}</strong>`; };
     const fmt = iso => { const d = (iso instanceof Date) ? iso : new Date(iso); return isNaN(d) ? '—' : d.toLocaleString(); };
+    const show = (msg, kind='ok')=>{
+      notice.style.display='block'; notice.textContent=msg;
+      notice.style.borderColor=(kind==='ok')?'#b2f2bb':'#ffc9c9';
+      setTimeout(()=> notice.style.display='none', 2200);
+    };
 
-    function setCounters(rows){
+    /* ==== SELECT ANALISTAS ==== */
+    (function initAnalistas(){
+      const sel = $('#analista');
+      sel.innerHTML = '<option value="">Selecciona…</option>' + ANALISTAS.map(a=>`<option value="${a.nombre}">${a.nombre}</option>`).join('');
+    })();
+
+    /* ==== AUTOCOMPLETE USUARIOS ==== */
+    const inputUsuario = $('#usuario'); const acList = $('#acList');
+    const norm = (s)=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    function filtraUsuarios(q){ const n=norm(q); if(!n) return []; return USUARIOS.filter(u=>norm(u).includes(n)).slice(0,8); }
+    function pintaLista(items){ if(!items.length){ acList.hidden=true; acList.innerHTML=''; return; } acList.innerHTML=items.map((t,i)=>`<li ${i===0?'aria-selected="true"':''}>${t}</li>`).join(''); acList.hidden=false; }
+    inputUsuario.addEventListener('input', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
+    inputUsuario.addEventListener('focus', ()=> pintaLista(filtraUsuarios(inputUsuario.value)));
+    document.addEventListener('click', (e)=>{ if (e.target.closest('#acList li')){ inputUsuario.value = e.target.textContent; acList.hidden = true; } else if(!e.target.closest('.ac')) { acList.hidden = true; } });
+
+    /* ==== REQUERIMIENTO UI ==== */
+    const reqSi = $('#reqSi'), reqNo = $('#reqNo'), reqNumber = $('#reqNumber');
+    function toggleReq(){ reqNumber.style.display = reqSi.checked ? '' : 'none'; }
+    reqSi.addEventListener('change', toggleReq); reqNo.addEventListener('change', toggleReq);
+
+    /* ==== BUSCADOR ==== */
+    quickSearch.addEventListener('input', ()=>{ searchText = quickSearch.value; render(); });
+
+    /* ==== FETCH WHOAMI + CONTACTS + LIST ==== */
+    async function fetchWhoAmI(){
+      try{
+        const params = new URLSearchParams({ action:'whoami' });
+        if (AUTH_KEY) params.set('key', AUTH_KEY);
+        const res = await fetch(WEB_APP_URL + '?' + params.toString());
+        const data = await res.json();
+        identity = data && data.ok ? data.me : null;
+        who.textContent = identity ? `Identidad: ${identity.name} (${identity.role})` : 'Identidad: (no detectada)';
+      }catch{}
+    }
+    async function fetchContacts(){
+      try{
+        const params = new URLSearchParams({ action:'contacts' });
+        if (AUTH_KEY) params.set('key', AUTH_KEY);
+        const res = await fetch(WEB_APP_URL + '?' + params.toString());
+        const data = await res.json();
+        if (data && data.ok && Array.isArray(data.contacts) && data.contacts.length){ USUARIOS = data.contacts; }
+      }catch{}
+    }
+    async function fetchList(){
+      try{
+        const params = new URLSearchParams({ action:'list', view:viewSelect.value });
+        if (analystSelect.value) params.set('analyst', analystSelect.value);
+        if (statusSelect.value==='pendientes') params.set('state','pendientes');
+        else if (statusSelect.value) params.set('status', statusSelect.value);
+        if (monthSelect.value) params.set('ym', monthSelect.value);
+        if (AUTH_KEY) params.set('key', AUTH_KEY);
+        const res = await fetch(WEB_APP_URL + '?' + params.toString());
+        const data = await res.json();
+        if (data && data.ok && Array.isArray(data.items)){
+          ticketsRemote = data.items;
+          syncBadge.innerHTML = 'Fuente: <strong>Sheets</strong>';
+          render();
+        }
+      }catch{}
+    }
+    [viewSelect, analystSelect, statusSelect, monthSelect].forEach(el=> el.addEventListener('change', fetchList));
+
+    /* ==== POST JSON ==== */
+    async function postJSON(payload){
+      if (AUTH_KEY) payload.key = AUTH_KEY;
+      const res = await fetch(WEB_APP_URL, { method:'POST',
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      try { return await res.json(); } catch { return { ok:false }; }
+    }
+
+    /* ==== CREAR TICKET ==== */
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const analista   = $('#analista').value;
+      const categoria  = $('#categoria').value;
+      const falla      = $('#falla').value;
+      const usuario    = $('#usuario').value.trim();
+      const prioridad  = $('#prioridad').value;
+      const descripcion= $('#descripcion').value.trim();
+      const tieneReq   = $('#reqSi').checked;
+      const reqNum     = $('#reqNumber').value.trim();
+
+      if (tieneReq && !reqNum){ show('Escribe el número de requerimiento','err'); $('#reqNumber').focus(); return; }
+      if(!analista || !categoria || !falla || !usuario || !prioridad){ show('Completa los campos obligatorios','err'); return; }
+
+      const correoAnalista = (ANALISTAS.find(a=>a.nombre===analista)?.email) || '';
+      const id = 'T' + new Date().toISOString().replace(/\D/g,'').slice(0,14);
+      const nowISO = new Date().toISOString();
+
+      const d = await postJSON({
+        action:'create', id, analista, correoAnalista, categoria, falla, usuario, prioridad,
+        descripcion, estado:'Abierto', fechaISO: nowISO, requerimiento: (tieneReq?`REQ-${reqNum}`:'')
+      });
+      if (d && d.ok){ show('Ticket creado'); fetchList(); form.reset(); toggleReq(); }
+      else show('No se pudo crear en Sheets','err');
+    });
+
+    /* ==== MODAL UTIL ==== */
+    function askModal({title,label,prefill='',readonly=false,okText='Aceptar',required=false}){
+      return new Promise(resolve=>{
+        modalTitle.textContent = title; modalLabel.textContent = label;
+        modalText.value = prefill; modalText.readOnly = !!readonly;
+        modalOk.textContent = okText;
+        const onOk = ()=>{
+          if(required && !modalText.value.trim()){ modalText.focus(); return; }
+          cleanup(); modal.close(); resolve({ok:true, text:modalText.value.trim()});
+        };
+        const onCancel = ()=>{ cleanup(); modal.close(); resolve({ok:false}); };
+        function cleanup(){ modalOk.removeEventListener('click', onOk); modalCancel.removeEventListener('click', onCancel); modal.removeEventListener('cancel', onCancel); }
+        modalOk.addEventListener('click', onOk); modalCancel.addEventListener('click', onCancel); modal.addEventListener('cancel', onCancel);
+        modal.showModal(); setTimeout(()=>modalText.focus(), 50);
+      });
+    }
+    document.addEventListener('click', (e)=>{
+      const peek = e.target.closest('.desc-peek');
+      if (!peek) return;
+      askModal({ title:'Descripción completa', label:'Descripción', prefill: (peek.dataset.full||''), readonly:true, okText:'Cerrar' });
+    });
+
+    /* ==== CAMBIOS ESTADO / PRIORIDAD ==== */
+    document.addEventListener('focusin',(e)=>{
+      const s = e.target.closest('.estado-select'); if (s) s.dataset.prev = s.value;
+    });
+    document.addEventListener('change', async (e)=>{
+      const selE = e.target.closest('.estado-select');
+      const selP = e.target.closest('.prio-select');
+
+      if (selE){
+        const id = selE.dataset.id;
+        const newStatus = selE.value;
+        const prev = selE.dataset.prev || 'Abierto';
+
+        if (newStatus === 'Cancelado'){
+          const r = await askModal({title:'Cancelar ticket', label:'Motivo de cancelación', required:true});
+          if (!r.ok){ selE.value = prev; return; }
+          await postJSON({ action:'update_status', id, status:newStatus, reason:r.text });
+          fetchList(); return;
+        }
+        if (newStatus === 'Cerrado'){
+          const r = await askModal({title:'Cerrar ticket', label:'Solución aplicada', required:true});
+          if (!r.ok){ selE.value = prev; return; }
+          await postJSON({ action:'update_status', id, status:newStatus, solution:r.text });
+          fetchList(); return;
+        }
+        await postJSON({ action:'update_status', id, status:newStatus });
+        fetchList(); return;
+      }
+
+      if (selP){
+        await postJSON({ action:'update_priority', id: selP.dataset.id, prioridad: selP.value });
+        fetchList(); return;
+      }
+    });
+
+    /* ==== RENDER ==== */
+    function baseRows(){
+      let rows = ticketsRemote.slice();
+      if (statusSelect.value==='pendientes'){ rows = rows.filter(x => !['Cerrado','Cancelado'].includes(String(x.estado))); }
+      else if (statusSelect.value) rows = rows.filter(x => String(x.estado)===statusSelect.value);
+      if (analystSelect.value) rows = rows.filter(x => String(x.analista)===analystSelect.value);
+      if (monthSelect.value){
+        rows = rows.filter(x => {
+          const d = new Date(x.fecha);
+          const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+          return ym === monthSelect.value;
+        });
+      }
+      if (searchText && searchText.trim()){
+        const n = searchText.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+        rows = rows.filter(r =>
+          (`${r.id} ${r.categoria} ${r.falla} ${r.usuario} ${r.descripcion||''}`).toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+            .includes(n)
+        );
+      }
+      rows.sort((a,b)=> new Date(b.fecha) - new Date(a.fecha));
+      return rows;
+    }
+    function counters(rows){
       const c = { total:rows.length, abiertos:0, en_proceso:0, cerrados:0, cancelados:0, con_req:0 };
       rows.forEach(t=>{
         const s=String(t.estado||'').toLowerCase();
         if(s==='abierto') c.abiertos++; else if(s==='en proceso') c.en_proceso++; else if(s==='cerrado') c.cerrados++; else if(s==='cancelado') c.cancelados++;
         if (t.requerimiento) c.con_req++;
       });
-      kpiTotal.textContent=c.total; kpiAb.textContent=c.abiertos; kpiPr.textContent=c.en_proceso;
-      kpiCe.textContent=c.cerrados; kpiCa.textContent=c.cancelados; kpiRq.textContent=c.con_req||0;
+      return c;
     }
-
-    /* ==================== RENDER ==================== */
-    function render(rows){
-      setCounters(rows);
+    function setCounters(c){
+      document.getElementById('kpiTotal').textContent=c.total;
+      document.getElementById('kpiAb').textContent=c.abiertos;
+      document.getElementById('kpiPr').textContent=c.en_proceso;
+      document.getElementById('kpiCe').textContent=c.cerrados;
+      document.getElementById('kpiCa').textContent=c.cancelados;
+      document.getElementById('kpiRq').textContent=c.con_req||0;
+    }
+    function render(){
+      const rows = baseRows();
+      setCounters(counters(rows));
       tbody.innerHTML = rows.length ? rows.map(t=>`
         <tr>
           <td>${t.id||''}</td>
@@ -301,17 +516,11 @@
           <td>${esc(t.categoria||'')}</td>
           <td>${esc(t.falla||'')}</td>
           <td>${esc(t.usuario||'')}</td>
-
-          <td>
-            ${t.descripcion
-              ? `<span class="desc-peek" data-full="${esc(t.descripcion)}" title="Ver descripción completa">${esc(trunc(t.descripcion,30))}</span>`
-              : '<span class="muted">—</span>'}
-          </td>
-
+          <td>${t.descripcion ? `<span class="desc-peek" data-full="${esc(t.descripcion)}" title="Ver descripción completa">${esc(trunc(t.descripcion,30))}</span>` : '<span class="muted">—</span>'}</td>
           <td>${badge(t.prioridad||'')}</td>
           <td>${tagE(t.estado||'')}</td>
           <td>${fmt(t.fecha)}</td>
-
+          <td>${t.fechaCierre ? fmt(t.fechaCierre) : '—'}</td>
           <td>
             <div class="actions">
               <select class="estado-select" data-id="${t.id}">
@@ -327,64 +536,18 @@
               </select>
             </div>
           </td>
-        </tr>`).join('') : `<tr><td colspan="10" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
+        </tr>`).join('') : `<tr><td colspan="11" style="text-align:center;color:#51608b">Sin resultados</td></tr>`;
     }
 
-    /* ==================== MODAL TEXTO ==================== */
-    function askModal({title,label,prefill='',readonly=false,okText='Aceptar'}){
-      return new Promise(resolve=>{
-        modalTitle.textContent = title;
-        modalLabel.textContent = label;
-        modalText.value = prefill;
-        modalText.readOnly = !!readonly;
-        modalOk.textContent = okText;
-
-        const onOk = ()=>{ cleanup(); modal.close(); resolve({ok:true}); };
-        const onCancel = ()=>{ cleanup(); modal.close(); resolve({ok:false}); };
-        function cleanup(){ modalOk.removeEventListener('click', onOk); modalCancel.removeEventListener('click', onCancel); modal.removeEventListener('cancel', onCancel); }
-
-        modalOk.addEventListener('click', onOk);
-        modalCancel.addEventListener('click', onCancel);
-        modal.addEventListener('cancel', onCancel);
-        modal.showModal();
-        setTimeout(()=>modalText.focus(), 50);
-      });
+    /* ==== INIT ==== */
+    async function init(){
+      await fetchWhoAmI();
+      await fetchContacts();
+      await fetchList();
+      setInterval(()=>{ if(!document.hidden) fetchList(); }, AUTO_REFRESH_MS);
     }
-
-    document.addEventListener('click', (e)=>{
-      const peek = e.target.closest('.desc-peek');
-      if (!peek) return;
-      askModal({ title:'Descripción completa', label:'Descripción', prefill: peek.dataset.full || '', readonly:true, okText:'Cerrar' });
-    });
-
-    /* ==================== FETCH (lista) ==================== */
-    async function fetchList(){
-      try{
-        const params = new URLSearchParams({ action:'list', view: viewSelect.value });
-        if (analystSelect.value) params.set('analyst', analystSelect.value);
-        if (statusSelect.value==='pendientes') params.set('state','pendientes');
-        else if (statusSelect.value) params.set('status', statusSelect.value);
-        if (monthSelect.value) params.set('ym', monthSelect.value);
-        if (AUTH_KEY) params.set('key', AUTH_KEY);
-
-        const res = await fetch(WEB_APP_URL + '?' + params.toString());
-        const data = await res.json();
-        if (data && data.ok && Array.isArray(data.items)){
-          ticketsRemote = data.items;
-          if (data.me) who.textContent = `Identidad: ${data.me.name} (${data.me.role})`;
-          render(ticketsRemote);
-        }
-      }catch(e){ /* silencio */ }
-    }
-
-    [viewSelect, analystSelect, statusSelect, monthSelect].forEach(el=> el.addEventListener('change', fetchList));
-
-    /* ==================== INIT ==================== */
-    fetchList();
-    setInterval(()=>{ if(!document.hidden) fetchList(); }, AUTO_REFRESH_MS);
+    init();
   })();
   </script>
 </body>
 </html>
-
-
