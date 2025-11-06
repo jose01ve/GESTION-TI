@@ -115,6 +115,22 @@
    .col-date { min-width: 130px; white-space: nowrap; }
    /* Aplica también al cuerpo, 9na columna = Fecha */
    tbody td:nth-child(9) { min-width: 130px; white-space: nowrap; }
+
+    /* Evita que se “aplasten” las últimas columnas */
+table{ min-width: 1200px; }
+
+/* Anchos mínimos y no cortar fechas */
+.col-date,
+.col-date-close { min-width:130px; white-space:nowrap; }
+
+/* También aplicar por índice en el cuerpo */
+tbody td:nth-child(9),
+tbody td:nth-child(10){ min-width:130px; white-space:nowrap; }
+
+/* Asegurar espacio para Acciones */
+.col-actions{ min-width:160px; }
+tbody td:nth-child(11){ min-width:160px; }
+
   </style>
 </head>
 <body data-theme="light">
@@ -333,20 +349,22 @@
 
         <div class="tablebox">
           <table>
-          <thead>
-          <tr>
-          <th>Ticket</th>
-          <th>Analista</th>
-          <th>Categoría</th>
-          <th>Falla</th>
-          <th>Usuario</th>
-          <th>Descripción</th><!-- vista truncada + clic -->
-          <th>Prioridad</th>
-          <th>Estado</th>
-          <th class="col-date">Fecha</th>
-          <th>Acciones</th>
-         </tr>
-         </thead>
+             <thead>
+  <tr>
+    <th>Ticket</th>
+    <th>Analista</th>
+    <th>Categoría</th>
+    <th>Falla</th>
+    <th>Usuario</th>
+    <th>Descripción</th><!-- vista truncada + clic -->
+    <th>Prioridad</th>
+    <th>Estado</th>
+    <th class="col-date">Creación</th>
+    <th class="col-date-close">Cierre</th>
+    <th class="col-actions">Acciones</th>
+  </tr>
+</thead>
+
           <tbody id="tbody"></tbody>
           </table>
         </div>
@@ -829,6 +847,7 @@ document.addEventListener('click', (e)=>{
   </script>
 </body>
 </html>
+
 
 
 
